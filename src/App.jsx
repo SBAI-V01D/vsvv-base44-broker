@@ -142,18 +142,13 @@ const AuthenticatedApp = () => {
         <Route path="/leads" element={<Leads />} />
         <Route path="/coverage-intelligence" element={<CoverageIntelligence />} />
         <Route path="/system-logs" element={<SystemLogs />} />
-        <Route path="/admin-logs" element={<AdminLogs />} />
         <Route path="/partner" element={<Partners />} />
         <Route path="/partner/:id" element={<PartnerDetail />} />
         <Route path="/verkaufschancen" element={<Verkaufschancen />} />
         <Route path="/vertragsablaeufe" element={<Vertragsablaeufe />} />
-        <Route path="/admin/team-zugriffsrechte" element={<AdminTeamAccess />} />
         {/* AdvisoryDossierEngine — Phase 1 — Admin-Only */}
         <Route path="/beratungsdossier" element={<AdvisoryDossier />} />
-        <Route path="/admin/enterprise-control-center" element={<AdminEnterpriseControlCenter />} />
         <Route path="/reporting" element={<BrokerReporting />} />
-        <Route path="/admin/enterprise-audit" element={<EnterpriseAudit />} />
-        <Route path="/admin/insurance-learning" element={<InsuranceLearningCenter />} />
         <Route path="/dokument-extraktor" element={<DocumentExtractor />} />
         <Route path="/ausschreibungen" element={<Ausschreibungen />} />
         <Route path="/ausschreibungen/:id" element={<AusschreibungDetail />} />
@@ -185,7 +180,6 @@ const AuthenticatedApp = () => {
       <Route path="/admin/enterprise-audit" element={<Navigate to="/admin/audit" replace />} />
       <Route path="/admin-logs" element={<Navigate to="/admin/audit-logs" replace />} />
       <Route path="/system-logs" element={<Navigate to="/admin/logs" replace />} />
-      <Route path="/admin/insurance-learning" element={<Navigate to="/admin/insurance-learning" replace />} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
