@@ -562,7 +562,7 @@ export default function Dashboard() {
             {[
               {label:'Enterprise Control Center', path:'/admin/control-center', icon:'⚙️', desc:'Governance, Incidents & Compliance'},
               {label:'System Check', path:'/admin/system-check', icon:'🔍', desc:'Integrität & Validierung'},
-              {label:'KI-Analyse & Verbesserungen', path:'/ai-review', icon:'🤖', desc:'AI Findings & Qualität'},
+              {label:'KI-Analyse & Verbesserungen', path:'/admin/improvements', icon:'🤖', desc:'AI Findings & Qualität'},
               {label:'Audit & Security', path:'/admin/audit', icon:'🛡️', desc:'Audit-Trail & Sicherheit'},
               {label:'Insurance Learning', path:'/admin/insurance-learning', icon:'📚', desc:'KI-Wissensbasis & Muster'},
               {label:'Berater & Organisation', path:'/berater-organisation', icon:'🏢', desc:'Team & Strukturverwaltung'},
