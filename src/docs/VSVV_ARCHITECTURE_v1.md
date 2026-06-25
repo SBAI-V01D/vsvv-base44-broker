@@ -657,12 +657,12 @@ CREATE POLICY "admin_override_vertraege" ON vertraege
 
 ```javascript
 // functions/importBAGDatenToSupabase.js
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@vsvv/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const vsvv = createClientFromRequest(req);
+    const user = await vsvv.auth.me();
     
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
@@ -676,7 +676,7 @@ Deno.serve(async (req) => {
     }
 
     // Supabase Connection via Connector
-    const supabase = await base44.asServiceRole.connectors.getConnection('supabase');
+    const supabase = await vsvv.asServiceRole.connectors.getConnection('supabase');
     const serviceKey = supabase.connectionConfig.service_role_key;
     const projectUrl = supabase.connectionConfig.project_url;
 
@@ -729,7 +729,7 @@ Deno.serve(async (req) => {
     }
 
     // Import-Log schreiben
-    await base44.entities.ImportLog.create({
+    await vsvv.entities.ImportLog.create({
       import_typ: 'bag_praemien',
       datei_name: `BAG_${jahr}.xlsx`,
       anzahl_gesamt: records.length,
@@ -792,12 +792,12 @@ Deno.serve(async (req) => {
 
 ```javascript
 // functions/queryBAGPraemien.js
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@vsvv/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const vsvv = createClientFromRequest(req);
+    const user = await vsvv.auth.me();
     
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -818,7 +818,7 @@ Deno.serve(async (req) => {
     }
 
     // Supabase Connection
-    const supabase = await base44.asServiceRole.connectors.getConnection('supabase');
+    const supabase = await vsvv.asServiceRole.connectors.getConnection('supabase');
     const serviceKey = supabase.connectionConfig.service_role_key;
     const projectUrl = supabase.connectionConfig.project_url;
 
@@ -911,12 +911,12 @@ Deno.serve(async (req) => {
 
 ```javascript
 // functions/validateBAGImport.js
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@vsvv/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const vsvv = createClientFromRequest(req);
+    const user = await vsvv.auth.me();
     
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
@@ -925,7 +925,7 @@ Deno.serve(async (req) => {
     const { import_id } = await req.json();
 
     // Supabase Connection
-    const supabase = await base44.asServiceRole.connectors.getConnection('supabase');
+    const supabase = await vsvv.asServiceRole.connectors.getConnection('supabase');
     const serviceKey = supabase.connectionConfig.service_role_key;
     const projectUrl = supabase.connectionConfig.project_url;
 
@@ -989,19 +989,19 @@ Deno.serve(async (req) => {
 
 ```javascript
 // functions/getBAGStatistik.js
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@vsvv/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const vsvv = createClientFromRequest(req);
+    const user = await vsvv.auth.me();
     
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Supabase Connection
-    const supabase = await base44.asServiceRole.connectors.getConnection('supabase');
+    const supabase = await vsvv.asServiceRole.connectors.getConnection('supabase');
     const serviceKey = supabase.connectionConfig.service_role_key;
     const projectUrl = supabase.connectionConfig.project_url;
 

@@ -465,8 +465,8 @@
 ## 3. BACKEND FUNCTIONS (Deno Deploy)
 
 Alle Functions sind unter `functions/` als JS-Dateien.
-Aufruf: `base44.functions.invoke('functionName', payload)`
-Auth: `createClientFromRequest(req)` + `base44.auth.me()`
+Aufruf: `vsvv.functions.invoke('functionName', payload)`
+Auth: `createClientFromRequest(req)` + `vsvv.auth.me()`
 
 ### 3.1 BAG Import
 | Function | Zweck |
@@ -763,40 +763,40 @@ App.jsx → Router
 ### Frontend → Backend
 ```javascript
 // Entities direkt
-const data = await base44.entities.Customer.filter({ organization_id: org.id });
+const data = await vsvv.entities.Customer.filter({ organization_id: org.id });
 
 // Backend Function
-const result = await base44.functions.invoke('analyzeKrankenkassenVergleich', {
+const result = await vsvv.functions.invoke('analyzeKrankenkassenVergleich', {
   kanton: 'ZH', franchise: 300, modell: 'standard'
 });
 
 // File Upload
-const { file_url } = await base44.integrations.Core.UploadFile({ file });
+const { file_url } = await vsvv.integrations.Core.UploadFile({ file });
 
 // AI
-const analysis = await base44.integrations.Core.InvokeLLM({
+const analysis = await vsvv.integrations.Core.InvokeLLM({
   prompt: '...', response_json_schema: { type: 'object', properties: {...} }
 });
 ```
 
 ### Backend Function Template
 ```javascript
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@vsvv/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const vsvv = createClientFromRequest(req);
+    const user = await vsvv.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     // if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     const { param1, param2 } = await req.json();
 
     // User-scoped
-    const items = await base44.entities.Customer.list();
+    const items = await vsvv.entities.Customer.list();
 
     // Service-role (admin)
-    const allItems = await base44.asServiceRole.entities.Customer.list();
+    const allItems = await vsvv.asServiceRole.entities.Customer.list();
 
     return Response.json({ success: true, items });
   } catch (error) {
@@ -808,14 +808,14 @@ Deno.serve(async (req) => {
 ### BAG Import Pattern (Frontend-seitig optimal)
 ```javascript
 // 1. Upload Datei
-const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
+const { file_url } = await vsvv.integrations.Core.UploadFile({ file: selectedFile });
 
 // 2. Sequenziell alle 26 Kantone
 const KANTONE = ['ZH','BE','LU','UR','SZ','OW','NW','GL','ZG','FR','SO','BS',
                  'BL','SH','AR','AI','SG','GR','AG','TG','TI','VD','VS','NE','GE','JU'];
 
 for (const kanton of KANTONE) {
-  const response = await base44.functions.invoke('importBAGDatenFromURL', {
+  const response = await vsvv.functions.invoke('importBAGDatenFromURL', {
     file_url, jahr: 2026, kanton
   });
   await new Promise(r => setTimeout(r, 100)); // Pause zwischen Kantonen
@@ -828,7 +828,7 @@ for (const kanton of KANTONE) {
 
 | Package | Version | Verwendung |
 |---------|---------|------------|
-| `@base44/sdk` | ^0.8.31 | Platform SDK |
+| `@vsvv/sdk` | ^0.8.31 | Platform SDK |
 | `xlsx` | ^0.18.5 | Excel Parsing |
 | `jspdf` | ^4.0.0 | PDF Generierung |
 | `recharts` | ^2.15.4 | Charts & Grafiken |

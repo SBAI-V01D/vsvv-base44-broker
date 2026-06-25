@@ -1,14 +1,14 @@
 /**
- * VSVV API Client — Drop-in replacement for @base44/sdk
+ * VSVV API Client — Drop-in replacement for @vsvv/sdk
  *
- * Usage: import { base44 } from '@/api/base44Client'
+ * Usage: import { vsvv } from '@/api/vsvvClient'
  *
- * This module creates a `base44`-compatible interface that talks to our
+ * This module creates a `vsvv`-compatible interface that talks to our
  * self-hosted Fastify backend instead of Base44's cloud API.
  *
  * ALL existing frontend code continues to work without changes.
  *
- * Supported calling patterns (matching @base44/sdk exactly):
+ * Supported calling patterns (matching @vsvv/sdk exactly):
  *   list()                    → GET /api/{entities}
  *   list(sort, pageSize)      → GET /api/{entities}?sortBy=...&limit=...
  *   list(sort, pageSize, offset) → GET /api/{entities}?sortBy=...&limit=...&page=...
@@ -144,7 +144,7 @@ async function request(method, path, options = {}) {
 
 // ─── Service-Role Proxy ─────────────────────────────────────────────────────
 // Bypasses RLS for admin use. Mirrors the entity proxy but adds a service-role header.
-// Used via base44.asServiceRole.entities.X.list() in hooks like useAccessControl.js
+// Used via vsvv.asServiceRole.entities.X.list() in hooks like useAccessControl.js
 
 function createServiceRoleEntityProxy() {
   return new Proxy({}, {
@@ -257,7 +257,7 @@ function createEntityProxy() {
 
       const entityMethods = {
         /**
-         * list() — supports MULTIPLE calling patterns matching @base44/sdk:
+         * list() — supports MULTIPLE calling patterns matching @vsvv/sdk:
          *
          *   list()                                    → all records, default sort
          *   list(sort, pageSize)                      → e.g. list('-created_date', 500)
@@ -440,12 +440,16 @@ const auth = {
     socketIoInitialized = false
     socketIoInstance = null
 
-    if (redirectUrl) {
-      window.location.href = redirectUrl
-    }
+    window.location.href = redirectUrl || '/login'
   },
 
   redirectToLogin: (returnUrl) => {
+    const target = returnUrl ? `/login?redirect=${encodeURIComponent(returnUrl)}` : '/login'
+    window.location.href = target
+  },
+
+  // Alias for internal use
+  navigateToLogin: (returnUrl) => {
     const target = returnUrl ? `/login?redirect=${encodeURIComponent(returnUrl)}` : '/login'
     window.location.href = target
   },
@@ -491,7 +495,7 @@ const integrations = {
     },
 
     /**
-     * SendEmail — matches base44.integrations.Core.SendEmail({ to, subject, body })
+     * SendEmail — matches vsvv.integrations.Core.SendEmail({ to, subject, body })
      * Used in src/lib/notifications.js
      */
     SendEmail: async ({ to, subject, body, ...rest }) => {
@@ -505,14 +509,11 @@ const integrations = {
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 /**
- * The main base44-compatible export.
+ * The main VSVV API client export.
  *
- * Usage: import { base44 } from '@/api/base44Client'
- *
- * Every method matches @base44/sdk's interface so all 213+ existing
- * component files work without changes.
+ * Usage: import { vsvv } from '@/api/vsvvClient'
  */
-export const base44 = {
+export const vsvv = {
   entities: createEntityProxy(),
   asServiceRole: {
     entities: createServiceRoleEntityProxy(),
@@ -525,6 +526,8 @@ export const base44 = {
 // Listen for forced logout events (e.g., from token refresh failure)
 window.addEventListener('auth:logout', () => {
   window.dispatchEvent(new CustomEvent('vsvv:logout'))
+  // Redirect to login
+  window.location.href = '/login'
 })
 
-export default base44
+export default vsvv

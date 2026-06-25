@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -104,20 +104,20 @@ export default function DocumentExtractor() {
 
   const { data: allCustomers = [] } = useQuery({
     queryKey: ['customers', 'all'],
-    queryFn: () => base44.entities.Customer.list(null, 500),
+    queryFn: () => vsvv.entities.Customer.list(null, 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const uploadMutation = useMutation({
     mutationFn: async (f) => {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
+      const { file_url } = await vsvv.integrations.Core.UploadFile({ file: f });
       return file_url;
     }
   });
 
   const extractMutation = useMutation({
     mutationFn: async (file_url) => {
-      const res = await base44.functions.invoke('extractInsuranceDocument', { file_url, file_name: file?.name });
+      const res = await vsvv.functions.invoke('extractInsuranceDocument', { file_url, file_name: file?.name });
       return res.data;
     },
     onSuccess: (data) => {
@@ -154,7 +154,7 @@ export default function DocumentExtractor() {
         const person = (data.persons || [])[personIdx] || {};
         const merged = { ...person, ...(editPersons[personIdx] || {}) };
 
-        await base44.entities.Contract.create({
+        await vsvv.entities.Contract.create({
           customer_id: selectedCustomerId || null,
           customer_name: selectedCustomerId
             ? allCustomers.find(c => c.id === selectedCustomerId)?.first_name + ' ' + allCustomers.find(c => c.id === selectedCustomerId)?.last_name

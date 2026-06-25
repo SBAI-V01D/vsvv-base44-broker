@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ApplicationKanban from '../components/applications/ApplicationKanban'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Plus, Search, Edit, Trash2, FileText, TrendingUp, Clock, CheckCircle, Calendar, Building2, Tag, Archive, Inbox, LayoutGrid, List } from 'lucide-react'
 import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
@@ -45,25 +45,25 @@ export default function Applications() {
 
   const { data: statusDefs = [] } = useQuery({
     queryKey: ['statusDefinitions'],
-    queryFn: () => base44.entities.StatusDefinition.filter({ type: 'application' }),
+    queryFn: () => vsvv.entities.StatusDefinition.filter({ type: 'application' }),
     staleTime: 10 * 60 * 1000,
   })
 
   const { data: applications = [] } = useQuery({
     queryKey: ['applications'],
-    queryFn: () => base44.entities.Application.list('-created_date', 500),
+    queryFn: () => vsvv.entities.Application.list('-created_date', 500),
     staleTime: 2 * 60 * 1000,
   })
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list('-created_date', 500),
+    queryFn: () => vsvv.entities.Customer.list('-created_date', 500),
     staleTime: 5 * 60 * 1000,
   })
 
   const { data: brokers = [] } = useQuery({
     queryKey: ['brokers'],
-    queryFn: () => base44.entities.Broker.filter({ is_active: true }, '-created_date', 100),
+    queryFn: () => vsvv.entities.Broker.filter({ is_active: true }, '-created_date', 100),
     staleTime: 10 * 60 * 1000,
   })
 
@@ -76,17 +76,17 @@ export default function Applications() {
   }
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Application.create(data),
+    mutationFn: (data) => vsvv.entities.Application.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['applications'] }); setShowForm(false); setEditing(null) },
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Application.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.Application.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['applications'] }); setShowForm(false); setEditing(null) },
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Application.delete(id),
+    mutationFn: (id) => vsvv.entities.Application.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['applications'] }),
   })
 
@@ -161,7 +161,7 @@ export default function Applications() {
     if (isApproval) {
       setCreatingContract(true)
       try {
-        const result = await base44.functions.invoke('acceptApplicationAndCreateContract', {
+        const result = await vsvv.functions.invoke('acceptApplicationAndCreateContract', {
           application_id: app.id,
         })
         if (result.data.success) {
@@ -172,7 +172,7 @@ export default function Applications() {
       } catch (e) {
         console.error('One-click acceptance failed:', e)
         // Fallback: normaler Status-Update
-        await base44.entities.Application.update(app.id, {
+        await vsvv.entities.Application.update(app.id, {
           custom_status: status,
           status_changed_at: new Date().toISOString(),
         })
@@ -180,7 +180,7 @@ export default function Applications() {
       setCreatingContract(false)
     } else {
       // Normaler Status-Update (nicht Genehmigung)
-      await base44.entities.Application.update(app.id, {
+      await vsvv.entities.Application.update(app.id, {
         custom_status: status,
         status_changed_at: new Date().toISOString(),
       })
@@ -478,7 +478,7 @@ export default function Applications() {
                           onClick={async () => {
                             setCreatingContract(true)
                             try {
-                              const result = await base44.functions.invoke('acceptApplicationAndCreateContract', {
+                              const result = await vsvv.functions.invoke('acceptApplicationAndCreateContract', {
                                 application_id: app.id,
                               })
                               if (result.data.success) {

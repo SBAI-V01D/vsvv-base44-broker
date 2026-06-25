@@ -17,7 +17,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Loader2, CheckCircle2, AlertCircle, Clock, RefreshCw, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -67,7 +67,7 @@ export default function DocumentAnalysisStatus({ documentId, onRetry }) {
   const { data: queueEntry, isLoading } = useQuery({
     queryKey: ['document_analysis_queue', documentId],
     queryFn: async () => {
-      const queues = await base44.entities.AutomationQueue.filter({
+      const queues = await vsvv.entities.AutomationQueue.filter({
         queue_name: 'document_analysis',
         'payload.document_id': documentId,
       }, '-created_date', 1);
@@ -106,7 +106,7 @@ export default function DocumentAnalysisStatus({ documentId, onRetry }) {
       await onRetry();
     } else {
       // Reset queue entry
-      await base44.entities.AutomationQueue.update(queueEntry.id, {
+      await vsvv.entities.AutomationQueue.update(queueEntry.id, {
         status: 'pending',
         retry_count: 0,
         error_message: null,

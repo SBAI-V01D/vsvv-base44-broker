@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertTriangle, Clock, CheckCircle2 } from 'lucide-react'
 
 export default function RenewalWidget() {
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => base44.entities.Contract.list('-end_date'),
+    queryFn: () => vsvv.entities.Contract.list('-end_date'),
   })
 
   const renewalData = useMemo(() => {

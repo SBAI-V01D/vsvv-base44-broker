@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -42,7 +42,7 @@ const grouped = ALL_SPARTEN.reduce((acc, s) => {
 function AdvisorSelect({ value, onChange }) {
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors-all'],
-    queryFn: () => base44.entities.Advisor.list(),
+    queryFn: () => vsvv.entities.Advisor.list(),
     staleTime: 60_000,
   })
   const active = advisors.filter(a => a.status === 'active')
@@ -90,7 +90,7 @@ export default function ApplicationForm({ application, customers = [], brokers =
   // Advisors für Standardberater-Lookup
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors-all'],
-    queryFn: () => base44.entities.Advisor.list(),
+    queryFn: () => vsvv.entities.Advisor.list(),
     staleTime: 60_000,
   })
 
@@ -156,7 +156,7 @@ export default function ApplicationForm({ application, customers = [], brokers =
   // Verträge des gewählten Kunden für Ablöse-Auswahl
   const { data: customerContracts = [] } = useQuery({
     queryKey: ['contracts-for-customer', form.customer_id],
-    queryFn: () => base44.entities.Contract.filter({ customer_id: form.customer_id, archived: false }),
+    queryFn: () => vsvv.entities.Contract.filter({ customer_id: form.customer_id, archived: false }),
     enabled: !!form.customer_id && abloeseActive,
     staleTime: 30_000,
   })

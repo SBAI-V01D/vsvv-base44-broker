@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44, setTokens, getAccessToken, clearTokens } from '@/api/base44Client';
+import { vsvv, setTokens, getAccessToken, clearTokens } from '@/api/vsvvClient';
 
 const AuthContext = createContext();
 
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = async () => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const currentUser = await vsvv.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -90,14 +90,14 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
 
     if (shouldRedirect) {
-      base44.auth.logout(window.location.href);
+      vsvv.auth.logout('/login');
     } else {
-      base44.auth.logout();
+      vsvv.auth.logout();
     }
   };
 
   const navigateToLogin = () => {
-    base44.auth.redirectToLogin(window.location.href);
+    vsvv.auth.redirectToLogin('/login');
   };
 
   return (

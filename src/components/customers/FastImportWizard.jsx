@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -76,7 +76,7 @@ export default function FastImportWizard({ open, onOpenChange, onSuccess }) {
       console.log(`🔍 Columns: first=${firstNameIdx}, last=${lastNameIdx}, email=${emailIdx}`)
 
       // Get default org
-      const orgs = await base44.entities.Organization.list('', 1)
+      const orgs = await vsvv.entities.Organization.list('', 1)
       const defaultOrgId = orgs?.[0]?.id
 
       // Parse records
@@ -133,7 +133,7 @@ export default function FastImportWizard({ open, onOpenChange, onSuccess }) {
 
       for (let i = 0; i < records.length; i++) {
         try {
-          await base44.entities.Customer.create(records[i])
+          await vsvv.entities.Customer.create(records[i])
           successful++
         } catch (e) {
           failed++

@@ -289,7 +289,7 @@ Opportunity v2.0 {
 // PATTERN: Konsistent in allen Entity-Operations
 
 // 1. READ: Nur eigene Daten/Team-Daten
-const userVisibleCustomers = await base44.asServiceRole.entities.Customer.filter({
+const userVisibleCustomers = await vsvv.asServiceRole.entities.Customer.filter({
   $or: [
     { primary_advisor_id: user.id },
     { assigned_advisors: { $contains: user.id } }

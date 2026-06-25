@@ -194,7 +194,7 @@ export default function ComplianceSchreiben() {
   const handleEmail = () => {
     const subject = encodeURIComponent('Compliance-Anfrage für CRM-System im Versicherungsbereich (FINMA-relevant)');
     const body = encodeURIComponent(COMPLIANCE_LETTER);
-    window.open(`mailto:support@base44.com?subject=${subject}&body=${body}`);
+    window.open(`mailto:support@vsvv.com?subject=${subject}&body=${body}`);
   };
 
   return (
@@ -258,7 +258,7 @@ export default function ComplianceSchreiben() {
         <CardContent className="space-y-3">
           <ol className="list-decimal list-inside space-y-2 text-sm">
             <li>Schreiben kopieren oder herunterladen</li>
-            <li>Per E-Mail senden an: <strong>support@base44.com</strong></li>
+            <li>Per E-Mail senden an: <strong>support@vsvv.com</strong></li>
             <li>Alternativ: Über Base44 Security Trust Center einreichen</li>
             <li>Auf schriftliche Antwort warten (10 Werktage)</li>
             <li>Erst nach positiver Bestätigung Kundendaten importieren</li>
@@ -275,7 +275,7 @@ export default function ComplianceSchreiben() {
       <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
         <ExternalLink className="w-4 h-4" />
         <a 
-          href="https://base44.com/security" 
+          href="https://vsvv.com/security" 
           target="_blank" 
           rel="noopener noreferrer"
           className="underline hover:text-primary"

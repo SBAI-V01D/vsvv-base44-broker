@@ -14,6 +14,8 @@ import { initSocketServer, closeSocketServer } from './lib/socket.js';
 // Middleware
 import { PUBLIC_ROUTES, requireAuth } from './middleware/auth.js';
 import { requireRole } from './middleware/rbac.js';
+import { requireServiceRole } from './middleware/service-role.js';
+import { createAuditHook } from './middleware/audit.js';
 import type { Role } from './middleware/rbac.js';
 
 // Auth routes
@@ -61,6 +63,16 @@ declare module 'fastify' {
     requireRole: (
       roles: Role[],
     ) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+
+    /**
+     * Service-Role access control guard.
+     * Validates the X-Service-Role header — only admin users may use it.
+     * Must be used *after* `requireAuth` and `requireTenant`.
+     */
+    requireServiceRole: (
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ) => Promise<void>;
   }
 }
 
@@ -104,12 +116,19 @@ export async function buildApp(): Promise<FastifyInstance> {
    */
   app.decorate('requireAuth', requireAuth);
 
-  /**
-   * Role-based access control guard — must be used *after* `requireAuth`.
-   * Factory function that returns a preHandler checking the user's role
-   * against a list of allowed roles. Returns 403 if not authorized.
-   */
-  app.decorate('requireRole', requireRole);
+    /**
+     * Role-based access control guard — must be used *after* `requireAuth`.
+     * Factory function that returns a preHandler checking the user's role
+     * against a list of allowed roles. Returns 403 if not authorized.
+     */
+    app.decorate('requireRole', requireRole);
+
+    /**
+     * Service-Role guard — validates the X-Service-Role header.
+     * Only admin users may use this header to bypass normal RBAC.
+     * Must be used *after* `requireAuth`.
+     */
+    app.decorate('requireServiceRole', requireServiceRole);
 
   // ----- Global Auth Hook --------------------------------------------------
 
@@ -118,6 +137,8 @@ export async function buildApp(): Promise<FastifyInstance> {
    * Public routes (from the PUBLIC_ROUTES whitelist) are skipped inside
    * the requireAuth middleware. Individual routes can still opt in via
    * per-route preHandler for explicit documentation.
+   *
+   * Also runs requireServiceRole to prevent X-Service-Role privilege escalation.
    */
   app.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
     const urlPath = request.url.split('?')[0];
@@ -132,8 +153,23 @@ export async function buildApp(): Promise<FastifyInstance> {
         error: 'Unauthorized',
         message: 'Invalid or expired token',
       });
+      return;
     }
+
+    // Enforce service-role access control AFTER successful auth
+    // Only checks requests with X-Service-Role header, no-op otherwise
+    await requireServiceRole(request, reply);
   });
+
+  // ----- Audit Hook (DSGVO-compliant access logging) ------------------------
+
+  /**
+   * Global onResponse hook: logs read/write access to sensitive personal data.
+   * Required for DSGVO Art. 5(1)(f) + Art. 30 and FINMA compliance.
+   * Only fires for authenticated requests to sensitive entity routes.
+   * Fire-and-forget — does not block responses.
+   */
+  app.addHook('onResponse', createAuditHook());
 
   // ----- Entity CRUD Routes -------------------------------------------------
 

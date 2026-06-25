@@ -75,7 +75,7 @@ if (!canViewCustomer(customerId)) {
 
 ### 4. Backend-Filterung
 ```jsx
-const response = await base44.functions.invoke('getVisibleData', {
+const response = await vsvv.functions.invoke('getVisibleData', {
   entity: 'Customer',
   entityId: id,
 })

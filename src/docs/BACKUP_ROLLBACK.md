@@ -54,7 +54,7 @@ pg_dump -h db.xxx.supabase.co -U postgres \
 
 ```javascript
 // Function: createFullBackup
-const backup = await base44.functions.invoke('createFullBackup', {
+const backup = await vsvv.functions.invoke('createFullBackup', {
   entities: ['BAGPraemienDaten', 'Kunde', 'Vertrag'],
   format: 'json',
   storage: 'supabase' // oder 's3', 'local'

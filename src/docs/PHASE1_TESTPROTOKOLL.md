@@ -672,7 +672,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 |---|---|---|---|
 | **Tester** | Peter Adam | admin@vsvv.ch | +41 XX XXX XX XX |
 | **Support** | Supabase | support@supabase.com | - |
-| **Support** | Base44 | support@base44.com | - |
+| **Support** | Base44 | support@vsvv.com | - |
 
 ### C. Versionierung
 

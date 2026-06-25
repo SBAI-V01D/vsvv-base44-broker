@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -12,12 +12,12 @@ export default function DocumentAccessTab() {
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => base44.entities.Document.list(),
+    queryFn: () => vsvv.entities.Document.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => base44.entities.Advisor.list(),
+    queryFn: () => vsvv.entities.Advisor.list(),
   })
 
   const accessLevelLabels = {

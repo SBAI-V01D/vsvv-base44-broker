@@ -16,7 +16,7 @@
 
 **Verwendung:**
 ```javascript
-await base44.functions.invoke('auditLogWrite', {
+await vsvv.functions.invoke('auditLogWrite', {
   entity_type: 'Contract',
   entity_id: contractId,
   action: 'create',

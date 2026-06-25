@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import {
   Brain, Zap, Activity, Building2, ChevronDown, ChevronUp, ExternalLink,
   AlertTriangle, Info, TrendingUp, CheckCircle2, Loader2, RefreshCw,
@@ -277,7 +277,7 @@ export default function AiReviewCenter() {
   useEffect(() => {
     const loadLastReview = async () => {
       try {
-        const reviews = await base44.entities.AiReview.list('-reviewed_at', 1);
+        const reviews = await vsvv.entities.AiReview.list('-reviewed_at', 1);
         if (reviews.length > 0) {
           const lastReview = reviews[0];
           setResult({
@@ -299,7 +299,7 @@ export default function AiReviewCenter() {
     setLoading(true); setError(null); setResult(null);
     setFilterArea('all'); setFilterSev('all');
     try {
-      const res = await base44.functions.invoke('aiSystemReview', { level: selectedLevel });
+      const res = await vsvv.functions.invoke('aiSystemReview', { level: selectedLevel });
       setResult(res.data);
     } catch (e) {
       setError(e.message || 'Review fehlgeschlagen');

@@ -3,7 +3,7 @@ import { usePortalData } from '@/hooks/usePortalData'
 import { usePortalCustomer } from '@/hooks/usePortalCustomer'
 import { Download, Upload } from 'lucide-react'
 
-const LOGO_URL = 'https://media.base44.com/images/public/69f07890d7d9106eb68a2c98/0cde67ef2_LogoVSVV2.png'
+const LOGO_URL = 'https://media.vsvv.com/images/public/69f07890d7d9106eb68a2c98/0cde67ef2_LogoVSVV2.png'
 
 export default function PortalCustomerDashboard() {
   const { customer } = usePortalCustomer()

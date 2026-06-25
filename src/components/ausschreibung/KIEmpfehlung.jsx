@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Sparkles, Star, AlertTriangle, CheckCircle2, TrendingUp, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function KIEmpfehlung({ ausschreibung, offerten, onUpdate }) {
@@ -62,7 +62,7 @@ Antworte als JSON:
   "handlungsempfehlung": "Konkrete nächste Schritte..."
 }`;
 
-      const res = await base44.integrations.Core.InvokeLLM({ prompt, response_json_schema: { type: 'object', properties: { empfohlener_versicherer: { type: 'string' }, empfehlungs_begruendung: { type: 'string' }, guenstigster_versicherer: { type: 'string' }, einsparung_chf: { type: 'number' }, kritische_ausschluesse: { type: 'array', items: { type: 'string' } }, deckungsluecken: { type: 'array', items: { type: 'string' } }, kundenzusammenfassung: { type: 'string' }, broker_fazit: { type: 'string' }, scores: { type: 'object' }, handlungsempfehlung: { type: 'string' } } } });
+      const res = await vsvv.integrations.Core.InvokeLLM({ prompt, response_json_schema: { type: 'object', properties: { empfohlener_versicherer: { type: 'string' }, empfehlungs_begruendung: { type: 'string' }, guenstigster_versicherer: { type: 'string' }, einsparung_chf: { type: 'number' }, kritische_ausschluesse: { type: 'array', items: { type: 'string' } }, deckungsluecken: { type: 'array', items: { type: 'string' } }, kundenzusammenfassung: { type: 'string' }, broker_fazit: { type: 'string' }, scores: { type: 'object' }, handlungsempfehlung: { type: 'string' } } } });
 
       setResult(res);
       setExpanded(true);
@@ -72,7 +72,7 @@ Antworte als JSON:
         for (const o of offerten) {
           const sc = res.scores[o.versicherer_name];
           if (sc) {
-            await base44.entities.Offerte.update(o.id, {
+            await vsvv.entities.Offerte.update(o.id, {
               ki_preis_score: sc.preis, ki_deckungs_score: sc.deckung,
               ki_risiko_score: sc.risiko, ki_service_score: sc.service,
               ki_score: sc.gesamt, ki_staerken: res.staerken_pro_versicherer?.[o.versicherer_name] || [],

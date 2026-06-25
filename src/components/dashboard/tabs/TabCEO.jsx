@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertTriangle, TrendingUp, Users, FileText } from 'lucide-react'
@@ -10,13 +10,13 @@ export default function TabCEO() {
   const [filterAdvisor, setFilterAdvisor] = useState('all')
   const [filterOrg, setFilterOrg] = useState('all')
 
-  const { data: customers = [] }  = useQuery({ queryKey: ['customers'],        queryFn: () => base44.entities.Customer.list() })
-  const { data: contracts = [] }  = useQuery({ queryKey: ['contracts'],        queryFn: () => base44.entities.Contract.list() })
-  const { data: commissions = [] }= useQuery({ queryKey: ['commissionEntries'],queryFn: () => base44.entities.CommissionEntry.list('-created_date', 500) })
-  const { data: documents = [] }  = useQuery({ queryKey: ['documents'],        queryFn: () => base44.entities.Document.list('-created_date', 500) })
-  const { data: advisors = [] }   = useQuery({ queryKey: ['advisors'],         queryFn: () => base44.entities.Advisor.list() })
-  const { data: orgs = [] }       = useQuery({ queryKey: ['organizations'],    queryFn: () => base44.entities.Organization.list() })
-  const { data: leads = [] }      = useQuery({ queryKey: ['leads'],            queryFn: () => base44.entities.Lead.list() })
+  const { data: customers = [] }  = useQuery({ queryKey: ['customers'],        queryFn: () => vsvv.entities.Customer.list() })
+  const { data: contracts = [] }  = useQuery({ queryKey: ['contracts'],        queryFn: () => vsvv.entities.Contract.list() })
+  const { data: commissions = [] }= useQuery({ queryKey: ['commissionEntries'],queryFn: () => vsvv.entities.CommissionEntry.list('-created_date', 500) })
+  const { data: documents = [] }  = useQuery({ queryKey: ['documents'],        queryFn: () => vsvv.entities.Document.list('-created_date', 500) })
+  const { data: advisors = [] }   = useQuery({ queryKey: ['advisors'],         queryFn: () => vsvv.entities.Advisor.list() })
+  const { data: orgs = [] }       = useQuery({ queryKey: ['organizations'],    queryFn: () => vsvv.entities.Organization.list() })
+  const { data: leads = [] }      = useQuery({ queryKey: ['leads'],            queryFn: () => vsvv.entities.Lead.list() })
 
   const filteredContracts = useMemo(() =>
     contracts.filter(c => {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -27,7 +27,7 @@ export default function PricingOptimizationPanel() {
   const { data: suggestions = [] } = useQuery({
     queryKey: ['pricing-suggestions'],
     queryFn: async () => {
-      return await base44.entities.PricingSuggestion.filter(
+      return await vsvv.entities.PricingSuggestion.filter(
         { status: 'pending' },
         '-saving_percent'
       )
@@ -221,7 +221,7 @@ export default function PricingOptimizationPanel() {
   )
 
   async function updateSuggestion(suggestionId, data) {
-    await base44.entities.PricingSuggestion.update(suggestionId, data)
+    await vsvv.entities.PricingSuggestion.update(suggestionId, data)
     queryClient.invalidateQueries({ queryKey: ['pricing-suggestions'] })
   }
 }

@@ -4,7 +4,7 @@
 
 ### 1. Single Source of Truth (Financial Engine)
 ```
-All KPIs → calcKPIs() {base44}
+All KPIs → calcKPIs() {vsvv}
                 ↓
         ├→ Dashboard
         ├→ BI Analytics

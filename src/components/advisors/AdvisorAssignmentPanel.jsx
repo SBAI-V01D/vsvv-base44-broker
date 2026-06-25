@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,13 +17,13 @@ export default function AdvisorAssignmentPanel({ customerId, onAssignmentsUpdate
   // Fetch current assignments
   const { data: assignments = [] } = useQuery({
     queryKey: ['customerAdvisors', customerId],
-    queryFn: () => base44.entities.CustomerAdvisor.filter({ customer_id: customerId }),
+    queryFn: () => vsvv.entities.CustomerAdvisor.filter({ customer_id: customerId }),
   });
 
   // Fetch all advisors
   const { data: allAdvisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => base44.entities.Advisor.list(),
+    queryFn: () => vsvv.entities.Advisor.list(),
   });
 
   // Filter advisors not yet assigned
@@ -38,7 +38,7 @@ export default function AdvisorAssignmentPanel({ customerId, onAssignmentsUpdate
   // Add advisor mutation
   const addAdvisorMutation = useMutation({
     mutationFn: (advisorId) =>
-      base44.entities.CustomerAdvisor.create({
+      vsvv.entities.CustomerAdvisor.create({
         customer_id: customerId,
         customer_name: 'temp',
         advisor_id: advisorId,
@@ -57,7 +57,7 @@ export default function AdvisorAssignmentPanel({ customerId, onAssignmentsUpdate
 
   // Remove advisor mutation
   const removeAdvisorMutation = useMutation({
-    mutationFn: (assignmentId) => base44.entities.CustomerAdvisor.delete(assignmentId),
+    mutationFn: (assignmentId) => vsvv.entities.CustomerAdvisor.delete(assignmentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customerAdvisors', customerId] });
       onAssignmentsUpdated?.();

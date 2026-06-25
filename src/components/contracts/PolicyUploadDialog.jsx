@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,8 +26,8 @@ export default function PolicyUploadDialog({ open, onOpenChange, contractId, onU
     // Auto-extract data
     setExtracting(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
-      const response = await base44.functions.invoke('extractPolicyData', { file_url });
+      const { file_url } = await vsvv.integrations.Core.UploadFile({ file: f });
+      const response = await vsvv.functions.invoke('extractPolicyData', { file_url });
       setExtractedData(response.data || {});
       setFormData(response.data || {});
     } catch (error) {
@@ -44,7 +44,7 @@ export default function PolicyUploadDialog({ open, onOpenChange, contractId, onU
 
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await vsvv.integrations.Core.UploadFile({ file });
       const updateData = { policy_document_url: file_url };
       
       // Nur nicht-null Felder hinzufügen
@@ -56,7 +56,7 @@ export default function PolicyUploadDialog({ open, onOpenChange, contractId, onU
       if (formData.premium_monthly) updateData.premium_monthly = formData.premium_monthly;
       if (formData.premium_yearly) updateData.premium_yearly = formData.premium_yearly;
 
-      await base44.entities.Contract.update(contractId, updateData);
+      await vsvv.entities.Contract.update(contractId, updateData);
       setFile(null);
       setExtractedData(null);
       setFormData({});

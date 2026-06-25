@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -125,7 +125,7 @@ export default function AdminLogs() {
 
   const loadLogs = async () => {
     setLoading(true);
-    const data = await base44.entities.AuditLog.list('-created_date', 200);
+    const data = await vsvv.entities.AuditLog.list('-created_date', 200);
     setLogs(data);
     setLoading(false);
   };
@@ -134,7 +134,7 @@ export default function AdminLogs() {
 
   const runValidation = async () => {
     setRunning(true);
-    const res = await base44.functions.invoke('enterpriseValidationSuite', { suite: 'all' });
+    const res = await vsvv.functions.invoke('enterpriseValidationSuite', { suite: 'all' });
     setValidationResult(res.data);
     setRunning(false);
     loadLogs();

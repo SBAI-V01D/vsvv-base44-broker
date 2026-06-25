@@ -7,7 +7,7 @@
  */
 import React, { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { AlertTriangle, TrendingUp, CheckSquare, ArrowRight, Gift, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -63,14 +63,14 @@ export default function PortfolioDashboard({ setWorkspaceMode }) {
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
-      const all = await base44.entities.Customer.filter({ archived: false }, '-updated_date', 500);
+      const all = await vsvv.entities.Customer.filter({ archived: false }, '-updated_date', 500);
       return all.filter(c => !c.is_family_member);
     },
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['portfolio_tasks'],
-    queryFn: () => base44.entities.Task.filter({ status: 'open' }, '-due_date', 200),
+    queryFn: () => vsvv.entities.Task.filter({ status: 'open' }, '-due_date', 200),
     staleTime: 60_000,
   });
 

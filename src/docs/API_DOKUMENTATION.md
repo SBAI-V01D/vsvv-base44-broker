@@ -429,7 +429,7 @@ const queryClient = new QueryClient({
 **1. BAG-Import Test:**
 ```javascript
 const testImport = async () => {
-  const response = await base44.functions.invoke('importBAGDatenToSupabase', {
+  const response = await vsvv.functions.invoke('importBAGDatenToSupabase', {
     records: testRecords,
     jahr: 2026,
     importModus: 'auswahl',
@@ -445,7 +445,7 @@ const testImport = async () => {
 ```javascript
 const testQueryPerformance = async () => {
   const start = Date.now();
-  const response = await base44.functions.invoke('queryBAGPraemien', {
+  const response = await vsvv.functions.invoke('queryBAGPraemien', {
     kanton: 'ZH',
     jahr: 2026
   });

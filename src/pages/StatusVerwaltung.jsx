@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Plus, Edit, Trash2, GripVertical } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,21 +59,21 @@ export default function StatusVerwaltung() {
 
   const { data: statusDefs = [] } = useQuery({
     queryKey: ['statusDefinitions'],
-    queryFn: () => base44.entities.StatusDefinition.list('sort_order'),
+    queryFn: () => vsvv.entities.StatusDefinition.list('sort_order'),
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.StatusDefinition.create(data),
+    mutationFn: (data) => vsvv.entities.StatusDefinition.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['statusDefinitions'] }); setShowForm(false) },
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.StatusDefinition.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.StatusDefinition.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['statusDefinitions'] }); setShowForm(false) },
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.StatusDefinition.delete(id),
+    mutationFn: (id) => vsvv.entities.StatusDefinition.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['statusDefinitions'] }),
   })
 

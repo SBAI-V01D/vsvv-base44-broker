@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -45,11 +45,11 @@ const UploadDialog = ({ partnerId, partnerName, onClose, onSuccess }) => {
 
     try {
       setUploading(true)
-      const { file_url } = await base44.integrations.Core.UploadFile({ file })
+      const { file_url } = await vsvv.integrations.Core.UploadFile({ file })
       
-      const currentUser = await base44.auth.me()
+      const currentUser = await vsvv.auth.me()
       
-      await base44.entities.PartnerDocument.create({
+      await vsvv.entities.PartnerDocument.create({
         partner_id: partnerId,
         partner_name: partnerName,
         file_name: file.name,
@@ -61,7 +61,7 @@ const UploadDialog = ({ partnerId, partnerName, onClose, onSuccess }) => {
         uploaded_by_name: currentUser.full_name || currentUser.email
       })
 
-      await base44.entities.PartnerActivity.create({
+      await vsvv.entities.PartnerActivity.create({
         partner_id: partnerId,
         partner_name: partnerName,
         activity_type: 'document_uploaded',
@@ -137,7 +137,7 @@ export default function PartnerDocumentsPanel({ partnerId, partnerName }) {
     queryKey: ['partner-documents', partnerId],
     queryFn: async () => {
       try {
-        return await base44.entities.PartnerDocument.filter({ partner_id: partnerId }, '-created_date', 1000)
+        return await vsvv.entities.PartnerDocument.filter({ partner_id: partnerId }, '-created_date', 1000)
       } catch {
         return []
       }
@@ -148,10 +148,10 @@ export default function PartnerDocumentsPanel({ partnerId, partnerName }) {
   const deleteMutation = useMutation({
     mutationFn: async (docId) => {
       const doc = documents.find(d => d.id === docId)
-      await base44.entities.PartnerDocument.delete(docId)
+      await vsvv.entities.PartnerDocument.delete(docId)
       
-      const currentUser = await base44.auth.me()
-      await base44.entities.PartnerActivity.create({
+      const currentUser = await vsvv.auth.me()
+      await vsvv.entities.PartnerActivity.create({
         partner_id: partnerId,
         partner_name: partnerName,
         activity_type: 'document_deleted',

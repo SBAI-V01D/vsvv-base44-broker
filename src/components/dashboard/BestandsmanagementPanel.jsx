@@ -5,7 +5,7 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { cn } from '@/lib/utils'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 import {
@@ -193,11 +193,11 @@ export default function BestandsmanagementPanel({ contracts = [] }) {
   const [filterSeverity, setFilterSeverity] = useState('all')
 
   const createVsMutation = useMutation({
-    mutationFn: (data) => base44.entities.Verkaufschance.create(data),
+    mutationFn: (data) => vsvv.entities.Verkaufschance.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] }); navigate('/verkaufschancen') },
   })
   const updateContractMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Contract.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.Contract.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
   })
 

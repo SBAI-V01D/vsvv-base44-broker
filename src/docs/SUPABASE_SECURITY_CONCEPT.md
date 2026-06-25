@@ -320,13 +320,13 @@ USING (user_role() = 'admin');
 
 ```javascript
 // ✅ KORREKT: Backend-Function (functions/importBAGDatenToSupabase.js)
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@vsvv/sdk@0.8.31';
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
+  const vsvv = createClientFromRequest(req);
   
   // 1. User authentifizieren
-  const user = await base44.auth.me();
+  const user = await vsvv.auth.me();
   if (!user || user.role !== 'admin') {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -427,10 +427,10 @@ echo $SUPABASE_SERVICE_ROLE_KEY
 ```javascript
 // Standard-Template für alle Backend-Functions
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
+  const vsvv = createClientFromRequest(req);
   
   // 1. Authentifizierung prüfen
-  const user = await base44.auth.me();
+  const user = await vsvv.auth.me();
   if (!user) {
     return Response.json(
       { error: 'Authentication required' }, 

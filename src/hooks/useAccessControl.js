@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 
 /**
  * Hook für echte Backend-basierte Zugriffskontrolle
@@ -7,7 +7,7 @@ import { base44 } from '@/api/base44Client';
 export function useAccessControl() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => vsvv.auth.me(),
     staleTime: Infinity,
   });
 
@@ -17,7 +17,7 @@ export function useAccessControl() {
     if (currentUser.role === 'admin') return true;
     
     try {
-      const result = await base44.functions.invoke('guardDataAccess', {
+      const result = await vsvv.functions.invoke('guardDataAccess', {
         entityType: 'Customer',
         entityId: customerId,
       });
@@ -33,7 +33,7 @@ export function useAccessControl() {
     if (currentUser.role === 'admin') return true;
     
     try {
-      const result = await base44.functions.invoke('guardDataAccess', {
+      const result = await vsvv.functions.invoke('guardDataAccess', {
         entityType: 'Contract',
         entityId: contractId,
       });
@@ -49,7 +49,7 @@ export function useAccessControl() {
     if (currentUser.role === 'admin') return true;
     
     try {
-      const result = await base44.functions.invoke('guardDataAccess', {
+      const result = await vsvv.functions.invoke('guardDataAccess', {
         entityType: 'Document',
         entityId: documentId,
       });
@@ -65,9 +65,9 @@ export function useAccessControl() {
     queryFn: async () => {
       if (!currentUser?.id) return [];
       if (currentUser.role === 'admin') {
-        return base44.asServiceRole.entities.Customer.list(null, 100);
+        return vsvv.asServiceRole.entities.Customer.list(null, 100);
       }
-      const result = await base44.functions.invoke('getUserVisibleData', {
+      const result = await vsvv.functions.invoke('getUserVisibleData', {
         entityType: 'Customer',
         limit: 100,
       });
@@ -82,9 +82,9 @@ export function useAccessControl() {
     queryFn: async () => {
       if (!currentUser?.id) return [];
       if (currentUser.role === 'admin') {
-        return base44.asServiceRole.entities.Contract.list(null, 100);
+        return vsvv.asServiceRole.entities.Contract.list(null, 100);
       }
-      const result = await base44.functions.invoke('getUserVisibleData', {
+      const result = await vsvv.functions.invoke('getUserVisibleData', {
         entityType: 'Contract',
         limit: 100,
       });

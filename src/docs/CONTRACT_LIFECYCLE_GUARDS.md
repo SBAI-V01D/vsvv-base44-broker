@@ -36,14 +36,14 @@ Dieses Dokument beschreibt die implementierten Guards zur Verhinderung von Race-
 **Funktion:** Atomare Prüfung VOR jedem `Contract.create()`
 
 ```javascript
-async function guardContractCreation(base44, appId, customerId) {
+async function guardContractCreation(vsvv, appId, customerId) {
   // Guard 1: source_application_id existiert bereits
-  const existingBySource = await base44.asServiceRole.entities.Contract.filter({ 
+  const existingBySource = await vsvv.asServiceRole.entities.Contract.filter({ 
     source_application_id: appId 
   });
   
   // Guard 2: Antrag hat bereits linked_contract_id
-  const application = await base44.asServiceRole.entities.Application.get(appId);
+  const application = await vsvv.asServiceRole.entities.Application.get(appId);
   
   // Guard 3: (optional) Aktiver Vertrag existiert bereits
   
@@ -240,12 +240,12 @@ if (!canAdvanceStatus(current, target)) {
 
 ```javascript
 // Pseudo-Code
-const contracts = await base44.asServiceRole.entities.Contract.list();
+const contracts = await vsvv.asServiceRole.entities.Contract.list();
 const duplicates = findDuplicatesBy(contracts, 'source_application_id');
 
 for (const dup of duplicates) {
   // Behalte neuesten, archive alte
-  await base44.asServiceRole.entities.Contract.update(dup.oldId, {
+  await vsvv.asServiceRole.entities.Contract.update(dup.oldId, {
     archived: true,
     archived_reason: 'duplicate_removed_by_migration',
   });

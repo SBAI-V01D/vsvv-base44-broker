@@ -23,7 +23,7 @@
  */
 import React, { useState, useRef, useMemo } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import {
   Upload, Sparkles, AlertTriangle, Check, X,
   Loader2, FileText, ChevronDown, ChevronUp, Shield,
@@ -507,7 +507,7 @@ export default function DossierAiUpload({ dossierId, personName, onEntryAdded, o
   // CRM-Kunden laden fuer Matching (nur im Review-Schritt)
   const { data: allCustomers = [] } = useQuery({
     queryKey: ['customers_dossier_match'],
-    queryFn: () => base44.entities.Customer.list(null, 500),
+    queryFn: () => vsvv.entities.Customer.list(null, 500),
     enabled: step === 'review',
   });
 
@@ -568,8 +568,8 @@ export default function DossierAiUpload({ dossierId, personName, onEntryAdded, o
   // ── Analyse ────────────────────────────────────────────────────────────────
   const analyzeMutation = useMutation({
     mutationFn: async (uploadedFile) => {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadedFile });
-      return base44.integrations.Core.InvokeLLM({
+      const { file_url } = await vsvv.integrations.Core.UploadFile({ file: uploadedFile });
+      return vsvv.integrations.Core.InvokeLLM({
         prompt: EXTRACTION_PROMPT,
         file_urls: [file_url],
         response_json_schema: EXTRACTION_SCHEMA,
@@ -678,14 +678,14 @@ export default function DossierAiUpload({ dossierId, personName, onEntryAdded, o
           filterQuery.product_name = p.product_name;
         }
         
-        const existingInSameGroup = await base44.entities.ComparisonEntry.filter(filterQuery).then(r => {
+        const existingInSameGroup = await vsvv.entities.ComparisonEntry.filter(filterQuery).then(r => {
           console.log(`[DossierAiUpload SAVE] Filter ergab ${r.length} Einträge (gesellschaft=${p.gesellschaft}, product=${p.product_name || 'any'})`);
           return r[0];
         });
         
         if (existingInSameGroup) {
           console.log(`[DossierAiUpload SAVE] UPDATE: ${p.gesellschaft} (ID: ${existingInSameGroup.id})`);
-          const entry = await base44.entities.ComparisonEntry.update(existingInSameGroup.id, {
+          const entry = await vsvv.entities.ComparisonEntry.update(existingInSameGroup.id, {
             product_name:      p.product_name || null,
             praemie_monatlich: p.praemie_monatlich != null ? Number(p.praemie_monatlich) : null,
             franchise:         p.franchise != null ? Number(p.franchise) : null,
@@ -701,7 +701,7 @@ export default function DossierAiUpload({ dossierId, personName, onEntryAdded, o
           results.push(entry);
         } else {
           console.log(`[DossierAiUpload SAVE] CREATE: ${p.gesellschaft} in Gruppe "${targetGruppe}"`);
-          const entry = await base44.entities.ComparisonEntry.create({
+          const entry = await vsvv.entities.ComparisonEntry.create({
             dossier_id:        dossierId,
             person_name:       personNameFinal,
             section:           sectionFinal,

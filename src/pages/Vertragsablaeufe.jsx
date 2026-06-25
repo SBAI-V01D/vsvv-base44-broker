@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 import { daysUntil, analyzeContract, isContractActionable } from '@/lib/contractRelevance'
 import { cn } from '@/lib/utils'
@@ -398,29 +398,29 @@ export default function Vertragsablaeufe() {
 
   const { data: contracts = [], isLoading } = useQuery({
     queryKey: ['contracts', 'ablaeufe'],
-    queryFn: () => base44.entities.Contract.filter({ archived: false }, '-updated_date', 1000),
+    queryFn: () => vsvv.entities.Contract.filter({ archived: false }, '-updated_date', 1000),
     staleTime: 2 * 60 * 1000,
   })
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['verkaufschancen'],
-    queryFn: () => base44.entities.Verkaufschance.filter({ status: ['neu', 'in_ausschreibung', 'offerten_erhalten', 'beratung_erfolgt', 'kunde_entscheidet'] }, null, 200),
+    queryFn: () => vsvv.entities.Verkaufschance.filter({ status: ['neu', 'in_ausschreibung', 'offerten_erhalten', 'beratung_erfolgt', 'kunde_entscheidet'] }, null, 200),
     staleTime: 2 * 60 * 1000,
   })
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks', 'open'],
-    queryFn: () => base44.entities.Task.filter({ status: ['open', 'in_progress'] }, null, 200),
+    queryFn: () => vsvv.entities.Task.filter({ status: ['open', 'in_progress'] }, null, 200),
     staleTime: 2 * 60 * 1000,
   })
 
   const createVsMutation = useMutation({
-    mutationFn: (data) => base44.entities.Verkaufschance.create(data),
+    mutationFn: (data) => vsvv.entities.Verkaufschance.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] }); navigate('/verkaufschancen') },
   })
   const [followupPendingId, setFollowupPendingId] = useState(null)
   const createFollowupMutation = useMutation({
-    mutationFn: (contract) => base44.entities.Task.create({
+    mutationFn: (contract) => vsvv.entities.Task.create({
       title: `Follow-up Verlängerung: ${contract.customer_name} – ${contract.insurer}`,
       customer_id: contract.customer_id,
       customer_name: contract.customer_name,
@@ -437,7 +437,7 @@ export default function Vertragsablaeufe() {
     onError: () => setFollowupPendingId(null),
   })
   const updateContractMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Contract.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.Contract.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
   })
 

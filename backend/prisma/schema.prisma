@@ -1425,6 +1425,8 @@ model User {
   refresh_tokens         RefreshToken[]
 
   @@index([organization_id])
+  @@index([organization_id, email])
+  @@index([organization_id, role])
   @@map("user")
 }
 
@@ -1596,6 +1598,9 @@ model Customer {
   @@index([organization_id, advisor_id])
   @@index([organization_id, archived])
   @@index([organization_id, primary_advisor_id])
+  @@index([organization_id, last_name])
+  @@index([organization_id, email])
+  @@index([organization_id, first_name, last_name])
   @@map("customer")
 }
 
@@ -1720,6 +1725,8 @@ model Contract {
   @@index([organization_id, customer_id])
   @@index([organization_id, advisor_id])
   @@index([organization_id, renewal_status])
+  @@index([organization_id, renewal_date])
+  @@index([organization_id, policy_number])
   @@map("contract")
 }
 
@@ -1769,6 +1776,8 @@ model Application {
 
   @@index([organization_id, status])
   @@index([organization_id, advisor_id])
+  @@index([organization_id, insurer])
+  @@index([organization_id, policy_number])
   @@map("application")
 }
 
@@ -1896,6 +1905,8 @@ model CommissionEntry {
 
   @@index([organization_id, advisor_id])
   @@index([organization_id, policy_id])
+  @@index([organization_id, status])
+  @@index([organization_id, policy_number])
   @@map("commission_entry")
 }
 
@@ -2003,6 +2014,9 @@ model Document {
 
   @@index([organization_id, customer_id])
   @@index([organization_id, category])
+  @@index([organization_id, name])
+  @@index([organization_id, uploaded_by])
+  @@index([organization_id, created_at])
   @@map("document")
 }
 
@@ -2204,6 +2218,8 @@ model Notification {
   // Relations
   organization      Organization?    @relation(fields: [organization_id], references: [id])
 
+  @@index([organization_id, status])
+  @@index([organization_id, recipient_email])
   @@map("notification")
 }
 

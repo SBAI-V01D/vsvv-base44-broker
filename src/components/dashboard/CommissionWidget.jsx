@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,12 +12,12 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 export default function CommissionWidget() {
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissions'],
-    queryFn: () => base44.entities.Commission.list(),
+    queryFn: () => vsvv.entities.Commission.list(),
   });
 
   const { data: commissionRates = [] } = useQuery({
     queryKey: ['commissionRates'],
-    queryFn: () => base44.entities.CommissionRate.filter({ is_active: true }),
+    queryFn: () => vsvv.entities.CommissionRate.filter({ is_active: true }),
   });
 
   // Aggregation by month and provider

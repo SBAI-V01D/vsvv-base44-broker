@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,16 +19,16 @@ export default function CustomerAssignmentsTab() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => vsvv.entities.Customer.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => base44.entities.Advisor.list(),
+    queryFn: () => vsvv.entities.Advisor.list(),
   })
 
   const updateCustomerMutation = useMutation({
-    mutationFn: ({ customerId, data }) => base44.entities.Customer.update(customerId, data),
+    mutationFn: ({ customerId, data }) => vsvv.entities.Customer.update(customerId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       setShowDialog(false)

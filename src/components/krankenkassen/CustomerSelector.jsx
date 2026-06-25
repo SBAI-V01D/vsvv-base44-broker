@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,7 +17,7 @@ export default function CustomerSelector({ formData, setFormData, onSelect }) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['kkv_customers'],
-    queryFn: () => base44.entities.Customer.filter({ archived: false }, 'last_name', 1000),
+    queryFn: () => vsvv.entities.Customer.filter({ archived: false }, 'last_name', 1000),
     staleTime: 2 * 60 * 1000,
   });
 

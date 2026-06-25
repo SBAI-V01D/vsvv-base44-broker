@@ -12,7 +12,7 @@ import DailyActionsPanel from '@/components/dashboard/DailyActionsPanel'
 import PipelineSection from '@/components/dashboard/PipelineSection'
 import RenewalsActionPanel from '@/components/dashboard/RenewalsActionPanel'
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 
 export default function AdvancedDashboard() {
   const [filterAdvisor, setFilterAdvisor] = useState('all')
@@ -20,12 +20,12 @@ export default function AdvancedDashboard() {
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => base44.entities.Advisor.list(),
+    queryFn: () => vsvv.entities.Advisor.list(),
   })
 
   const { data: organizations = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => base44.entities.Organization.list(),
+    queryFn: () => vsvv.entities.Organization.list(),
   })
 
   const metrics = useDashboardMetrics({

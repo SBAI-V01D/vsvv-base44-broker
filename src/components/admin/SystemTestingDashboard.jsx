@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -17,7 +17,7 @@ export default function SystemTestingDashboard() {
   const handlePhase1Test = async () => {
     setRunningTest('phase1');
     try {
-      const result = await base44.functions.invoke('validateDashboardKPIs', {});
+      const result = await vsvv.functions.invoke('validateDashboardKPIs', {});
       setTestResults(prev => ({ ...prev, phase1: result }));
     } catch (err) {
       alert('Test failed: ' + err.message);
@@ -30,7 +30,7 @@ export default function SystemTestingDashboard() {
   const handlePhase2Test = async () => {
     setRunningTest('phase2');
     try {
-      const result = await base44.functions.invoke('checkDataConsistency', {});
+      const result = await vsvv.functions.invoke('checkDataConsistency', {});
       setTestResults(prev => ({ ...prev, phase2: result }));
     } catch (err) {
       alert('Test failed: ' + err.message);
@@ -43,7 +43,7 @@ export default function SystemTestingDashboard() {
   const handlePhase3Test = async () => {
     setRunningTest('phase3');
     try {
-      const result = await base44.functions.invoke('auditSecurityRules', {});
+      const result = await vsvv.functions.invoke('auditSecurityRules', {});
       setTestResults(prev => ({ ...prev, phase3: result }));
     } catch (err) {
       alert('Test failed: ' + err.message);

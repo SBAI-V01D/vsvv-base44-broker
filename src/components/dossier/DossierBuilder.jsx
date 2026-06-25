@@ -7,7 +7,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import DossierStammdatenTab from './tabs/DossierStammdatenTab';
 import DossierPersonalienTab from './tabs/DossierPersonalienTab';
@@ -48,14 +48,14 @@ export default function DossierBuilder({ dossierId, onSaved }) {
 
   const { data: dossier, isLoading } = useQuery({
     queryKey: ['advisory_dossier', dossierId],
-    queryFn: () => base44.entities.AdvisoryDossier.filter({ id: dossierId }).then(r => r[0]),
+    queryFn: () => vsvv.entities.AdvisoryDossier.filter({ id: dossierId }).then(r => r[0]),
     enabled: !!dossierId,
     staleTime: 30_000,
     retry: 1,
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.AdvisoryDossier.create(data),
+    mutationFn: (data) => vsvv.entities.AdvisoryDossier.create(data),
     onSuccess: (created) => {
       qc.invalidateQueries({ queryKey: ['advisory_dossiers'] });
       onSaved(created.id);
@@ -65,7 +65,7 @@ export default function DossierBuilder({ dossierId, onSaved }) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.AdvisoryDossier.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.AdvisoryDossier.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['advisory_dossier', dossierId] });
       qc.invalidateQueries({ queryKey: ['advisory_dossiers'] });

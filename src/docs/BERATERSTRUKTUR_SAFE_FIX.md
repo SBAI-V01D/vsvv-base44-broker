@@ -135,7 +135,7 @@ Wenn ein User manuell einen Kunden einem Dokument zuordnet:
 
 ```javascript
 // DocumentReviewPanel.jsx
-await base44.entities.Document.update(document.id, {
+await vsvv.entities.Document.update(document.id, {
   customer_id: c.id,
   customer_name: `${c.first_name} ${c.last_name}`,
   customer_locked: true  // ← CRITICAL

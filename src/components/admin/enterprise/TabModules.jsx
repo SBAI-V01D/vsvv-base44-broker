@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { CheckCircle2, AlertTriangle, XCircle, Loader2, RefreshCw } from 'lucide-react';
 
 const MODULE_META = {
@@ -51,7 +51,7 @@ export default function TabModules() {
   const runCheck = async () => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('validateEnterpriseIntegrity', {});
+      const res = await vsvv.functions.invoke('validateEnterpriseIntegrity', {});
       setResult(res.data);
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ export default function TabModules() {
 
   const { data: systemLogs = [] } = useQuery({
     queryKey: ['modules_integrity_logs'],
-    queryFn: () => base44.entities.SystemLog.filter({ source: 'enterprise_integrity_check' }, '-created_date', 10),
+    queryFn: () => vsvv.entities.SystemLog.filter({ source: 'enterprise_integrity_check' }, '-created_date', 10),
     staleTime: 30_000,
   });
 

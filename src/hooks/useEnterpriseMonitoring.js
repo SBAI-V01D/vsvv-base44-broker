@@ -8,14 +8,14 @@
  *   - Logging via SystemLog (fire-and-forget)
  */
 import { useEffect, useRef, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 
 const RENDER_WARN_MS = 300;
 const QUERY_WARN_MS  = 1000;
 
 // Hilfsfunktion: loggt ohne await (fire & forget)
 function logWarning(message, details = {}) {
-  base44.entities.SystemLog.create({
+  vsvv.entities.SystemLog.create({
     level:   'warn',
     source:  'enterprise_monitoring',
     message,
@@ -106,8 +106,8 @@ export function useDossierIntegrityCheck(dossier) {
 export function useAuditAction() {
   const logAction = useCallback(async (action, entityId, entityType, meta = {}) => {
     try {
-      const user = await base44.auth.me();
-      await base44.entities.SystemLog.create({
+      const user = await vsvv.auth.me();
+      await vsvv.entities.SystemLog.create({
         level:               'info',
         source:              'audit_action',
         message:             `${action}: ${entityType}/${entityId}`,

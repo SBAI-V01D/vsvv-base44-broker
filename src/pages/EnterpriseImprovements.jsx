@@ -11,7 +11,7 @@
 
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,14 +58,14 @@ export default function EnterpriseImprovements() {
   const { data: improvements = [], refetch } = useQuery({
     queryKey: ['enterprise_improvements'],
     queryFn: async () => {
-      return await base44.entities.EnterpriseImprovement.list('-proposed_at', 50);
+      return await vsvv.entities.EnterpriseImprovement.list('-proposed_at', 50);
     },
   });
 
   // Generate Improvements Mutation
   const generateMutation = useMutation({
     mutationFn: async (auditResult) => {
-      const res = await base44.functions.invoke('generateEnterpriseImprovements', {
+      const res = await vsvv.functions.invoke('generateEnterpriseImprovements', {
         audit_result: auditResult,
       });
       return res.data;
@@ -78,8 +78,8 @@ export default function EnterpriseImprovements() {
   // Approve Mutation
   const approveMutation = useMutation({
     mutationFn: async (improvementId) => {
-      const user = await base44.auth.me();
-      return await base44.entities.EnterpriseImprovement.update(improvementId, {
+      const user = await vsvv.auth.me();
+      return await vsvv.entities.EnterpriseImprovement.update(improvementId, {
         status: 'approved',
         approved_by: user.full_name || user.email,
         approved_at: new Date().toISOString(),
@@ -93,7 +93,7 @@ export default function EnterpriseImprovements() {
   // Reject Mutation
   const rejectMutation = useMutation({
     mutationFn: async ({ improvementId, reason }) => {
-      return await base44.entities.EnterpriseImprovement.update(improvementId, {
+      return await vsvv.entities.EnterpriseImprovement.update(improvementId, {
         status: 'rejected',
         rejection_reason: reason,
       });
@@ -108,7 +108,7 @@ export default function EnterpriseImprovements() {
   // Mark as Implemented Mutation
   const implementMutation = useMutation({
     mutationFn: async (improvementId) => {
-      return await base44.entities.EnterpriseImprovement.update(improvementId, {
+      return await vsvv.entities.EnterpriseImprovement.update(improvementId, {
         status: 'implemented',
         implemented_at: new Date().toISOString(),
       });
@@ -121,8 +121,8 @@ export default function EnterpriseImprovements() {
   // Verify Impact Mutation
   const verifyMutation = useMutation({
     mutationFn: async ({ improvementId, actualImpact }) => {
-      const user = await base44.auth.me();
-      return await base44.entities.EnterpriseImprovement.update(improvementId, {
+      const user = await vsvv.auth.me();
+      return await vsvv.entities.EnterpriseImprovement.update(improvementId, {
         status: 'verified',
         verified_at: new Date().toISOString(),
         actual_impact: actualImpact,

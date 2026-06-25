@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,7 +25,7 @@ export default function ContractFromVerkaufschanceDialog({
   const handleCreate = async () => {
     setLoading(true)
     // 1. Vertrag erstellen
-    const newContract = await base44.entities.Contract.create({
+    const newContract = await vsvv.entities.Contract.create({
       customer_id: customer.id,
       customer_name: `${customer.first_name} ${customer.last_name}`,
       primary_customer_id: customer.primary_customer_id || customer.id,
@@ -52,7 +52,7 @@ export default function ContractFromVerkaufschanceDialog({
     // 2. Provision erstellen (falls Jahresprämie vorhanden)
     const premiumYearly = parseFloat(form.premium_yearly) || 0
     if (premiumYearly > 0) {
-      await base44.entities.CommissionEntry.create({
+      await vsvv.entities.CommissionEntry.create({
         policy_id: newContract.id,
         policy_number: form.policy_number || '',
         advisor_id: customer.advisor_id || '',
@@ -71,7 +71,7 @@ export default function ContractFromVerkaufschanceDialog({
     }
 
     // 3. Verkaufschance auf "Gewonnen" setzen
-    await base44.entities.Verkaufschance.update(verkaufschance.id, {
+    await vsvv.entities.Verkaufschance.update(verkaufschance.id, {
       status: 'gewonnen',
       won_contract_id: newContract.id,
       selected_insurer: selectedGesellschaft.gesellschaft,

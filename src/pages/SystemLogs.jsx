@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { useAuth } from '@/lib/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -71,23 +71,23 @@ export default function SystemLogs() {
 
   const { data: logs = [], isLoading, refetch } = useQuery({
     queryKey: ['systemLogs'],
-    queryFn: () => base44.entities.SystemLog.list('-created_date', 200),
+    queryFn: () => vsvv.entities.SystemLog.list('-created_date', 200),
   })
 
   const { data: queue = [] } = useQuery({
     queryKey: ['automationQueue'],
-    queryFn: () => base44.entities.AutomationQueue.list('-created_date', 100),
+    queryFn: () => vsvv.entities.AutomationQueue.list('-created_date', 100),
   })
 
   const resolveMutation = useMutation({
-    mutationFn: id => base44.entities.SystemLog.update(id, { resolved: true }),
+    mutationFn: id => vsvv.entities.SystemLog.update(id, { resolved: true }),
     onSuccess: () => qc.invalidateQueries(['systemLogs']),
   })
 
   const deleteResolvedMutation = useMutation({
     mutationFn: async () => {
       const resolved = logs.filter(l => l.resolved)
-      await Promise.all(resolved.map(l => base44.entities.SystemLog.delete(l.id)))
+      await Promise.all(resolved.map(l => vsvv.entities.SystemLog.delete(l.id)))
     },
     onSuccess: () => qc.invalidateQueries(['systemLogs']),
   })

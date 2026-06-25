@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,7 +65,7 @@ export default function TabSystemCheck() {
 
   const runCheckMutation = useMutation({
     mutationFn: async () => {
-      const res = await base44.functions.invoke('enterpriseSystemCheck', {});
+      const res = await vsvv.functions.invoke('enterpriseSystemCheck', {});
       return res.data;
     },
     onSuccess: (data) => {

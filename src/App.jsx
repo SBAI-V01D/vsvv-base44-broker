@@ -60,6 +60,7 @@ import AdminHub from './pages/AdminHub'
 import AdminSecurity from './pages/AdminSecurity'
 import AdminBackup from './pages/AdminBackup'
 import EnterpriseImprovements from './pages/EnterpriseImprovements'
+import Login from './pages/Login'
 
 // Portal
 import PortalRoot from './pages/portal/PortalRoot'
@@ -71,13 +72,15 @@ import PortalProfile from './pages/portal/PortalProfile.jsx'
 import PortalSetup from './pages/portal/PortalSetup'
 import PortalResetPassword from './pages/portal/PortalResetPassword'
 
-const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth()
-  const location = useLocation()
+const PUBLIC_ROUTES = ['/login', '/portal']
 
-  // Portal routes are public — skip Base44 auth entirely
-  const isPortalRoute = location.pathname.startsWith('/portal')
-  if (isPortalRoute) {
+const AuthenticatedApp = () => {
+  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated } = useAuth()
+  const location = useLocation()
+  const isPublicRoute = PUBLIC_ROUTES.some(p => location.pathname.startsWith(p))
+
+  // Portal routes are public — skip auth entirely
+  if (location.pathname.startsWith('/portal')) {
     return (
       <Routes>
         <Route path="/portal/setup" element={<PortalSetup />} />
@@ -105,18 +108,26 @@ const AuthenticatedApp = () => {
     )
   }
 
+  // Auth guard — unauthenticated users see login page
+  if (!isAuthenticated && !isPublicRoute) {
+    return <Navigate to="/login" replace />
+  }
+
+  // Auth errors → redirect to login
   if (authError) {
+    if (authError.type === 'auth_required') {
+      return <Navigate to="/login" replace />
+    }
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin()
-      return null
     }
     return <UserNotRegisteredError />
   }
 
   return (
     <Routes>
+      {/* Public routes — no AppLayout wrapper */}
+      <Route path="/login" element={<Login />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/kunden" element={<CustomerIntelligenceWorkspace />} />

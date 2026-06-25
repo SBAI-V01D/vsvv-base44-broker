@@ -3,7 +3,7 @@ import { Download, FileJson, CheckCircle2, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const BASE = 'https://base44.app/api/apps/69f07890d7d9106eb68a2c98/files/mp/public/69f07890d7d9106eb68a2c98/';
+const BASE = 'https://vsvv.app/api/apps/69f07890d7d9106eb68a2c98/files/mp/public/69f07890d7d9106eb68a2c98/';
 
 const BAG_CHUNKS = [
   // Chunk 1–20 (aus früheren Exporten — Datum 2026-06-11 oder -15, gleiche Basis-URL)

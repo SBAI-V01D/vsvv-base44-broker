@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 import { cn } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
@@ -77,7 +77,7 @@ export default function Customer360() {
   const { data: customer, isLoading, error } = useQuery({
     queryKey: ['customer', customerId],
     queryFn: async () => {
-      const results = await base44.entities.Customer.filter({ id: customerId });
+      const results = await vsvv.entities.Customer.filter({ id: customerId });
       return results?.[0] || null;
     },
     enabled: !!customerId,
@@ -86,33 +86,33 @@ export default function Customer360() {
   const { data: contracts = [] } = useQuery({
     queryKey: ['360-contracts', customerId],
     queryFn: async () => {
-      const all = await base44.entities.Contract.filter({ customer_id: customerId })
+      const all = await vsvv.entities.Contract.filter({ customer_id: customerId })
       return all.filter(c => !c.archived)
     },
   })
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['360-vs', customerId],
-    queryFn: () => base44.entities.Verkaufschance.filter({ customer_id: customerId }),
+    queryFn: () => vsvv.entities.Verkaufschance.filter({ customer_id: customerId }),
   })
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['360-tasks', customerId],
-    queryFn: () => base44.entities.Task.filter({ customer_id: customerId }, '-due_date', 100),
+    queryFn: () => vsvv.entities.Task.filter({ customer_id: customerId }, '-due_date', 100),
   })
 
   const { data: familyMembers = [] } = useQuery({
     queryKey: ['360-family', customerId],
-    queryFn: () => base44.entities.Customer.filter({ primary_customer_id: customerId }),
+    queryFn: () => vsvv.entities.Customer.filter({ primary_customer_id: customerId }),
   })
 
   const { data: familyContracts = [] } = useQuery({
     queryKey: ['360-family-contracts', customerId],
     queryFn: async () => {
-      const members = await base44.entities.Customer.filter({ primary_customer_id: customerId })
+      const members = await vsvv.entities.Customer.filter({ primary_customer_id: customerId })
       if (!members.length) return []
       const results = await Promise.all(
-        members.map(m => base44.entities.Contract.filter({ customer_id: m.id }))
+        members.map(m => vsvv.entities.Contract.filter({ customer_id: m.id }))
       )
       return results.flat().filter(c => !c.archived)
     },
@@ -122,7 +122,7 @@ export default function Customer360() {
   const { data: applications = [] } = useQuery({
     queryKey: ['360-applications', customerId],
     queryFn: async () => {
-      const all = await base44.entities.Application.filter({ customer_id: customerId })
+      const all = await vsvv.entities.Application.filter({ customer_id: customerId })
       return all.filter(a => !a.archived).sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
     },
     enabled: !!customerId,
@@ -132,8 +132,8 @@ export default function Customer360() {
     queryKey: ['documents', customerId],
     queryFn: async () => {
       const [byCustomer, byPrimary] = await Promise.all([
-        base44.entities.Document.filter({ customer_id: customerId }, '-uploaded_at', 100),
-        base44.entities.Document.filter({ primary_customer_id: customerId }, '-uploaded_at', 50),
+        vsvv.entities.Document.filter({ customer_id: customerId }, '-uploaded_at', 100),
+        vsvv.entities.Document.filter({ primary_customer_id: customerId }, '-uploaded_at', 50),
       ])
       const seen = new Set()
       return [...byCustomer, ...byPrimary].filter(d => {
@@ -147,12 +147,12 @@ export default function Customer360() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers-for-360'],
-    queryFn: () => base44.entities.Customer.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => vsvv.entities.Customer.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   })
 
   const updateCustomerMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Customer.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.Customer.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer', customerId] })
       queryClient.invalidateQueries({ queryKey: ['360-contracts', customerId] })
@@ -161,7 +161,7 @@ export default function Customer360() {
   })
 
   const updateContractMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Contract.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.Contract.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['360-contracts', customerId] })
       queryClient.invalidateQueries({ queryKey: ['360-family-contracts', customerId] })
@@ -170,12 +170,12 @@ export default function Customer360() {
   })
 
   const createTaskMutation = useMutation({
-    mutationFn: d => base44.entities.Task.create(d),
+    mutationFn: d => vsvv.entities.Task.create(d),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['360-tasks', customerId] }),
   })
 
   const createVsMutation = useMutation({
-    mutationFn: d => base44.entities.Verkaufschance.create(d),
+    mutationFn: d => vsvv.entities.Verkaufschance.create(d),
     onSuccess: result => {
       queryClient.invalidateQueries({ queryKey: ['360-vs', customerId] })
       setShowVsForm(false)

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useOutletContext } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { AlertCircle, Plus, CheckCircle2, Clock, XCircle, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -60,13 +60,13 @@ export default function PortalClaims() {
 
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['portal-claims', user?.id],
-    queryFn: () => base44.entities.Claim.filter({ customer_id: user?.id }, '-created_date'),
+    queryFn: () => vsvv.entities.Claim.filter({ customer_id: user?.id }, '-created_date'),
     enabled: !!user?.id,
   });
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['portal-contracts', user?.id],
-    queryFn: () => base44.entities.Contract.filter({ customer_id: user?.id }),
+    queryFn: () => vsvv.entities.Contract.filter({ customer_id: user?.id }),
     enabled: !!user?.id,
   });
 
@@ -76,7 +76,7 @@ export default function PortalClaims() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Claim.create(data),
+    mutationFn: (data) => vsvv.entities.Claim.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portal-claims', user?.id] });
       setShowForm(false);

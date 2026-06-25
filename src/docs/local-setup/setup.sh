@@ -121,14 +121,14 @@ echo ""
 
 # ── 5. Base44 SDK Client ─────────────────────────────────────────────────────
 echo "▶ Creating Base44 SDK client..."
-cat > src/api/base44Client.js << 'SDK'
-import { createClient } from '@base44/sdk';
+cat > src/api/vsvvClient.js << 'SDK'
+import { createClient } from '@vsvv/sdk';
 
-export const base44 = createClient({
+export const vsvv = createClient({
   appId: process.env.VITE_BASE44_APP_ID || 'YOUR_APP_ID_HERE',
 });
 
-export default base44;
+export default vsvv;
 SDK
 echo "✅ SDK client created"
 echo ""
@@ -395,7 +395,7 @@ cat > .env.example << 'ENV'
 VITE_BASE44_APP_ID=your_app_id_here
 
 # Optional: Override API endpoint
-# VITE_BASE44_API_URL=https://api.base44.com
+# VITE_BASE44_API_URL=https://api.vsvv.com
 ENV
 
 cp .env.example .env

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, TrendingUp, DollarSign, Target, CheckCircle2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -27,21 +27,21 @@ export default function Pipeline() {
 
   const { data: deals = [] } = useQuery({
     queryKey: ['deals'],
-    queryFn: () => base44.entities.Deal.list('-created_date'),
+    queryFn: () => vsvv.entities.Deal.list('-created_date'),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Deal.create(data),
+    mutationFn: (data) => vsvv.entities.Deal.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['deals'] }); setShowForm(false); },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Deal.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.Deal.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['deals'] }); setEditingDeal(null); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Deal.delete(id),
+    mutationFn: (id) => vsvv.entities.Deal.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deals'] }),
   });
 

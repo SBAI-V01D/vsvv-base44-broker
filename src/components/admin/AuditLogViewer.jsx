@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
@@ -24,7 +24,7 @@ export default function AuditLogViewer() {
     queryKey: ['auditLogs'],
     queryFn: async () => {
       try {
-        return await base44.entities.AuditLog.list('-changed_at', 500);
+        return await vsvv.entities.AuditLog.list('-changed_at', 500);
       } catch {
         return [];
       }

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { usePortalData } from '@/hooks/usePortalData'
 import { usePortalCustomer } from '@/hooks/usePortalCustomer'
 
-const LOGO_URL = 'https://media.base44.com/images/public/69f07890d7d9106eb68a2c98/10f5c3d63_VSVV.png'
+const LOGO_URL = 'https://media.vsvv.com/images/public/69f07890d7d9106eb68a2c98/10f5c3d63_VSVV.png'
 
 export default function PortalDashboard() {
   const { customer } = usePortalCustomer()
@@ -104,7 +104,7 @@ export default function PortalDashboard() {
       
       const session_token = localStorage.getItem('portal_session_token') || ''
       // Update via secured getPortalData endpoint
-      await base44.functions.invoke('getPortalData', {
+      await vsvv.functions.invoke('getPortalData', {
         customer_id: customerId,
         session_token,
         action: 'update_customer',
@@ -154,7 +154,7 @@ export default function PortalDashboard() {
       })
 
       const session_token = localStorage.getItem('portal_session_token') || ''
-      await base44.functions.invoke('uploadPortalDocument', {
+      await vsvv.functions.invoke('uploadPortalDocument', {
         file_base64,
         filename: uploadFile.name,
         customer_id: localStorage.getItem('portal_customer_id'),

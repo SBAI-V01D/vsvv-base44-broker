@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,18 +14,18 @@ export default function SalesAutopilot() {
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads'],
-    queryFn: () => base44.entities.Lead.list(),
+    queryFn: () => vsvv.entities.Lead.list(),
   })
 
   const updateLeadMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Lead.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.Lead.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] })
     },
   })
 
   const runAutopilotMutation = useMutation({
-    mutationFn: (action) => base44.functions.invoke(`autopilot${action}`, {}),
+    mutationFn: (action) => vsvv.functions.invoke(`autopilot${action}`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] })
     },

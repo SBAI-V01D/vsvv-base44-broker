@@ -1,16 +1,16 @@
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 
 /**
  * Send an email notification and log it to the Notification entity.
  */
 export async function sendNotification({ type, recipientEmail, recipientName, subject, body, referenceId, referenceType, sentBy }) {
-  await base44.integrations.Core.SendEmail({
+  await vsvv.integrations.Core.SendEmail({
     to: recipientEmail,
     subject,
     body,
   });
 
-  await base44.entities.Notification.create({
+  await vsvv.entities.Notification.create({
     type,
     recipient_email: recipientEmail,
     recipient_name: recipientName || '',

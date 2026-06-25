@@ -9,7 +9,8 @@ import {
   Megaphone, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
+import { useAuth } from '@/lib/AuthContext';
 import { resolveRole, ROLE_LABELS } from '@/lib/rbac';
 import GlobalSearch from './GlobalSearch';
 
@@ -38,11 +39,11 @@ function useSidebarBadges() {
     const load = async () => {
       try {
         const [tasks, contracts, docs, leads, verkaufschancen] = await Promise.all([
-          base44.entities.Task.list(),
-          base44.entities.Contract.list(),
-          base44.entities.Document.list(),
-          base44.entities.Lead.list(),
-          base44.entities.Verkaufschance.list(),
+          vsvv.entities.Task.list(),
+          vsvv.entities.Contract.list(),
+          vsvv.entities.Document.list(),
+          vsvv.entities.Lead.list(),
+          vsvv.entities.Verkaufschance.list(),
         ]);
         const today = new Date();
         const openTasks = tasks.filter(t => t.status === 'open' || t.status === 'in_progress');
@@ -143,13 +144,9 @@ const navGroups = [
 
 export default function Sidebar({ onNavigate }) {
   const [collapsed, setCollapsed] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser } = useAuth();
   const location = useLocation();
   const badges = useSidebarBadges();
-
-  useEffect(() => {
-    base44.auth.me().then(u => setCurrentUser(u)).catch(() => {});
-  }, []);
 
   const isAdmin = currentUser?.role === 'admin';
   const role = resolveRole(currentUser);
@@ -345,7 +342,7 @@ export default function Sidebar({ onNavigate }) {
         style={{ borderTop: `1px solid ${T.border}` }}
       >
         <button
-          onClick={() => base44.auth.logout()}
+          onClick={() => vsvv.auth.logout()}
           title="Abmelden"
           className={cn(
             'flex items-center gap-2 rounded-xl text-[12px] font-medium transition-all duration-200',

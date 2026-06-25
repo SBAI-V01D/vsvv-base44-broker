@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Link } from 'react-router-dom';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -68,7 +68,7 @@ function StatCard({ label, value, sub, icon: Icon, color }) {
 export default function PipelinePerformance() {
   const { data: deals = [], isLoading } = useQuery({
     queryKey: ['deals'],
-    queryFn: () => base44.entities.Deal.list('-created_date'),
+    queryFn: () => vsvv.entities.Deal.list('-created_date'),
   });
 
   // ── 1. Monatlicher Umsatzverlauf (letzte 9 Monate) ──────────────────────

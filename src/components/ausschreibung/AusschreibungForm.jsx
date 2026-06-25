@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,7 +41,7 @@ export default function AusschreibungForm({ ausschreibung, onSave, onCancel }) {
   // Advisor des eingeloggten Users automatisch vorausfüllen
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors-all'],
-    queryFn: () => base44.entities.Advisor.list(),
+    queryFn: () => vsvv.entities.Advisor.list(),
     staleTime: 60_000,
   });
   const defaultBrokerName = React.useMemo(() => {
@@ -60,7 +60,7 @@ export default function AusschreibungForm({ ausschreibung, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    base44.entities.Customer.list().then(setCustomers).catch(() => {});
+    vsvv.entities.Customer.list().then(setCustomers).catch(() => {});
   }, []);
 
   // Standardberater setzen (nur für neue Ausschreibungen)

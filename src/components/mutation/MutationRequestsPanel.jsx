@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -34,23 +34,23 @@ export default function MutationRequestsPanel() {
 
   const { data: mutations = [] } = useQuery({
     queryKey: ['mutation-requests'],
-    queryFn: () => base44.entities.MutationRequest.filter({ status: 'pending' }, '-created_date'),
+    queryFn: () => vsvv.entities.MutationRequest.filter({ status: 'pending' }, '-created_date'),
   })
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => vsvv.entities.Customer.list(),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => base44.entities.Contract.list(),
+    queryFn: () => vsvv.entities.Contract.list(),
   })
 
   const rejectMutation = useMutation({
     mutationFn: async (mutationId) => {
-      const user = await base44.auth.me()
-      return base44.entities.MutationRequest.update(mutationId, {
+      const user = await vsvv.auth.me()
+      return vsvv.entities.MutationRequest.update(mutationId, {
         status: 'rejected',
         reviewed_by: user.email,
         reviewed_at: new Date().toISOString(),
@@ -89,13 +89,13 @@ export default function MutationRequestsPanel() {
   const handleApprove = async () => {
     if (!selectedRequest || !form) return
     setSaving(true)
-    const user = await base44.auth.me()
+    const user = await vsvv.auth.me()
 
     // Archive old policy
-    await base44.entities.Contract.update(selectedRequest.policy_id, { status: 'pending_change' })
+    await vsvv.entities.Contract.update(selectedRequest.policy_id, { status: 'pending_change' })
 
     // Create new version with updated data
-    await base44.entities.Contract.create({
+    await vsvv.entities.Contract.create({
       ...(selectedContract || {}),
       id: undefined,
       created_date: undefined,
@@ -119,7 +119,7 @@ export default function MutationRequestsPanel() {
     })
 
     // Update mutation request
-    await base44.entities.MutationRequest.update(selectedRequest.id, {
+    await vsvv.entities.MutationRequest.update(selectedRequest.id, {
       status: 'approved',
       reviewed_by: user.email,
       reviewed_at: new Date().toISOString(),

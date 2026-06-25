@@ -10,7 +10,7 @@ services:
     environment:
       POSTGRES_DB: vsvv
       POSTGRES_USER: vsvv
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-vsvv_dev_2026}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password is required. Set DB_PASSWORD in .env}
     ports:
       - "5432:5432"
     healthcheck:
@@ -47,8 +47,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MinIO root user is required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MinIO root password is required. Set MINIO_ROOT_PASSWORD in .env}
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -85,22 +85,23 @@ services:
       NODE_ENV: development
       PORT: 3003
       HOST: 0.0.0.0
-      DATABASE_URL: postgresql://vsvv:${DB_PASSWORD:-vsvv_dev_2026}@postgres:5432/vsvv
+      DATABASE_URL: postgresql://vsvv:${DB_PASSWORD:?}@postgres:5432/vsvv
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-vsvv-dev-jwt-secret-min-32-chars-long!!}
+      JWT_SECRET: ${JWT_SECRET:?JWT secret is required. Generate with: openssl rand -hex 64}
       JWT_ACCESS_EXPIRY: 15m
       JWT_REFRESH_EXPIRY: 7d
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_USE_SSL: "false"
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
       MINIO_BUCKET: vsvv-documents
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
       SMTP_FROM: noreply@vsvv.ch
-      CORS_ORIGIN: "*"
-      LOG_LEVEL: debug
+      # SECURITY: In production, set this to the explicit frontend URL
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3004}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:
       - ./backend/src:/app/src
     networks:

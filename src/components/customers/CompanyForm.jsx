@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -95,7 +95,7 @@ export default function CompanyForm({ customer, onSave, onCancel, saving }) {
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => base44.entities.Advisor.filter({ status: 'active' }),
+    queryFn: () => vsvv.entities.Advisor.filter({ status: 'active' }),
   })
 
   const filteredAdvisors = advisors.filter(a => {

@@ -16,7 +16,7 @@
  *   → Das ist eine echte Korrektur
  */
 
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 
 /**
  * Vergleicht original KI-Extraktion mit final bestätigten Werten.
@@ -78,7 +78,7 @@ export function logCorrections(corrections, sourceDocument, productCount) {
   };
 
   // Async, fire-and-forget
-  base44.entities.SystemLog.create({
+  vsvv.entities.SystemLog.create({
     level:               'info',
     source:              'ki_extraktion_korrektur',
     message:             `KI-Korrektur: ${corrections.length} Feld(er) geändert (${productCount} Produkte)`,

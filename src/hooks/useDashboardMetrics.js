@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { useMemo } from 'react'
 
 /**
@@ -11,42 +11,42 @@ export function useDashboardMetrics(filters = {}) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => vsvv.entities.Customer.list(),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => base44.entities.Contract.list(),
+    queryFn: () => vsvv.entities.Contract.list(),
   })
 
   const { data: applications = [] } = useQuery({
     queryKey: ['applications'],
-    queryFn: () => base44.entities.Application.list(),
+    queryFn: () => vsvv.entities.Application.list(),
   })
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => base44.entities.Task.list(),
+    queryFn: () => vsvv.entities.Task.list(),
   })
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads'],
-    queryFn: () => base44.entities.Lead.list(),
+    queryFn: () => vsvv.entities.Lead.list(),
   })
 
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissionEntries'],
-    queryFn: () => base44.entities.CommissionEntry.list(),
+    queryFn: () => vsvv.entities.CommissionEntry.list(),
   })
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => base44.entities.Document.list(),
+    queryFn: () => vsvv.entities.Document.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => base44.entities.Advisor.list(),
+    queryFn: () => vsvv.entities.Advisor.list(),
   })
 
   // ─── AGGREGATION ───

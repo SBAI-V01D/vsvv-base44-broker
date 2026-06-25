@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { AlertTriangle, Calendar, TrendingUp, Activity, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,19 +31,19 @@ function formatCurrency(amount) {
 export default function RenewalRadar() {
   const { data: contracts = [] } = useQuery({
     queryKey: ['renewal_contracts'],
-    queryFn: () => base44.entities.Contract.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => vsvv.entities.Contract.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['renewal_customers'],
-    queryFn: () => base44.entities.Customer.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => vsvv.entities.Customer.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['renewal_opportunities'],
-    queryFn: () => base44.entities.Verkaufschance.filter({}),
+    queryFn: () => vsvv.entities.Verkaufschance.filter({}),
     staleTime: 5 * 60 * 1000,
   });
 

@@ -7,7 +7,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 
 const CentralAnalysisContext = createContext(null);
 
@@ -21,7 +21,7 @@ export function CentralAnalysisProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke('centralAnalysisEngine', {});
+      const res = await vsvv.functions.invoke('centralAnalysisEngine', {});
       setAnalysisData(res.data);
       setLastRun(new Date());
       return res.data;

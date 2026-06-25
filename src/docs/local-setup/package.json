@@ -11,7 +11,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.31",
+    "@vsvv/sdk": "^0.8.31",
     "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "^4.1.2",
     "@radix-ui/react-accordion": "^1.2.3",
@@ -58,7 +58,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@base44/vite-plugin": "^1.0.21",
+    "@vsvv/vite-plugin": "^1.0.21",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",

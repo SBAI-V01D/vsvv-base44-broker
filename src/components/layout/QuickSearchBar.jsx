@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Search, Users, FileText, Target, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { cn } from '@/lib/utils'
 
 /**
@@ -38,9 +38,9 @@ export default function QuickSearchBar() {
       try {
         const q = query.toLowerCase()
         const [customers, contracts, leads] = await Promise.all([
-          base44.entities.Customer.list(),
-          base44.entities.Contract.list(),
-          base44.entities.Lead.list(),
+          vsvv.entities.Customer.list(),
+          vsvv.entities.Contract.list(),
+          vsvv.entities.Lead.list(),
         ])
 
         const customerResults = customers

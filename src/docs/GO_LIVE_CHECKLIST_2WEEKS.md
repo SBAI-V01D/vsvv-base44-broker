@@ -91,7 +91,7 @@ IMPACT: Data Breach, Compliance Failure, Go-Live Blocker
 ```javascript
 // PATTERN: Alle Backend-Funktionen MÜSSEN folgendes prüfen:
 
-1. [ ] AUTHENTICATE: user = await base44.auth.me()
+1. [ ] AUTHENTICATE: user = await vsvv.auth.me()
    if (!user) return 403
 
 2. [ ] AUTHORIZE: canAccessEntity(user, record)

@@ -22,7 +22,7 @@
 
 ```bash
 # Im Browser-Konsole oder via API-Client:
-const result = await base44.functions.invoke('migrateCustomerNumbers', {});
+const result = await vsvv.functions.invoke('migrateCustomerNumbers', {});
 console.log(result);
 ```
 

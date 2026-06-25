@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +16,7 @@ export default function KrankenkassenCockpit() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['krankenkassen-stats'],
     queryFn: async () => {
-      const vergleiche = await base44.entities.KrankenkassenVergleich.list();
+      const vergleiche = await vsvv.entities.KrankenkassenVergleich.list();
       
       const letzte30Tage = vergleiche.filter(v => {
         const datum = new Date(v.vergleichsdatum);

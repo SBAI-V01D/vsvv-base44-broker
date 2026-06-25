@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { AlertCircle, Search, Edit, Bell } from 'lucide-react';
 import { sendNotification, claimStatusEmailBody } from '@/lib/notifications';
 import { useToast } from '@/components/ui/use-toast';
@@ -33,12 +33,12 @@ export default function Claims() {
 
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['claims'],
-    queryFn: () => base44.entities.Claim.list('-created_date'),
+    queryFn: () => vsvv.entities.Claim.list('-created_date'),
   });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data, originalStatus, sendMail }) => {
-      await base44.entities.Claim.update(id, data);
+      await vsvv.entities.Claim.update(id, data);
       // Send email if status changed and customer email is available and broker opted in
       if (sendMail && data.customer_email && data.status !== originalStatus) {
         await sendNotification({

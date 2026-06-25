@@ -74,7 +74,7 @@ PROBLEME:
 ```javascript
 const { data: customerDirect } = useQuery({
   queryKey: ['customer', id],
-  queryFn: () => base44.entities.Customer.filter({ id }, null, 1).then(r => r?.[0]),
+  queryFn: () => vsvv.entities.Customer.filter({ id }, null, 1).then(r => r?.[0]),
   enabled: !!id,
   staleTime: 2 * 60 * 1000, // 2 Minuten Cache
 })
@@ -303,7 +303,7 @@ useEffect(() => {
 ### Network Tab prüfen:
 
 1. Öffne Chrome DevTools → Network
-2. Filter: `api/base44` oder `entities`
+2. Filter: `api/vsvv` oder `entities`
 3. Öffne einen Kunden
 4. Zähle die API-Calls
 5. Miss die Dauer jedes Calls

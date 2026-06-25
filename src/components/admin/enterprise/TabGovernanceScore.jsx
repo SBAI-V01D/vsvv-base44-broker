@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import {
   Shield, RefreshCw, TrendingUp, TrendingDown, Minus,
   AlertTriangle, CheckCircle2, XCircle, Info,
@@ -132,7 +132,7 @@ export default function TabGovernanceScore() {
   const { data: snapshot, isLoading, refetch } = useQuery({
     queryKey: ['ecc_governance_snapshot'],
     queryFn: async () => {
-      const snapshots = await base44.entities.GovernanceScoreSnapshot.list('-computed_at', 1);
+      const snapshots = await vsvv.entities.GovernanceScoreSnapshot.list('-computed_at', 1);
       return snapshots[0] || null;
     },
     staleTime: 15 * 60 * 1000,
@@ -146,7 +146,7 @@ export default function TabGovernanceScore() {
     setIsComputing(true);
     setComputeError(null);
     try {
-      await base44.functions.invoke('snapshotGovernanceScore', {});
+      await vsvv.functions.invoke('snapshotGovernanceScore', {});
       await refetch();
     } catch (e) {
       setComputeError(e?.response?.data?.error || e.message || 'Unbekannter Fehler');

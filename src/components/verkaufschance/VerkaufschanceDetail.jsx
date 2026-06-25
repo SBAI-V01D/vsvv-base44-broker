@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -46,7 +46,7 @@ export default function VerkaufschanceDetail({ verkaufschance, customer, onClose
   const [showAiUpload, setShowAiUpload] = useState(false)
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Verkaufschance.update(verkaufschance.id, data),
+    mutationFn: (data) => vsvv.entities.Verkaufschance.update(verkaufschance.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] })
       queryClient.invalidateQueries({ queryKey: ['verkaufschancen', verkaufschance.customer_id] })

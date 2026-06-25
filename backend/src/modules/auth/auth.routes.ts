@@ -416,10 +416,12 @@ const authRoutes: FastifyPluginAsync = async (app) => {
       },
     });
 
-    // In development, log the reset URL for convenience
+    // NOTE: We log ONLY the user ID, NEVER the token itself.
+    // Logging reset tokens is a security risk — logs may be ingested by
+    // third-party services (e.g., Datadog, Splunk), exposing account access.
     if (env.NODE_ENV === 'development') {
       app.log.info(
-        `[DEV] Password reset link: http://localhost:${env.PORT}/reset-password?token=${resetToken}`,
+        `[DEV] Password reset token generated for user: ${user.id}`,
       );
     }
 

@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import {
   Plus, User, Building2, Upload, Download, Users, Search,
   AlertTriangle, Loader2, XCircle
@@ -274,18 +274,18 @@ export default function Customers() {
   const [showMerge, setShowMerge]       = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => vsvv.auth.me() });
 
   const { data: organizations = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => base44.entities.Organization.list('-created_date', 50),
+    queryFn: () => vsvv.entities.Organization.list('-created_date', 50),
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
-      const all = await base44.entities.Customer.filter({ archived: false }, '-updated_date', 500);
+      const all = await vsvv.entities.Customer.filter({ archived: false }, '-updated_date', 500);
       if (currentUser?.role === 'admin') return all;
       if (currentUser?.role === 'broker' || currentUser?.role === 'assistenz') {
         return all.filter(c =>
@@ -302,44 +302,44 @@ export default function Customers() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['customers_tasks'],
-    queryFn: () => base44.entities.Task.filter({ status: 'open' }, '-due_date', 200),
+    queryFn: () => vsvv.entities.Task.filter({ status: 'open' }, '-due_date', 200),
     staleTime: 60_000,
   });
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['customers_contracts'],
-    queryFn: () => base44.entities.Contract.filter({ status: 'active', archived: false }, '-created_date', 500),
+    queryFn: () => vsvv.entities.Contract.filter({ status: 'active', archived: false }, '-created_date', 500),
     staleTime: 60_000,
   });
 
   const { data: leads = [] } = useQuery({
     queryKey: ['customers_leads'],
-    queryFn: () => base44.entities.Lead.filter({ status: 'new' }, '-created_date', 100),
+    queryFn: () => vsvv.entities.Lead.filter({ status: 'new' }, '-created_date', 100),
     staleTime: 60_000,
   });
 
   const { data: documents = [] } = useQuery({
     queryKey: ['customers_documents'],
-    queryFn: () => base44.entities.Document.filter({ archived: false }, '-uploaded_at', 500),
+    queryFn: () => vsvv.entities.Document.filter({ archived: false }, '-uploaded_at', 500),
     staleTime: 60_000,
   });
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['customers_verkaufschancen'],
-    queryFn: () => base44.entities.Verkaufschance.filter({}),
+    queryFn: () => vsvv.entities.Verkaufschance.filter({}),
     staleTime: 60_000,
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Customer.create(data),
+    mutationFn: (data) => vsvv.entities.Customer.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['customers'] }); setShowForm(false); setEditing(null); },
   });
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Customer.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.Customer.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['customers'] }); setShowForm(false); setEditing(null); },
   });
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Customer.delete(id),
+    mutationFn: (id) => vsvv.entities.Customer.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['customers'] }),
   });
 
@@ -426,7 +426,7 @@ export default function Customers() {
     let cData = { ...data, organization_id: orgId };
     if (!cData.customer_number) {
       try {
-        const r = await base44.functions.invoke('generateCustomerNumber', {});
+        const r = await vsvv.functions.invoke('generateCustomerNumber', {});
         if (r?.data?.customer_number) cData.customer_number = r.data.customer_number;
       } catch {}
     }

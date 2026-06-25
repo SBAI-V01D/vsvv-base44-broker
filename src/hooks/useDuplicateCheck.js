@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 
 export function useDuplicateCheck() {
   const checkDuplicates = useCallback(async ({ entity_type, email, phone, mobile, first_name, last_name, birthdate }) => {
     try {
-      const result = await base44.functions.invoke('detectDuplicates', {
+      const result = await vsvv.functions.invoke('detectDuplicates', {
         entity_type,
         email,
         phone,
@@ -22,7 +22,7 @@ export function useDuplicateCheck() {
 
   const logError = useCallback(async ({ error_type, entity_type, entity_id, error_message, function_name }) => {
     try {
-      await base44.functions.invoke('logError', {
+      await vsvv.functions.invoke('logError', {
         error_type,
         entity_type,
         entity_id,
@@ -36,7 +36,7 @@ export function useDuplicateCheck() {
 
   const createAudit = useCallback(async ({ entity_type, entity_id, action, old_values, new_values, summary }) => {
     try {
-      await base44.functions.invoke('createAuditLog', {
+      await vsvv.functions.invoke('createAuditLog', {
         entity_type,
         entity_id,
         action,

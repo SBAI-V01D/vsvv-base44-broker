@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { User, Search, MessageSquare, Shield, Inbox } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,17 +26,17 @@ export default function Messages() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => vsvv.entities.Customer.list(),
   });
 
   const { data: messages = [] } = useQuery({
     queryKey: ['messages'],
-    queryFn: () => base44.entities.Message.list('-created_date'),
+    queryFn: () => vsvv.entities.Message.list('-created_date'),
     refetchInterval: 10000,
   });
 
   const sendMutation = useMutation({
-    mutationFn: (data) => base44.entities.Message.create(data),
+    mutationFn: (data) => vsvv.entities.Message.create(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['messages'] }),
   });
 

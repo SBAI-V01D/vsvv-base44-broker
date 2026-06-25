@@ -177,7 +177,7 @@ Commissions (10% rate):
 ### Setup:
 ```
 1. Admin Login (role=admin)
-   → base44.auth.me().role = 'admin'
+   → vsvv.auth.me().role = 'admin'
 2. Seite /kunden öffnen
    → Sieht ALLE Kunden (kein Filter)
 3. guardPortalAccess({ user_role: 'admin', entity_id: X })

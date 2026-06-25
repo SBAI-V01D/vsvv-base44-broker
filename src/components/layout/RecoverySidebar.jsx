@@ -6,7 +6,7 @@ import {
   BarChart3, User
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 
 /**
  * RECOVERY SIDEBAR
@@ -51,7 +51,7 @@ export default function RecoverySidebar({ onNavigate }) {
   const location = useLocation()
 
   React.useEffect(() => {
-    base44.auth.me().then(u => setCurrentUser(u)).catch(() => {})
+    vsvv.auth.me().then(u => setCurrentUser(u)).catch(() => {})
   }, [])
 
   return (
@@ -167,7 +167,7 @@ export default function RecoverySidebar({ onNavigate }) {
         )}
       >
         <button
-          onClick={() => base44.auth.logout()}
+          onClick={() => vsvv.auth.logout()}
           title="Abmelden"
           className={cn(
             'flex items-center gap-2.5 rounded-[8px] text-[13px] font-medium text-white/35 hover:text-white/70 hover:bg-white/[0.05] transition-all',

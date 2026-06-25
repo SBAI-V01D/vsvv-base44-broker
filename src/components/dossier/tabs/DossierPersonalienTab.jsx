@@ -6,7 +6,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { User, Phone, Mail, MapPin, Calendar, CreditCard, Shield, Edit3, Check, X } from 'lucide-react';
 import DossierBrokerSection from './DossierBrokerSection';
 import { toast } from 'sonner';
@@ -86,7 +86,7 @@ export default function DossierPersonalienTab({ dossier }) {
 
   const { data: customer, isLoading } = useQuery({
     queryKey: ['dossier_customer_ro', customerId],
-    queryFn: () => base44.entities.Customer.filter({ id: customerId }).then(r => r[0]),
+    queryFn: () => vsvv.entities.Customer.filter({ id: customerId }).then(r => r[0]),
     enabled: !!customerId,
   });
 
@@ -100,7 +100,7 @@ export default function DossierPersonalienTab({ dossier }) {
   }, [customer, editing]);
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Customer.update(customerId, data),
+    mutationFn: (data) => vsvv.entities.Customer.update(customerId, data),
     onSuccess: () => {
       // Invalidate überall — CRM-Module + Dossier sehen sofort frische Daten
       qc.invalidateQueries({ queryKey: ['dossier_customer_ro'] });

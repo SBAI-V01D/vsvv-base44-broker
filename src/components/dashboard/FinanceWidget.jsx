@@ -1,6 +1,6 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, DollarSign, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -9,12 +9,12 @@ export default function FinanceWidget() {
   const navigate = useNavigate()
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissions'],
-    queryFn: () => base44.entities.CommissionEntry.list(null, 1000),
+    queryFn: () => vsvv.entities.CommissionEntry.list(null, 1000),
   })
 
   const { data: accountingEntries = [] } = useQuery({
     queryKey: ['accounting_entries'],
-    queryFn: () => base44.entities.AccountingEntry.list(null, 1000),
+    queryFn: () => vsvv.entities.AccountingEntry.list(null, 1000),
   })
 
   // ─── KPIs ───

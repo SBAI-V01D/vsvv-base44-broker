@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Gift, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 
 
 
@@ -48,7 +48,7 @@ function getDaysUntilBirthday(birthdate, referenceDate = new Date()) {
 export default function BirthdaySection({ customers: customersProp }) {
   const { data: fetchedCustomers = [] } = useQuery({
     queryKey: ['birthday_customers'],
-    queryFn: () => base44.entities.Customer.filter({ archived: false }, 'birthdate', 200),
+    queryFn: () => vsvv.entities.Customer.filter({ archived: false }, 'birthdate', 200),
     staleTime: 10 * 60 * 1000,
     enabled: !customersProp,
   });

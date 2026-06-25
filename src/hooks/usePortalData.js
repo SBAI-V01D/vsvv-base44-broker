@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 
 export function usePortalData() {
   const customerId = localStorage.getItem('portal_customer_id')
@@ -10,7 +10,7 @@ export function usePortalData() {
     queryFn: async () => {
       if (!customerId) return null
       const session_token = localStorage.getItem('portal_session_token') || ''
-      const res = await base44.functions.invoke('getPortalData', { customer_id: customerId, session_token })
+      const res = await vsvv.functions.invoke('getPortalData', { customer_id: customerId, session_token })
       return res.data
     },
     enabled: !!customerId,

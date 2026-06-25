@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -26,13 +26,13 @@ export default function RenewalsSection() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => base44.entities.Contract.list('-end_date'),
+    queryFn: () => vsvv.entities.Contract.list('-end_date'),
   })
 
   const { data: offers = [] } = useQuery({
     queryKey: ['renewal-offers'],
     queryFn: async () => {
-      const all = await base44.entities.Contract.list('-end_date')
+      const all = await vsvv.entities.Contract.list('-end_date')
       return all.filter(c => c.renewal_offer_created)
     },
   })
@@ -73,7 +73,7 @@ export default function RenewalsSection() {
   // ─── MUTATIONS ───
   const prepareOfferMutation = useMutation({
     mutationFn: (contractId) =>
-      base44.functions.invoke('prepareRenewalOffer', { contract_id: contractId }),
+      vsvv.functions.invoke('prepareRenewalOffer', { contract_id: contractId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts', 'renewal-offers'] })
       setSelectedPolicy(null)
@@ -82,7 +82,7 @@ export default function RenewalsSection() {
 
   const sendOfferMutation = useMutation({
     mutationFn: (contractId) =>
-      base44.functions.invoke('sendRenewalOffer', { contract_id: contractId }),
+      vsvv.functions.invoke('sendRenewalOffer', { contract_id: contractId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts', 'renewal-offers'] })
       setShowOfferDialog(false)
@@ -92,7 +92,7 @@ export default function RenewalsSection() {
 
   const acceptOfferMutation = useMutation({
     mutationFn: (contractId) =>
-      base44.functions.invoke('acceptRenewalOffer', { contract_id: contractId }),
+      vsvv.functions.invoke('acceptRenewalOffer', { contract_id: contractId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts', 'renewal-offers'] })
       setSelectedPolicy(null)

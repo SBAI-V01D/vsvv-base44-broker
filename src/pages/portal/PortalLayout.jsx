@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Shield, FileText, AlertCircle, FolderOpen, MessageSquare, LogOut, Menu, X, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
@@ -54,7 +54,7 @@ export default function PortalLayout({ user }) {
                 {user.full_name || user.email}
               </span>
             )}
-            <Button variant="ghost" size="sm" onClick={() => base44.auth.logout()} className="text-slate-600 hover:text-destructive">
+            <Button variant="ghost" size="sm" onClick={() => vsvv.auth.logout()} className="text-slate-600 hover:text-destructive">
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline ml-1">Abmelden</span>
             </Button>

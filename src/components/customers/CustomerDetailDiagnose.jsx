@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 
 /**
  * CustomerDetail Diagnose-Tool
@@ -31,7 +31,7 @@ export function useCustomerDetailDiagnose(customerId) {
     // Performance Observer für API-Calls
     const observer = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        if (entry.name.includes('api/base44') || entry.name.includes('entities')) {
+        if (entry.name.includes('api/vsvv') || entry.name.includes('entities')) {
           const url = new URL(entry.name)
           const entity = url.pathname.split('/').pop()
           if (!timings[entity]) {
@@ -64,7 +64,7 @@ export function useCustomerDetailDiagnose(customerId) {
     try {
       // Test 1: Customer Direct Load
       const customerStart = Date.now()
-      const customer = await base44.entities.Customer.filter({ id: customerId }, null, 1)
+      const customer = await vsvv.entities.Customer.filter({ id: customerId }, null, 1)
       const customerTime = Date.now() - customerStart
       if (!customer || customer.length === 0) {
         issues.push({ type: 'CRITICAL', message: 'Kunde nicht gefunden', time: customerTime })
@@ -74,7 +74,7 @@ export function useCustomerDetailDiagnose(customerId) {
 
       // Test 2: Contracts Load
       const contractsStart = Date.now()
-      const contracts = await base44.entities.Contract.filter({ customer_id: customerId, archived: false })
+      const contracts = await vsvv.entities.Contract.filter({ customer_id: customerId, archived: false })
       const contractsTime = Date.now() - contractsStart
       if (contractsTime > 500) {
         issues.push({ type: 'WARNING', message: `Verträge laden langsam (${contractsTime}ms)`, time: contractsTime })
@@ -88,7 +88,7 @@ export function useCustomerDetailDiagnose(customerId) {
       // Test 4: If family member, check primary customer load
       if (customer[0]?.is_family_member && customer[0]?.primary_customer_id) {
         const primaryStart = Date.now()
-        const primary = await base44.entities.Customer.filter({ id: customer[0].primary_customer_id }, null, 1)
+        const primary = await vsvv.entities.Customer.filter({ id: customer[0].primary_customer_id }, null, 1)
         const primaryTime = Date.now() - primaryStart
         if (!primary || primary.length === 0) {
           issues.push({ type: 'CRITICAL', message: 'Hauptkunde nicht gefunden', time: primaryTime })
@@ -99,7 +99,7 @@ export function useCustomerDetailDiagnose(customerId) {
 
       // Test 5: Advisors Load
       const advisorsStart = Date.now()
-      const advisors = await base44.entities.Advisor.list()
+      const advisors = await vsvv.entities.Advisor.list()
       const advisorsTime = Date.now() - advisorsStart
       if (advisorsTime > 1000) {
         issues.push({ type: 'WARNING', message: `Berater laden langsam (${advisorsTime}ms)`, time: advisorsTime })

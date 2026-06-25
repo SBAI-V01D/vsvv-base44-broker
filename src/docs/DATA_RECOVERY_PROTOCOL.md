@@ -40,7 +40,7 @@ SCHRITT 3: validateSystemIntegrity
 **Aktion:** Starten Sie `reconstructCustomersFromRelations`
 
 ```javascript
-const report = await base44.functions.invoke('reconstructCustomersFromRelations', {});
+const report = await vsvv.functions.invoke('reconstructCustomersFromRelations', {});
 console.log(report.data.summary);
 // Zeigt: Wie viele Kunden fehlen, wo sie referenziert sind
 ```
@@ -59,7 +59,7 @@ console.log(report.data.summary);
 
 ```javascript
 const reconstructionReport = reportFromStep1.data;
-const result = await base44.functions.invoke('reconstructAndRestoreCustomers', {
+const result = await vsvv.functions.invoke('reconstructAndRestoreCustomers', {
   reconstruction_report: reconstructionReport
 });
 console.log(`✓ Created: ${result.data.summary.successfully_created} customers`);
@@ -78,7 +78,7 @@ console.log(`✓ Created: ${result.data.summary.successfully_created} customers`
 **Aktion:** Prüfe alle Relationen
 
 ```javascript
-const validation = await base44.functions.invoke('validateSystemIntegrity', {});
+const validation = await vsvv.functions.invoke('validateSystemIntegrity', {});
 console.log(validation.data.integrity_check);
 // Zeigt: Alle Relationen intakt?
 ```
@@ -110,7 +110,7 @@ Vs. Database Rollback: 1-2 Stunden, Risiko, Komplexität
 **Fallback:** Dann Database-Backup-Restore
 
 Koordinieren Sie mit Base44-Support:
-- support@base44.com
+- support@vsvv.com
 - "Database restore required - backup timestamp needed"
 
 ---
@@ -166,7 +166,7 @@ Kunden mit Verträgen/Anträgen/Dokumenten:
 
 ## KONTAKT
 
-**Base44 Support:** support@base44.com
+**Base44 Support:** support@vsvv.com
 **Notfall:** Backup-Team koordinieren
 **Dauer:** Typisch 1-2 Stunden für Restore + Verifizierung
 

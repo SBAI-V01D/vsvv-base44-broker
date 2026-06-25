@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { Bell, Send, Clock, FileText, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,17 +26,17 @@ export default function Notifications() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => base44.entities.Contract.list(),
+    queryFn: () => vsvv.entities.Contract.list(),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => vsvv.entities.Customer.list(),
   });
 
   const { data: notifications = [], isLoading: notifLoading } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => base44.entities.Notification.list('-created_date', 50),
+    queryFn: () => vsvv.entities.Notification.list('-created_date', 50),
   });
 
   // Contracts expiring within EXPIRY_DAYS

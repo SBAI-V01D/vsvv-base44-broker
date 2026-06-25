@@ -21,10 +21,55 @@ import { requireTenant, tenantWhere } from '../middleware/tenant.js';
 import { emitEntityEvent } from './socket.js';
 
 // ---------------------------------------------------------------------------
-// Constants — fields stripped from responses
+// Type-Safe Prisma Delegate Access
+//
+// PrismaClient has 58+ model delegates (prisma.customer, prisma.contract, etc.)
+// This type map enables type-safe dynamic access to any delegate.
 // ---------------------------------------------------------------------------
 
-const SENSITIVE_FIELDS = ['password_hash', 'reset_token_hash'];
+/**
+ * Keys of PrismaClient that are model delegates (have findMany, create, etc.)
+ */
+type PrismaModelKey = {
+  [K in keyof PrismaClient]: PrismaClient[K] extends {
+    findMany: (...args: any[]) => any;
+  }
+    ? K
+    : never;
+}[keyof PrismaClient];
+
+/**
+ * Type-safe model delegate extractor.
+ * Returns the typed delegate for a given model name or throws at runtime.
+ */
+function getModelDelegate<K extends PrismaModelKey>(modelName: K): PrismaClient[K] {
+  const delegate = (prisma as PrismaClient)[modelName];
+  if (!delegate || typeof (delegate as any).findMany !== 'function') {
+    throw new Error(`Invalid Prisma model: '${String(modelName)}'`);
+  }
+  return delegate;
+}
+
+/**
+ * Strips sensitive fields from a data object (mass assignment protection).
+ */
+function stripSensitiveFields(data: Record<string, unknown>): Record<string, unknown> {
+  const cleaned = { ...data };
+  // Fields that are NEVER allowed to be set via API request body.
+  // Prevents mass assignment / privilege escalation attacks.
+  // These can only be set internally by the backend (e.g., auth module).
+  const STRIP_FIELDS = [
+    'password_hash',
+    'reset_token_hash',
+    'role',
+    'is_active',
+    'organization_id',
+  ] as const;
+  for (const field of STRIP_FIELDS) {
+    delete cleaned[field];
+  }
+  return cleaned;
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -175,16 +220,19 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
           }));
         }
 
+        // Use type-safe delegate for Prisma queries
+        const delegate = getModelDelegate(model as PrismaModelKey);
+
         // Execute query
         const [data, total] = await Promise.all([
-          (prisma as any)[model].findMany({
+          (delegate as any).findMany({
             where,
             include,
             skip,
             take: limit,
             orderBy: { [sortBy]: sortOrder },
           }),
-          (prisma as any)[model].count({ where }),
+          (delegate as any).count({ where }),
         ]);
 
         return {
@@ -221,7 +269,8 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
           where.archived = false;
         }
 
-        const record = await (prisma as any)[model].findFirst({
+        const delegate = getModelDelegate(model as PrismaModelKey);
+        const record = await (delegate as any).findFirst({
           where,
           include,
         });
@@ -249,7 +298,10 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
         ],
       },
       async (request, reply) => {
-        const body = (request.body ?? {}) as Record<string, unknown>;
+        let body = (request.body ?? {}) as Record<string, unknown>;
+
+        // SECURITY: Strip fields that must not be set via API (mass assignment protection)
+        body = stripSensitiveFields(body);
 
         // Custom validation
         if (validateCreate) {
@@ -261,11 +313,11 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
           }
         }
 
-        // Inject organization_id from tenant context
-        body.organization_id =
-          request.user?.organization_id ?? body.organization_id;
+        // Inject organization_id from tenant context (never trust client)
+        body.organization_id = request.user?.organization_id;
 
-        const record = await (prisma as any)[model].create({ data: body });
+        const delegate = getModelDelegate(model as PrismaModelKey);
+        const record = await (delegate as any).create({ data: body });
 
         // Broadcast via Socket.io
         emitEntityEvent(
@@ -294,10 +346,15 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
       },
       async (request, reply) => {
         const { id } = request.params as { id: string };
-        const body = (request.body ?? {}) as Record<string, unknown>;
+        let body = (request.body ?? {}) as Record<string, unknown>;
+
+        // SECURITY: Strip fields that must not be set via API (mass assignment protection)
+        body = stripSensitiveFields(body);
+
+        const delegate = getModelDelegate(model as PrismaModelKey);
 
         // Check record exists and belongs to tenant
-        const existing = await (prisma as any)[model].findFirst({
+        const existing = await (delegate as any).findFirst({
           where: { id, ...tenantWhere(request) },
         });
 
@@ -315,10 +372,7 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
           }
         }
 
-        // Don't allow changing organization_id
-        delete body.organization_id;
-
-        const record = await (prisma as any)[model].update({
+        const record = await (delegate as any).update({
           where: { id },
           data: body,
         });
@@ -351,7 +405,9 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
       async (request, reply) => {
         const { id } = request.params as { id: string };
 
-        const existing = await (prisma as any)[model].findFirst({
+        const delegate = getModelDelegate(model as PrismaModelKey);
+
+        const existing = await (delegate as any).findFirst({
           where: { id, ...tenantWhere(request) },
         });
 
@@ -359,7 +415,7 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
           return reply.code(404).send({ error: 'not_found' });
         }
 
-        const record = await (prisma as any)[model].update({
+        const record = await (delegate as any).update({
           where: { id },
           data: {
             archived: true,

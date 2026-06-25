@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { Star, Trash2, Edit3, Check, X } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { vsvv } from '@/api/vsvvClient';
 import { fmtCHF, sortByPraemie, scoreClass, SCORE_COLORS } from '@/lib/dossierCalc';
 
 const SECTION_LABELS = {
@@ -44,7 +44,7 @@ function EntryCard({ entry, lowestPraemie, onDelete, onUpdate, dossierId }) {
   const qc = useQueryClient();
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ComparisonEntry.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.ComparisonEntry.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dossier_comparison', dossierId] });
       setEditing(false);
@@ -255,7 +255,7 @@ export default function ComparisonSideBySide({ entries, dossierId }) {
   const qc = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.ComparisonEntry.delete(id),
+    mutationFn: (id) => vsvv.entities.ComparisonEntry.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dossier_comparison', dossierId] }),
   });
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { base44 } from '@/api/base44Client'
+import { vsvv } from '@/api/vsvvClient'
 import { Plus, Search, Send, Edit, Trash2, MoreHorizontal, Calendar } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,16 +19,16 @@ export default function EmailCampaigns() {
 
   const { data: campaigns = [] } = useQuery({
     queryKey: ['email-campaigns'],
-    queryFn: () => base44.entities.EmailCampaign.list('-created_date'),
+    queryFn: () => vsvv.entities.EmailCampaign.list('-created_date'),
   })
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => vsvv.entities.Customer.list(),
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.EmailCampaign.create(data),
+    mutationFn: (data) => vsvv.entities.EmailCampaign.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-campaigns'] })
       setShowForm(false)
@@ -37,7 +37,7 @@ export default function EmailCampaigns() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.EmailCampaign.update(id, data),
+    mutationFn: ({ id, data }) => vsvv.entities.EmailCampaign.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-campaigns'] })
       setShowForm(false)
@@ -46,12 +46,12 @@ export default function EmailCampaigns() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.EmailCampaign.delete(id),
+    mutationFn: (id) => vsvv.entities.EmailCampaign.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['email-campaigns'] }),
   })
 
   const sendMutation = useMutation({
-    mutationFn: (id) => base44.functions.invoke('sendEmailCampaign', { campaign_id: id }),
+    mutationFn: (id) => vsvv.functions.invoke('sendEmailCampaign', { campaign_id: id }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['email-campaigns'] }),
   })
 
