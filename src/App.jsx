@@ -57,6 +57,7 @@ import TestKrankenkassenVergleich from './pages/TestKrankenkassenVergleich'
 import ComplianceSchreiben from './pages/ComplianceSchreiben'
 import ChatExport from './pages/ChatExport'
 import ArchiveDownload from './pages/ArchiveDownload'
+import AdminHub from './pages/AdminHub'
 import EnterpriseImprovements from './pages/EnterpriseImprovements'
 
 // Portal
@@ -173,7 +174,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/insurance-learning" element={<ProtectedRoute allowedRoles={['admin']}><InsuranceLearningCenter /></ProtectedRoute>} />
         <Route path="/admin/security" element={<ProtectedRoute allowedRoles={['admin']}><div className="p-12 text-center text-muted-foreground">🔒 Sicherheit & Governance — kommt in Phase 3</div></ProtectedRoute>} />
         <Route path="/admin/backup" element={<ProtectedRoute allowedRoles={['admin']}><div className="p-12 text-center text-muted-foreground">💾 Backup & Recovery — kommt in Phase 3</div></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Navigate to="/admin/control-center" replace /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminHub /></ProtectedRoute>} />
       </Route>
 
       {/* ── LEGACY ROUTE REDIRECTS ───────────────────────────── */}
