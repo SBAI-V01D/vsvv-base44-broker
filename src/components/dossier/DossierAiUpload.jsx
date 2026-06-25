@@ -1,0 +1,1132 @@
+/**
+ * DossierAiUpload — Phase B
+ *
+ * Vollständige Upload-Session-Pipeline:
+ *   Upload → Analyse → Vorschau → Korrektur → Bestätigung → Persistierung
+ *
+ * Sicherheits-Prinzipien (unveränderlich):
+ *   - Kein direktes Speichern ohne explizite Benutzerbestätigung
+ *   - Kein Write auf CRM-Entities
+ *   - Alle KI-Daten sind initial als "ungeprüft" markiert
+ *   - Jedes Feld einzeln editierbar vor der Übernahme
+ *   - Nur Write auf ComparisonEntry nach Bestätigung
+ *
+ * Phase B+C Erweiterungen:
+ *   - Multi-Produkt-Extraktion (mehrere Produkte pro Dokument)
+ *   - Personen-Erkennung aus Dokument
+ *   - Gruppen-Logik: KVG + VVG pro Gesamtlösung
+ *   - Erweitertes Confidence-System (rot/amber/grün)
+ *   - Gesamttotal-Berechnung pro Person
+ *   - [Phase C] Korrektur-Tracking & Qualitätsmessung
+ *   - [Phase C] Schnellkorrektur-Modus: unsichere Felder zuerst
+ *   - [Phase C] Anonymisiertes Feedback-Logging via aiCorrectionLogger
+ */
+import React, { useState, useRef, useMemo } from 'react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import {
+  Upload, Sparkles, AlertTriangle, Check, X,
+  Loader2, FileText, ChevronDown, ChevronUp, Shield,
+  User, RefreshCw, CheckCircle, AlertCircle, Eye, Zap
+} from 'lucide-react';
+import { detectCorrections, logCorrections, sessionQualityScore } from '@/lib/aiCorrectionLogger';
+
+// ── Konstanten ────────────────────────────────────────────────────────────────
+const MAX_FILE_SIZE_MB = 10;
+const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+
+const GRUPPE_OPTIONS = [
+  { value: 'aktuelle_loesung', label: 'Aktuelle Lösung' },
+  { value: 'optimiert',        label: 'Optimiert' },
+  { value: 'angebot_1',        label: 'Angebot 1' },
+  { value: 'angebot_2',        label: 'Angebot 2' },
+  { value: 'angebot_3',        label: 'Angebot 3' },
+  { value: 'manuell',          label: 'Ohne Gruppe' },
+];
+
+// ── Confidence-Hilfsfunktionen ─────────────────────────────────────────────
+function confLevel(v) {
+  if (v == null) return 'unknown';
+  if (v >= 0.82) return 'high';
+  if (v >= 0.60) return 'medium';
+  return 'low';
+}
+
+function ConfidencePill({ confidence }) {
+  if (confidence == null) return null;
+  const level = confLevel(confidence);
+  const pct = Math.round(confidence * 100);
+  const cfg = {
+    high:    { cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: '✓' },
+    medium:  { cls: 'bg-amber-50 text-amber-700 border-amber-200', icon: '?' },
+    low:     { cls: 'bg-red-50 text-red-700 border-red-200', icon: '!' },
+    unknown: { cls: 'bg-slate-100 text-slate-500 border-slate-200', icon: '–' },
+  }[level];
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold border px-1.5 py-0.5 rounded-full ${cfg.cls}`}>
+      {cfg.icon} {pct}%
+    </span>
+  );
+}
+
+function ConfidenceBar({ confidence }) {
+  if (confidence == null) return null;
+  const level = confLevel(confidence);
+  const pct = Math.round(confidence * 100);
+  const barCls = level === 'high' ? 'bg-emerald-500' : level === 'medium' ? 'bg-amber-400' : 'bg-red-400';
+  return (
+    <div className="flex items-center gap-1.5 mt-0.5">
+      <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${barCls}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className={`text-[9px] font-medium ${level === 'high' ? 'text-emerald-600' : level === 'medium' ? 'text-amber-600' : 'text-red-600'}`}>
+        {pct}%
+      </span>
+    </div>
+  );
+}
+
+// ── Editierbares KI-Feld ──────────────────────────────────────────────────────
+function AiField({ label, fieldKey, value, confidence, type = 'text', options, onChange, required }) {
+  const level = confLevel(confidence);
+  const borderCls =
+    level === 'low'     ? 'border-red-300 bg-red-50/40' :
+    level === 'medium'  ? 'border-amber-300 bg-amber-50/30' :
+                          'border-input bg-background';
+  const inputCls = `w-full border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring ${borderCls}`;
+
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
+          {label}{required && ' *'}
+        </label>
+        <ConfidencePill confidence={confidence} />
+        {level === 'low' && (
+          <span className="text-[9px] text-red-600 flex items-center gap-0.5">
+            <AlertCircle className="w-2.5 h-2.5" /> Bitte prüfen
+          </span>
+        )}
+        {level === 'medium' && (
+          <span className="text-[9px] text-amber-600 flex items-center gap-0.5">
+            <Eye className="w-2.5 h-2.5" /> Überprüfen
+          </span>
+        )}
+      </div>
+      {options ? (
+        <select className={inputCls} value={value || ''} onChange={e => onChange(fieldKey, e.target.value)}>
+          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      ) : (
+        <input className={inputCls} type={type} value={value ?? ''} step={type === 'number' ? '0.05' : undefined}
+          onChange={e => onChange(fieldKey, e.target.value)} />
+      )}
+      {confidence != null && <ConfidenceBar confidence={confidence} />}
+    </div>
+  );
+}
+
+// ── Konfidenz-Zusammenfassung ─────────────────────────────────────────────────
+function ConfidenceSummary({ products }) {
+  const allConfs = products.flatMap(p =>
+    Object.values(p.confidence || {}).filter(v => v != null)
+  );
+  if (allConfs.length === 0) return null;
+  const avg = allConfs.reduce((a, b) => a + b, 0) / allConfs.length;
+  const lowCount = allConfs.filter(v => v < 0.60).length;
+  const medCount = allConfs.filter(v => v >= 0.60 && v < 0.82).length;
+  const highCount = allConfs.filter(v => v >= 0.82).length;
+  const level = confLevel(avg);
+
+  return (
+    <div className={`rounded-lg border px-4 py-3 flex items-center gap-4 flex-wrap text-xs
+      ${level === 'high' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
+        level === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+        'bg-red-50 border-red-200 text-red-800'}`}>
+      <div className="flex items-center gap-1.5 font-semibold">
+        {level === 'high' ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
+        Gesamt-Konfidenz: {Math.round(avg * 100)}%
+      </div>
+      <div className="flex items-center gap-3 text-[10px]">
+        {highCount > 0 && <span className="text-emerald-700">✓ {highCount} sicher</span>}
+        {medCount > 0  && <span className="text-amber-700">? {medCount} prüfen</span>}
+        {lowCount > 0  && <span className="text-red-700">! {lowCount} unsicher</span>}
+      </div>
+      {lowCount > 0 && (
+        <span className="text-[10px] font-medium">
+          Bitte rot markierte Felder vor dem Speichern korrigieren.
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ── Produktkarte im Review ────────────────────────────────────────────────────
+function ProductReviewCard({ product, index, personName, onChange, onRemove, knownPersons, defaultGruppe }) {
+  const [expanded, setExpanded] = useState(true);
+  const conf = product.confidence || {};
+  const totalMonthly = product.praemie_monatlich ? Number(product.praemie_monatlich) : null;
+
+  const handleChange = (key, val) => onChange(index, key, val);
+
+  // Unsichere Felder zählen für Schnellkorrektur-Hinweis
+  const lowConfFields = Object.entries(conf).filter(([, v]) => v != null && v < 0.60);
+  const medConfFields = Object.entries(conf).filter(([, v]) => v != null && v >= 0.60 && v < 0.82);
+
+  return (
+    <div className={`border rounded-xl overflow-hidden transition-shadow
+      ${product.section === 'grundversicherung' ? 'border-blue-200' : 'border-violet-200'}`}>
+      {/* Kartenheader */}
+      <div
+        className={`flex items-center justify-between px-4 py-2.5 cursor-pointer
+          ${product.section === 'grundversicherung' ? 'bg-blue-50' : 'bg-violet-50'}`}
+        onClick={() => setExpanded(e => !e)}
+      >
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border
+            ${product.section === 'grundversicherung'
+              ? 'bg-blue-100 text-blue-700 border-blue-200'
+              : 'bg-violet-100 text-violet-700 border-violet-200'}`}>
+            {product.section === 'grundversicherung' ? 'KVG' : 'VVG'}
+          </span>
+          <span className="text-sm font-semibold text-foreground">
+            {product.gesellschaft || <span className="text-muted-foreground italic">Gesellschaft ausfüllen</span>}
+          </span>
+          {product.product_name && (
+            <span className="text-xs text-muted-foreground">{product.product_name}</span>
+          )}
+          {totalMonthly && (
+            <span className="text-xs font-bold text-foreground">
+              CHF {Number(totalMonthly).toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/Mt.
+            </span>
+          )}
+          <ConfidencePill confidence={
+            Object.values(conf).filter(v => v != null).length > 0
+              ? Object.values(conf).filter(v => v != null).reduce((a, b) => a + b, 0) /
+                Object.values(conf).filter(v => v != null).length
+              : null
+          } />
+          {/* Schnellkorrektur-Hinweis */}
+          {lowConfFields.length > 0 && (
+            <span className="flex items-center gap-0.5 text-[9px] font-bold text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">
+              <Zap className="w-2.5 h-2.5" />
+              {lowConfFields.length} unsicher
+            </span>
+          )}
+          {lowConfFields.length === 0 && medConfFields.length > 0 && (
+            <span className="flex items-center gap-0.5 text-[9px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+              <Eye className="w-2.5 h-2.5" />
+              {medConfFields.length} prüfen
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={e => { e.stopPropagation(); onRemove(index); }}
+            className="p-1 text-muted-foreground hover:text-destructive rounded transition-colors">
+            <X className="w-3.5 h-3.5" />
+          </button>
+          {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="p-4 space-y-4 bg-card">
+          {/* Person & Gruppe */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Person</label>
+              {knownPersons.length > 0 ? (
+                <select
+                  className="w-full border border-input rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                  value={product.person_name || personName}
+                  onChange={e => handleChange('person_name', e.target.value)}
+                >
+                  {knownPersons.map(p => <option key={p} value={p}>{p}</option>)}
+                  <option value="__other">Andere Person…</option>
+                </select>
+              ) : (
+                <input
+                  className="w-full border border-input rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                  value={product.person_name || personName}
+                  onChange={e => handleChange('person_name', e.target.value)}
+                />
+              )}
+            </div>
+            <div>
+              <label className="block text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Gruppe</label>
+              <select
+                className="w-full border border-input rounded-md px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                value={product.gruppe || 'manuell'}
+                onChange={e => handleChange('gruppe', e.target.value)}
+              >
+                {GRUPPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Hauptfelder */}
+          <div className="grid grid-cols-2 gap-3">
+            <AiField label="Abschnitt" fieldKey="section" value={product.section} confidence={conf.section}
+              options={[
+                { value: 'grundversicherung', label: 'Grundversicherung (KVG)' },
+                { value: 'zusatzversicherung', label: 'Zusatzversicherung (VVG)' },
+              ]}
+              onChange={handleChange} />
+            <AiField label="Gesellschaft" fieldKey="gesellschaft" value={product.gesellschaft}
+              confidence={conf.gesellschaft} onChange={handleChange} required />
+            <AiField label="Produkt / Tarif" fieldKey="product_name" value={product.product_name}
+              confidence={conf.product_name} onChange={handleChange} />
+            <AiField label="Prämie/Mt. (CHF)" fieldKey="praemie_monatlich" type="number"
+              value={product.praemie_monatlich} confidence={conf.praemie_monatlich} onChange={handleChange} />
+            <AiField label="Franchise (CHF)" fieldKey="franchise" type="number"
+              value={product.franchise} confidence={conf.franchise} onChange={handleChange} />
+            <AiField label="Modell" fieldKey="modell" value={product.modell}
+              confidence={conf.modell} onChange={handleChange} />
+            <div className="col-span-2">
+              <AiField label="Deckungsdetails" fieldKey="deckung_details" value={product.deckung_details}
+                confidence={conf.deckung_details} onChange={handleChange} />
+            </div>
+          </div>
+
+          {/* Hinweis zur Gruppe */}
+          <div className="flex items-center gap-2 text-xs bg-primary/5 border border-primary/20 rounded px-2.5 py-2">
+            <CheckCircle className="w-3.5 h-3.5 text-primary" />
+            <span className="text-primary font-medium">
+              Wird in Gruppe <strong>"{GRUPPE_OPTIONS.find(o => o.value === defaultGruppe)?.label}"</strong> gespeichert
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Gesamttotal pro Person ────────────────────────────────────────────────────
+function PersonTotal({ products, personName }) {
+  const personProds = products.filter(p => (p.person_name || '') === personName);
+  const total = personProds.reduce((sum, p) => sum + (p.praemie_monatlich ? Number(p.praemie_monatlich) : 0), 0);
+  if (total === 0) return null;
+  return (
+    <div className="flex items-center justify-between text-xs px-3 py-2 bg-muted/50 rounded-lg border border-border/60">
+      <div className="flex items-center gap-2">
+        <User className="w-3.5 h-3.5 text-muted-foreground" />
+        <span className="font-medium text-foreground">{personName}</span>
+        <span className="text-muted-foreground">· {personProds.length} Produkt{personProds.length !== 1 ? 'e' : ''}</span>
+      </div>
+      <span className="font-bold text-foreground">
+        Σ CHF {total.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/Mt.
+        <span className="font-normal text-muted-foreground ml-1">
+          (CHF {(total * 12).toLocaleString('de-CH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/Jahr)
+        </span>
+      </span>
+    </div>
+  );
+}
+
+// ── KI-Extraktions-Schema (Phase B+C: mit Personen-Extraktion) ───────────────
+const EXTRACTION_SCHEMA = {
+  type: 'object',
+  properties: {
+    document_type: {
+      type: 'string',
+      enum: ['police', 'offerte', 'vergleich', 'unbekannt'],
+    },
+    // === PERSONEN ===
+    policy_holder_first_name: { type: 'string', description: 'Praemienzahler Vorname (Adressblock)' },
+    policy_holder_last_name: { type: 'string', description: 'Praemienzahler Nachname (Adressblock)' },
+    policy_holder_street: { type: 'string' },
+    policy_holder_zip_code: { type: 'string' },
+    policy_holder_city: { type: 'string' },
+    policy_holder_birthdate: { type: 'string', description: 'YYYY-MM-DD' },
+    insured_first_name: { type: 'string', description: 'Versicherte Person Vorname (falls abweichend)' },
+    insured_last_name: { type: 'string' },
+    insured_birthdate: { type: 'string', description: 'YYYY-MM-DD' },
+    insured_is_different: { type: 'boolean', description: 'true wenn VP != Prämeinzahler' },
+    confidence_persons: {
+      type: 'object',
+      properties: {
+        policy_holder_name: { type: 'number' },
+        policy_holder_address: { type: 'number' },
+        insured_name: { type: 'number' },
+        insured_birthdate: { type: 'number' },
+        role_distinction: { type: 'number' },
+      }
+    },
+    detected_persons: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+    insurer_name: { type: 'string' },
+    total_monthly_premium: { type: 'number' },
+    discount_amount: { type: 'number' },
+    products: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          gesellschaft:      { type: 'string' },
+          product_name:      { type: 'string' },
+          section:           { type: 'string', enum: ['grundversicherung', 'zusatzversicherung'] },
+          praemie_monatlich: { type: 'number' },
+          praemie_jaehrlich: { type: 'number' },
+          franchise:         { type: 'number' },
+          modell:            { type: 'string' },
+          deckung_details:   { type: 'string' },
+          person_name:       { type: 'string' },
+          is_current:        { type: 'boolean' },
+          confidence: {
+            type: 'object',
+            properties: {
+              gesellschaft:      { type: 'number' },
+              product_name:      { type: 'number' },
+              section:           { type: 'number' },
+              praemie_monatlich: { type: 'number' },
+              franchise:         { type: 'number' },
+              modell:            { type: 'number' },
+              deckung_details:   { type: 'number' },
+              person_name:       { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+    extraction_notes: { type: 'string' },
+    partial_extraction: { type: 'boolean' },
+  },
+};
+
+const EXTRACTION_PROMPT = `
+Du bist eine praezise Schweizer Versicherungs-Extraktionsengine. Analysiere das GESAMTE Dokument (alle Seiten).
+
+═══════════════════════════════════════════════════════
+SCHRITT 1: PERSONEN-ROLLEN IDENTIFIZIEREN
+═══════════════════════════════════════════════════════
+ROLLE A — PRAEMIENZAHLER / VERSICHERUNGSNEHMER:
+  Person im Adressblock oben (an wen der Brief geht)
+  => policy_holder_first_name / policy_holder_last_name / policy_holder_street / policy_holder_zip_code / policy_holder_city
+  => policy_holder_birthdate wenn sichtbar
+
+ROLLE B — VERSICHERTE PERSON (kann abweichen!):
+  Person fuer die die Police gilt
+  Bei CSS: "VERSICHERUNGSPOLICE fuer [Name], Geburtsdatum: TT.MM.JJJJ"
+  Bei Groupe Mutuel: Name im Policenheader oder "Versicherter:"
+  => insured_first_name / insured_last_name / insured_birthdate (YYYY-MM-DD)
+  => insured_is_different=true wenn NICHT identisch mit policy_holder
+
+Auch: detected_persons = alle im Dokument erwaehnten Personen (Namen-Liste)
+
+═══════════════════════════════════════════════════════
+GROUPE MUTUEL POLICE-STRUKTUR:
+═══════════════════════════════════════════════════════
+Seite 1: "Versicherungen gemäss KVG" => section: grundversicherung
+  RT=SanaTel(TelMed), RF=SanaFlex(Freie Arztwahl), RS=SanaStart, RH=SanaHAM(Hausarzt), RC=SanaCare(HMO)
+  "Monatlicher Abzug" / "Kombinationsrabatt" = Rabatt (discount_amount), KEIN Produkt!
+  "Monatsprämie gemäss KVG" = Subtotal, KEIN Produkt!
+Seite 2+: "Versicherungen gemäss VVG" => section: zusatzversicherung
+  BH=Taggeldversicherung, GO=Global Smart, KH=H-Capital, MU=Mundo, SP=Supra, HO=Hospi, CO=Complementa, DE=Denta
+Letzte Seite: "Monatsprämie zu Ihren Lasten" = total_monthly_premium
+
+═══════════════════════════════════════════════════════
+ANDERE VERSICHERER:
+═══════════════════════════════════════════════════════
+CSS/myFlex: KVG=Standard/HMO/Callmed/myDoc/Telmed, VVG=myFlex Spitalversicherung Balance/Comfort/Premium, myFlex Ambulant, myFlex Dental
+Helsana: KVG=Standard/BeneFit Plus HAM/HMO/Progrès, VVG=TOP/OMNI/SANA/DENTA/VITA
+SWICA: KVG=FAVORIT/OPTIMA HMO/HAM/OEKK, VVG=HOSPITA/COMPLETA/DENTA
+Sanitas: KVG=Standard/JumpStart/Callmed/Flexmed/HMO, VVG=Hospital Flex/Eco/Classic/Top, Ambulant Plus
+
+═══════════════════════════════════════════════════════
+PRODUKT-EXTRAKTION (NUR EXPLIZITE CHF-ZEILEN):
+═══════════════════════════════════════════════════════
+- Jede Police MUSS eigene CHF-Prämienzeile haben
+- VERBOTEN: KVG ohne KVG-CHF-Betrag, Subtotale, Rabatte, Gesundheitskonto, 24h-Service als Produkt
+- section="grundversicherung" NUR fuer KVG/obligatorisch, alles andere = "zusatzversicherung"
+- Im Zweifel: Police NICHT erfassen. policies=[] besser als falsche Police.
+
+═══════════════════════════════════════════════════════
+KONFIDENZ (0.0-1.0) pro Feld:
+═══════════════════════════════════════════════════════
+1.00=exakt lesbar | 0.80-0.99=klar ableitbar | 0.60-0.79=wahrscheinlich | 0.00-0.59=unsicher
+
+Antworte NUR mit dem JSON-Objekt.
+`;
+
+// ── Schritt-Indikator ─────────────────────────────────────────────────────────
+const STEPS = [
+  { key: 'upload',    label: 'Upload' },
+  { key: 'analyzing', label: 'Analyse' },
+  { key: 'review',   label: 'Vorschau' },
+  { key: 'confirm',  label: 'Bestätigung' },
+];
+
+function StepBar({ step }) {
+  const idx = STEPS.findIndex(s => s.key === step);
+  return (
+    <div className="flex items-center gap-0">
+      {STEPS.filter(s => s.key !== 'analyzing').map((s, i) => {
+        const displayIdx = ['upload', 'review', 'confirm'].indexOf(s.key);
+        const currentDisplayIdx = ['upload', 'review', 'confirm'].indexOf(
+          step === 'analyzing' ? 'upload' : step
+        );
+        const done = displayIdx < currentDisplayIdx;
+        const active = displayIdx === currentDisplayIdx;
+        return (
+          <React.Fragment key={s.key}>
+            {i > 0 && (
+              <div className={`flex-1 h-0.5 mx-1 ${done ? 'bg-primary' : 'bg-border'}`} />
+            )}
+            <div className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full transition-colors
+              ${active ? 'bg-primary text-primary-foreground' :
+                done ? 'bg-primary/15 text-primary' :
+                'bg-muted text-muted-foreground'}`}>
+              {done ? <Check className="w-2.5 h-2.5" /> : null}
+              {s.label}
+            </div>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Hauptkomponente ───────────────────────────────────────────────────────────
+export default function DossierAiUpload({ dossierId, personName, onEntryAdded, onClose, knownPersons = [], defaultGruppe: propDefaultGruppe = 'aktuelle_loesung' }) {
+  const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState('');
+  const [step, setStep] = useState('upload');
+  const [sessionProducts, setSessionProducts] = useState([]); // temporäre Session
+  const [detectedPersons, setDetectedPersons] = useState([]);
+  const [documentType, setDocumentType] = useState('');
+  const [extractionNotes, setExtractionNotes] = useState('');
+  const [defaultGruppe, setDefaultGruppe] = useState(propDefaultGruppe);
+  const [confirmedCount, setConfirmedCount] = useState(0);
+  const [originalProducts, setOriginalProducts] = useState([]); // Phase C: Korrektur-Tracking
+  const [extractedPersons, setExtractedPersons] = useState(null); // Personen aus Extraktion
+  const fileInputRef = useRef();
+  const qc = useQueryClient();
+
+  // CRM-Kunden laden fuer Matching (nur im Review-Schritt)
+  const { data: allCustomers = [] } = useQuery({
+    queryKey: ['customers_dossier_match'],
+    queryFn: () => base44.entities.Customer.list(null, 500),
+    enabled: step === 'review',
+  });
+
+  // Fuzzy-Matching Hilfsfunktion
+  const similarity = (a, b) => {
+    if (!a || !b) return 0;
+    const s1 = a.toLowerCase().trim(), s2 = b.toLowerCase().trim();
+    if (s1 === s2) return 1;
+    const longer = s1.length > s2.length ? s1 : s2;
+    const shorter = s1.length > s2.length ? s2 : s1;
+    const costs = Array.from({ length: shorter.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= longer.length; i++) {
+      let prev = i;
+      for (let j = 1; j <= shorter.length; j++) {
+        const val = longer[i-1] === shorter[j-1] ? costs[j-1] : Math.min(costs[j-1], prev, costs[j]) + 1;
+        costs[j-1] = prev; prev = val;
+      }
+      costs[shorter.length] = prev;
+    }
+    return (longer.length - costs[shorter.length]) / longer.length;
+  };
+
+  // CRM-Matches berechnen aus extrahierten Personendaten
+  const crmMatches = React.useMemo(() => {
+    if (!extractedPersons || allCustomers.length === 0) return [];
+    const results = [];
+    const tryMatch = (firstName, lastName, birthdate, role) => {
+      if (!firstName || !lastName) return;
+      const matches = allCustomers
+        .map(c => ({
+          customer: c,
+          score: similarity(c.first_name, firstName) * 0.5 + similarity(c.last_name, lastName) * 0.5,
+          birthdateMatch: birthdate && c.birthdate === birthdate,
+        }))
+        .filter(x => x.score > 0.80)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 2);
+      matches.forEach(({ customer, score, birthdateMatch }) => {
+        if (!results.find(r => r.customer.id === customer.id)) {
+          results.push({
+            customer,
+            role,
+            confidence: birthdateMatch ? 95 : Math.round(score * 85),
+            label: `${firstName} ${lastName}${birthdate ? ' · ' + birthdate : ''}`,
+          });
+        }
+      });
+    };
+    tryMatch(extractedPersons.policy_holder_first_name, extractedPersons.policy_holder_last_name, extractedPersons.policy_holder_birthdate, 'Prämeinzahler');
+    if (extractedPersons.insured_is_different) {
+      tryMatch(extractedPersons.insured_first_name, extractedPersons.insured_last_name, extractedPersons.insured_birthdate, 'Versicherte Person');
+    }
+    return results;
+  }, [extractedPersons, allCustomers]);
+
+  const allPersons = [...new Set([...knownPersons, ...detectedPersons, personName].filter(Boolean))];
+
+  // ── Analyse ────────────────────────────────────────────────────────────────
+  const analyzeMutation = useMutation({
+    mutationFn: async (uploadedFile) => {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadedFile });
+      return base44.integrations.Core.InvokeLLM({
+        prompt: EXTRACTION_PROMPT,
+        file_urls: [file_url],
+        response_json_schema: EXTRACTION_SCHEMA,
+        model: 'claude_sonnet_4_6',
+      });
+    },
+    onSuccess: (rawData) => {
+      // InvokeLLM wraps the result in { response: { ... } } — unwrap it
+      const data = rawData?.response ?? rawData ?? {};
+
+      setDocumentType(data.document_type || 'unbekannt');
+      // Personen-Daten speichern fuer CRM-Matching
+      if (data.policy_holder_last_name || data.insured_last_name) {
+        setExtractedPersons({
+          policy_holder_first_name: data.policy_holder_first_name || null,
+          policy_holder_last_name: data.policy_holder_last_name || null,
+          policy_holder_street: data.policy_holder_street || null,
+          policy_holder_zip_code: data.policy_holder_zip_code || null,
+          policy_holder_city: data.policy_holder_city || null,
+          policy_holder_birthdate: data.policy_holder_birthdate || null,
+          insured_first_name: data.insured_first_name || null,
+          insured_last_name: data.insured_last_name || null,
+          insured_birthdate: data.insured_birthdate || null,
+          insured_is_different: data.insured_is_different || false,
+          confidence_persons: data.confidence_persons || null,
+        });
+      }
+      setDetectedPersons(data.detected_persons || []);
+      // Notizen inkl. partial_extraction-Warnung
+      const notes = [
+        data.extraction_notes,
+        data.partial_extraction ? '⚠️ Teilextraktion: Nicht alle Seiten konnten vollständig analysiert werden. Bitte Produkte manuell prüfen.' : null,
+        data.total_monthly_premium ? `Gesamtprämie laut Dokument: CHF ${data.total_monthly_premium.toLocaleString('de-CH', { minimumFractionDigits: 2 })}/Mt.` : null,
+        data.discount_amount ? `Rabatt berücksichtigt: CHF ${data.discount_amount.toLocaleString('de-CH', { minimumFractionDigits: 2 })}/Mt.` : null,
+      ].filter(Boolean).join(' · ');
+      setExtractionNotes(notes);
+
+      // insurer_name als Fallback für gesellschaft
+      const insurerFallback = data.insurer_name || '';
+
+      const products = (data.products || []).map((p, i) => {
+        // Confidence-Objekt normalisieren — Schema gibt entweder p.confidence{} oder flache conf_*-Felder
+        const conf = p.confidence && typeof p.confidence === 'object' ? p.confidence : {
+          gesellschaft:      p.conf_product ?? null,
+          product_name:      p.conf_product ?? null,
+          section:           p.conf_section ?? null,
+          praemie_monatlich: p.conf_praemie ?? null,
+          franchise:         null,
+          modell:            null,
+          deckung_details:   null,
+          person_name:       null,
+        };
+        return {
+          ...p,
+          // Monatsprämie ableiten wenn nur Jahresprämie
+          praemie_monatlich: p.praemie_monatlich ?? (p.praemie_jaehrlich ? Math.round(p.praemie_jaehrlich / 12 * 100) / 100 : null),
+          // Gesellschaft-Fallback auf Dokumentversicherer
+          gesellschaft: p.gesellschaft || insurerFallback || '',
+          // section-Fallback
+          section: p.section || 'grundversicherung',
+          // Standardwerte
+          person_name: p.person_name || personName,
+          // FIX: Gruppe IMMER vom User ausgewählt (defaultGruppe), NIEMALS von is_current überschreiben
+          // is_current ist nur eine Flag, keine Gruppen-Zuordnung
+          gruppe: defaultGruppe,
+          gruppe_label: '',
+          confidence: conf,
+          _session_id: `session_${Date.now()}_${i}`,
+          _verified: false,
+        };
+      });
+
+      setSessionProducts(products);
+      setOriginalProducts(JSON.parse(JSON.stringify(products)));
+      setStep('review');
+    },
+    onError: (err) => {
+      setExtractionNotes(`Fehler bei der Analyse: ${err?.message || 'Unbekannter Fehler'}. Bitte erneut versuchen.`);
+      setStep('upload');
+    },
+  });
+
+  // ── Persistierung — HARTE TRENNUNG DER GRUPPEN ────────────────────────────
+  const saveMutation = useMutation({
+    mutationFn: async (products) => {
+      const results = [];
+      console.log(`[DossierAiUpload SAVE] START: ${products.length} Produkte, Ziel-Gruppe="${defaultGruppe}"`);
+      
+      for (const p of products) {
+        const targetGruppe = defaultGruppe;
+        const personNameFinal = p.person_name || personName;
+        const sectionFinal = p.section || 'grundversicherung';
+        
+        console.log(`[DossierAiUpload SAVE] Verarbeite: ${p.gesellschaft} ${p.product_name || ''} | ${personNameFinal} | ${sectionFinal}`);
+        
+        // FIX: Nach gesellschaft + product_name filtern (verhindert Überschreiben bei mehreren Produkten derselben Gesellschaft)
+        const filterQuery = {
+          dossier_id: dossierId,
+          person_name: personNameFinal,
+          section: sectionFinal,
+          gesellschaft: p.gesellschaft,
+          gruppe: targetGruppe,
+        };
+        // Nur nach product_name filtern wenn vorhanden (präzisere Zuordnung)
+        if (p.product_name && p.product_name.trim()) {
+          filterQuery.product_name = p.product_name;
+        }
+        
+        const existingInSameGroup = await base44.entities.ComparisonEntry.filter(filterQuery).then(r => {
+          console.log(`[DossierAiUpload SAVE] Filter ergab ${r.length} Einträge (gesellschaft=${p.gesellschaft}, product=${p.product_name || 'any'})`);
+          return r[0];
+        });
+        
+        if (existingInSameGroup) {
+          console.log(`[DossierAiUpload SAVE] UPDATE: ${p.gesellschaft} (ID: ${existingInSameGroup.id})`);
+          const entry = await base44.entities.ComparisonEntry.update(existingInSameGroup.id, {
+            product_name:      p.product_name || null,
+            praemie_monatlich: p.praemie_monatlich != null ? Number(p.praemie_monatlich) : null,
+            franchise:         p.franchise != null ? Number(p.franchise) : null,
+            modell:            p.modell || null,
+            deckung_details:   p.deckung_details || null,
+            ai_confidence:     p.confidence
+              ? (Object.values(p.confidence).filter(v => v != null).reduce((a, b) => a + b, 0) /
+                 Object.values(p.confidence).filter(v => v != null).length) || null
+              : null,
+            ai_source_document: file?.name || null,
+            manually_verified:  true,
+          });
+          results.push(entry);
+        } else {
+          console.log(`[DossierAiUpload SAVE] CREATE: ${p.gesellschaft} in Gruppe "${targetGruppe}"`);
+          const entry = await base44.entities.ComparisonEntry.create({
+            dossier_id:        dossierId,
+            person_name:       personNameFinal,
+            section:           sectionFinal,
+            gruppe:            targetGruppe,
+            gruppe_label:      p.gruppe_label || null,
+            gesellschaft:      p.gesellschaft,
+            product_name:      p.product_name || null,
+            praemie_monatlich: p.praemie_monatlich != null ? Number(p.praemie_monatlich) : null,
+            franchise:         p.franchise != null ? Number(p.franchise) : null,
+            modell:            p.modell || null,
+            deckung_details:   p.deckung_details || null,
+            is_current:        p.is_current || false,
+            is_recommended:    false,
+            ai_extracted:      true,
+            ai_confidence:     p.confidence
+              ? (Object.values(p.confidence).filter(v => v != null).reduce((a, b) => a + b, 0) /
+                 Object.values(p.confidence).filter(v => v != null).length) || null
+              : null,
+            ai_source_document: file?.name || null,
+            manually_verified:  true,
+          });
+          results.push(entry);
+        }
+      }
+      console.log(`[DossierAiUpload SAVE] SUCCESS: ${results.length} von ${products.length} Einträgen gespeichert`);
+      return results;
+    },
+    onSuccess: (results) => {
+      setConfirmedCount(results.length);
+      qc.invalidateQueries({ queryKey: ['dossier_comparison', dossierId] });
+      setStep('confirm');
+    },
+  });
+
+  // ── File-Handling ─────────────────────────────────────────────────────────
+  const handleFileChange = (f) => {
+    setFileError('');
+    if (!f) return;
+    if (!ALLOWED_TYPES.includes(f.type)) {
+      setFileError('Nur PDF oder Bild-Dateien erlaubt (PDF, PNG, JPG, WEBP).');
+      return;
+    }
+    if (f.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setFileError(`Datei zu gross. Maximum: ${MAX_FILE_SIZE_MB} MB.`);
+      return;
+    }
+    setFile(f);
+  };
+
+  const handleProductChange = (index, key, val) => {
+    setSessionProducts(ps => ps.map((p, i) => i === index ? { ...p, [key]: val } : p));
+  };
+
+  const handleRemoveProduct = (index) => {
+    setSessionProducts(ps => ps.filter((_, i) => i !== index));
+  };
+
+  const handleSave = () => {
+    const valid = sessionProducts.filter(p => p.gesellschaft && p.gesellschaft.trim());
+    if (valid.length === 0) return;
+
+    // Phase C: Korrekturen erkennen und anonymisiert loggen
+    const allCorrections = valid.flatMap((editedProduct, i) => {
+      const original = originalProducts[i] || {};
+      return detectCorrections(original, editedProduct);
+    });
+    logCorrections(allCorrections, file?.name, valid.length);
+
+    saveMutation.mutate(valid);
+  };
+
+  // Phase C: Qualitätsscore der aktuellen Session
+  const qualityScore = useMemo(() => {
+    if (sessionProducts.length === 0 || originalProducts.length === 0) return null;
+    const corrections = sessionProducts.flatMap((p, i) =>
+      detectCorrections(originalProducts[i] || {}, p)
+    );
+    return sessionQualityScore(sessionProducts, corrections);
+  }, [sessionProducts, originalProducts]);
+
+  // Personen aus Session ableiten
+  const sessionPersons = [...new Set(sessionProducts.map(p => p.person_name || personName).filter(Boolean))];
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  return (
+    <div className="border border-violet-200 bg-violet-50/30 rounded-xl overflow-hidden">
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3 bg-violet-50 border-b border-violet-200">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
+            <Sparkles className="w-3.5 h-3.5 text-violet-700" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">KI-Dokumentenanalyse</h3>
+            <p className="text-[10px] text-violet-600">Phase B — Multi-Produkt-Extraktion</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <StepBar step={step} />
+          <button onClick={onClose} className="p-1.5 hover:bg-violet-100 rounded-lg transition-colors">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-4">
+
+        {/* Sicherheitshinweis */}
+        <div className="flex items-start gap-2 text-xs bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2">
+          <Shield className="w-3.5 h-3.5 shrink-0 mt-0.5 text-slate-500" />
+          <span>
+            KI-Daten werden <strong>niemals automatisch gespeichert</strong>.
+            Jedes Feld kann vor der Übernahme geprüft und korrigiert werden.
+            Nur nach expliziter Bestätigung wird in ComparisonEntry geschrieben.
+          </span>
+        </div>
+
+        {/* ── Step: Upload ──────────────────────────────────────────────── */}
+        {step === 'upload' && (
+          <div className="space-y-4">
+            {/* Gruppe Vorauswahl */}
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                Zu welcher Vergleichsgruppe gehören die extrahierten Daten?
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {GRUPPE_OPTIONS.slice(0, 5).map(o => (
+                  <button key={o.value} type="button" onClick={() => setDefaultGruppe(o.value)}
+                    className={`text-xs font-medium py-2 px-3 rounded-lg border transition-colors
+                      ${defaultGruppe === o.value
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'border-border text-muted-foreground hover:bg-muted'}`}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Drop-Zone */}
+            <div
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => { e.preventDefault(); handleFileChange(e.dataTransfer.files?.[0]); }}
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors
+                ${file ? 'border-violet-400 bg-violet-50' : 'border-border hover:border-violet-300 hover:bg-violet-50/30'}`}
+            >
+              <input ref={fileInputRef} type="file" className="hidden"
+                accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
+                onChange={e => handleFileChange(e.target.files?.[0])} />
+              {file ? (
+                <div className="flex items-center justify-center gap-2">
+                  <FileText className="w-5 h-5 text-violet-600" />
+                  <span className="text-sm font-medium text-foreground">{file.name}</span>
+                  <span className="text-xs text-muted-foreground">({(file.size / 1024 / 1024).toFixed(1)} MB)</span>
+                </div>
+              ) : (
+                <>
+                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">PDF oder Bild hierher ziehen oder klicken</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Max. {MAX_FILE_SIZE_MB} MB · PDF, PNG, JPG, WEBP</p>
+                </>
+              )}
+            </div>
+
+            {fileError && (
+              <p className="text-xs text-destructive flex items-center gap-1.5">
+                <AlertTriangle className="w-3 h-3" /> {fileError}
+              </p>
+            )}
+
+            {/* Hinweis auf ausgewählte Gruppe */}
+            <div className="bg-primary/5 border border-primary/20 rounded-lg px-3 py-2 text-xs">
+              <p className="text-primary font-semibold">
+                Alle extrahierten Produkte werden der Gruppe <strong>"{GRUPPE_OPTIONS.find(o => o.value === defaultGruppe)?.label}"</strong> zugeordnet.
+              </p>
+              <p className="text-muted-foreground mt-0.5">
+                Bestehende Einträge in anderen Gruppen werden NICHT verändert.
+              </p>
+            </div>
+
+            <button onClick={() => { setStep('analyzing'); analyzeMutation.mutate(file); }}
+              disabled={!file || !!fileError}
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50">
+              <Sparkles className="w-4 h-4" />
+              KI-Analyse starten
+            </button>
+          </div>
+        )}
+
+        {/* ── Step: Analyzing ───────────────────────────────────────────── */}
+        {step === 'analyzing' && (
+          <div className="flex flex-col items-center justify-center py-12 gap-4">
+            <div className="relative">
+              <Loader2 className="w-10 h-10 text-violet-500 animate-spin" />
+              <Sparkles className="w-4 h-4 text-violet-600 absolute -top-1 -right-1" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-semibold text-foreground">Dokument wird analysiert…</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                KI extrahiert alle Versicherungsprodukte, Personen und Prämien.
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">Dauert 15–40 Sekunden.</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step: Review ──────────────────────────────────────────────── */}
+        {step === 'review' && (
+          <div className="space-y-4">
+            {/* Dokument-Info */}
+            <div className="flex items-center gap-4 flex-wrap text-xs bg-muted/50 border border-border/60 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="font-medium text-foreground">{file?.name}</span>
+              </div>
+              {documentType && (
+                <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase">
+                  {documentType}
+                </span>
+              )}
+              {detectedPersons.length > 0 && (
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <User className="w-3 h-3" />
+                  {detectedPersons.join(', ')}
+                </div>
+              )}
+              <span className="text-muted-foreground">{sessionProducts.length} Produkt{sessionProducts.length !== 1 ? 'e' : ''} erkannt</span>
+            </div>
+
+            {/* Erkannte Personen + CRM-Matching */}
+            {extractedPersons && (extractedPersons.policy_holder_last_name || extractedPersons.insured_last_name) && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-blue-700 flex items-center gap-1.5">
+                  <User className="w-3 h-3" /> Erkannte Personen
+                </p>
+                <div className="grid gap-1.5 text-xs">
+                  {extractedPersons.policy_holder_last_name && (
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-semibold text-blue-900">{extractedPersons.policy_holder_first_name} {extractedPersons.policy_holder_last_name}</span>
+                        <span className="ml-1.5 text-blue-600">(Prämeinzahler)</span>
+                        {extractedPersons.policy_holder_street && (
+                          <p className="text-blue-600/80">{extractedPersons.policy_holder_street}, {extractedPersons.policy_holder_zip_code} {extractedPersons.policy_holder_city}</p>
+                        )}
+                      </div>
+                      {extractedPersons.confidence_persons?.policy_holder_name != null && (
+                        <ConfidencePill confidence={extractedPersons.confidence_persons.policy_holder_name} />
+                      )}
+                    </div>
+                  )}
+                  {extractedPersons.insured_is_different && extractedPersons.insured_last_name && (
+                    <div className="flex items-start justify-between gap-2 pt-1 border-t border-blue-200">
+                      <div>
+                        <span className="font-semibold text-blue-900">{extractedPersons.insured_first_name} {extractedPersons.insured_last_name}</span>
+                        <span className="ml-1.5 text-blue-600">(Versicherte Person)</span>
+                        {extractedPersons.insured_birthdate && <p className="text-blue-600/80">GD: {extractedPersons.insured_birthdate}</p>}
+                      </div>
+                      {extractedPersons.confidence_persons?.insured_name != null && (
+                        <ConfidencePill confidence={extractedPersons.confidence_persons.insured_name} />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {/* CRM-Matches */}
+                {crmMatches.length > 0 && (
+                  <div className="pt-2 border-t border-blue-200 space-y-1">
+                    <p className="text-[10px] font-semibold text-blue-700 uppercase tracking-wide">CRM-Treffer</p>
+                    {crmMatches.map(({ customer, role, confidence: conf, label }) => (
+                      <div key={customer.id} className="flex items-center justify-between gap-2 bg-white/70 rounded px-2 py-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <User className="w-3 h-3 text-blue-500" />
+                          <span className="font-medium text-slate-800 text-xs">{customer.first_name} {customer.last_name}</span>
+                          <span className="text-[10px] text-blue-600">({role})</span>
+                          {customer.birthdate && <span className="text-[10px] text-slate-500">GD: {customer.birthdate}</span>}
+                        </div>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                          conf >= 90 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        }`}>{conf}%</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {extractionNotes && (
+              <div className="text-xs text-muted-foreground bg-muted/30 rounded-lg px-3 py-2 border border-border/40">
+                <strong>KI-Hinweis:</strong> {extractionNotes}
+              </div>
+            )}
+
+            {/* Konfidenz-Zusammenfassung + Session-Qualität */}
+            <ConfidenceSummary products={sessionProducts} />
+
+            {/* Phase C: Session-Qualitätsscore */}
+            {qualityScore != null && (
+              <div className={`flex items-center gap-3 text-xs px-3 py-2 rounded-lg border
+                ${qualityScore >= 75 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
+                  qualityScore >= 45 ? 'bg-amber-50 border-amber-200 text-amber-800' :
+                  'bg-red-50 border-red-200 text-red-800'}`}>
+                <Zap className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  <strong>Extraktionsqualität: {qualityScore}/100</strong>
+                  {qualityScore >= 75 && ' — Hohe Qualität, wenige Korrekturen erwartet'}
+                  {qualityScore >= 45 && qualityScore < 75 && ' — Mittlere Qualität, gelb/rot markierte Felder prüfen'}
+                  {qualityScore < 45 && ' — Niedrige Qualität, bitte alle Felder sorgfältig prüfen'}
+                </span>
+              </div>
+            )}
+
+            {/* Gesamttotale pro Person */}
+            {sessionPersons.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Gesamttotal pro Person</p>
+                {sessionPersons.map(p => (
+                  <PersonTotal key={p} products={sessionProducts} personName={p} />
+                ))}
+              </div>
+            )}
+
+            {/* Produkt-Karten */}
+            {sessionProducts.length === 0 ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 space-y-3">
+                <div className="flex items-center gap-2 text-amber-800 font-semibold text-sm">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  Keine Produkte automatisch erkannt
+                </div>
+                <p className="text-xs text-amber-700">
+                  Die KI konnte in diesem Dokument keine strukturierten Versicherungsprodukte identifizieren.
+                  Mögliche Ursachen: Sehr komprimiertes PDF, Scan-Qualität, ungewöhnliches Dokumentformat.
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => { setStep('upload'); setFile(null); setSessionProducts([]); setExtractionNotes(''); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-700 text-white text-xs font-medium rounded-lg hover:bg-amber-800 transition-colors"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Erneut analysieren
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="px-3 py-1.5 border border-amber-300 text-amber-800 text-xs font-medium rounded-lg hover:bg-amber-100 transition-colors"
+                  >
+                    Manuell erfassen
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-foreground">
+                  Extrahierte Produkte — <span className="text-muted-foreground font-normal">Alle Felder prüfen und ggf. korrigieren:</span>
+                </p>
+                {sessionProducts.map((p, i) => (
+                  <ProductReviewCard
+                    key={p._session_id || i}
+                    product={p}
+                    index={i}
+                    personName={personName}
+                    knownPersons={allPersons}
+                    onChange={handleProductChange}
+                    onRemove={handleRemoveProduct}
+                    defaultGruppe={defaultGruppe}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Aktionsbuttons */}
+            <div className="flex items-center gap-2 pt-3 border-t border-border/60 flex-wrap">
+              <button
+                onClick={handleSave}
+                disabled={sessionProducts.filter(p => p.gesellschaft?.trim()).length === 0 || saveMutation.isPending}
+                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+              >
+                <Check className="w-3.5 h-3.5" />
+                {saveMutation.isPending
+                  ? 'Wird gespeichert…'
+                  : `${sessionProducts.filter(p => p.gesellschaft?.trim()).length} Einträge speichern`}
+              </button>
+              <button
+                onClick={() => { setStep('upload'); setFile(null); setSessionProducts([]); }}
+                className="flex items-center gap-1.5 px-3 py-2 border border-border text-xs font-medium rounded-lg hover:bg-muted transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Neu analysieren
+              </button>
+              <button onClick={onClose}
+                className="px-3 py-2 border border-border text-xs font-medium rounded-lg hover:bg-muted transition-colors">
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step: Confirm (Erfolg) ────────────────────────────────────── */}
+        {step === 'confirm' && (
+          <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {confirmedCount} Einträge gespeichert
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Alle Daten wurden von Ihnen geprüft und im Dossier-Vergleich gespeichert.
+              </p>
+              {qualityScore != null && (
+                <p className={`text-xs mt-1.5 font-medium
+                  ${qualityScore >= 75 ? 'text-emerald-600' : qualityScore >= 45 ? 'text-amber-600' : 'text-red-600'}`}>
+                  Extraktionsqualität dieser Session: {qualityScore}/100
+                </p>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="px-5 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Fertig
+            </button>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}

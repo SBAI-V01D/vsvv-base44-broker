@@ -1,0 +1,3652 @@
+// ============================================================================
+// VSVV Premium Broker — Prisma Schema (59 Entities)
+// Generated from base44/entities/*.jsonc — Multi-Tenant PostgreSQL
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum OrganizationType {
+  strukturvertrieb
+  broker
+  partner
+  sonstiges
+
+  @@map("organization_type")
+}
+
+enum UserRole {
+  admin
+  management
+  broker
+  backoffice
+  finance
+  support
+  compliance
+
+  @@map("user_role")
+}
+
+enum AdvisorRole {
+  advisor
+  team_lead
+  address_broker
+
+  @@map("advisor_role")
+}
+
+enum SwissCanton {
+AG
+  AI
+  AR
+  BE
+  BL
+  BS
+  FR
+  GE
+  GL
+  GR
+  JU
+  LU
+  NE
+  NW
+  OW
+  SG
+  SH
+  SO
+  SZ
+  TG
+  TI
+  UR
+  VD
+  VS
+  ZG
+  ZH
+
+  @@map("swiss_canton")
+}
+
+enum CivilStatus {
+  single
+  married
+  divorced
+  widowed
+  registered_partnership
+  dissolved_partnership
+
+  @@map("civil_status")
+}
+
+enum CustomerType {
+  private
+  business
+
+  @@map("customer_type")
+}
+
+enum CustomerStatus {
+  active
+  inactive
+  prospect
+
+  @@map("customer_status")
+}
+
+enum MandateStatus {
+  valid
+  invalid
+  pending
+  expired
+
+  @@map("mandate_status")
+}
+
+enum InsuranceType {
+  life
+  health
+  property
+  liability
+  motor
+  other
+
+  @@map("insurance_type")
+}
+
+enum ContractStatus {
+  active
+  pending
+  cancelled
+  expired
+  archived
+
+  @@map("contract_status")
+}
+
+enum ProcessStatus {
+  neu
+  pruefung_offen
+  kunde_kontaktieren
+  verlaengerung_vorbereiten
+  beratung_erfolgt
+  erledigt
+
+  @@map("process_status")
+}
+
+enum ApplicationStatus {
+  new
+  in_progress
+  waiting
+  approved
+  rejected
+  archived
+
+  @@map("application_status")
+}
+
+enum CommissionType {
+  einmalig
+  wiederkehrend
+
+  @@map("commission_type")
+}
+
+enum CommissionStatus {
+  offen
+  bezahlt
+  storniert
+
+  @@map("commission_status")
+}
+
+enum CommissionEntryStatus {
+  pending
+  invoiced
+  received
+  earned
+  paid
+  cancelled
+
+  @@map("commission_entry_status")
+}
+
+enum DocumentCategory {
+  contract
+  application
+  identification
+  correspondence
+  other
+
+  @@map("document_category")
+}
+
+enum DocumentProcessingStage {
+  uploaded
+  parsed
+  entities_detected
+  customer_mapped
+  application_created
+  policy_created
+
+  @@map("document_processing_stage")
+}
+
+enum DocumentDocType {
+  antrag
+  anlage
+  unbekannt
+
+  @@map("document_doc_type")
+}
+
+enum DocumentClassificationStatus {
+  ausstehend
+  klassifiziert
+  pruefung_erforderlich
+  manuell
+
+  @@map("document_classification_status")
+}
+
+enum AccessLevel {
+  public_admin_only
+  assigned_advisors_only
+  assigned_brokers_only
+  team_visible
+  all_internal
+
+  @@map("access_level")
+}
+
+enum TaskStatus {
+  open
+  in_progress
+  completed
+
+  @@map("task_status")
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+  urgent
+
+  @@map("task_priority")
+}
+
+enum TaskType {
+  onboarding
+  renewal
+  follow_up
+  consultation
+  general
+  health_declaration
+
+  @@map("task_type")
+}
+
+enum LeadSource {
+  website
+  referral
+  campaign
+  manual
+  import
+
+  @@map("lead_source")
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  converted
+  lost
+
+  @@map("lead_status")
+}
+
+enum LeadAutopilotStatus {
+  off
+  active
+  paused
+
+  @@map("lead_autopilot_status")
+}
+
+enum LeadOfferStatus {
+  none
+  preparing
+  ready
+  sent
+  accepted
+  rejected
+
+  @@map("lead_offer_status")
+}
+
+enum NotificationType {
+  contract_expiry
+  application_update
+  missing_document
+  task_reminder
+
+  @@map("notification_type")
+}
+
+enum NotificationStatus {
+  sent
+  failed
+
+  @@map("notification_status")
+}
+
+enum MessageDirection {
+  inbound
+  outbound
+
+  @@map("message_direction")
+}
+
+enum MessageChannel {
+  email
+  sms
+  portal
+  phone
+
+  @@map("message_channel")
+}
+
+enum MessageStatus {
+  sent
+  delivered
+  read
+  failed
+
+  @@map("message_status")
+}
+
+enum MessageReferenceType {
+  contract
+  interaction
+  general
+
+  @@map("message_reference_type")
+}
+
+enum StatusDefinitionType {
+  application
+  contract
+
+  @@map("status_definition_type")
+}
+
+enum StatusColor {
+  gray
+  blue
+  yellow
+  orange
+  green
+  red
+  purple
+  teal
+
+  @@map("status_color")
+}
+
+enum StatusCategory {
+  offen
+  positiv
+  negativ
+  abgeschlossen
+
+  @@map("status_category")
+}
+
+enum StatusHistoryEntityType {
+  application
+  contract
+
+  @@map("status_history_entity_type")
+}
+
+enum BAGModell {
+  standard
+  telmed
+  hausarzt
+  hmo
+  other
+
+  @@map("bag_modell")
+}
+
+enum BAGAltersklasse {
+  kind
+  jugend
+  erwachsen
+
+  @@map("bag_altersklasse")
+}
+
+enum BAGGeschlecht {
+  m
+  w
+
+  @@map("bag_geschlecht")
+}
+
+enum KrankenkassenVergleichStatus {
+  entwurf
+  durchgefuehrt
+  gespeichert
+  praesentiert
+
+  @@map("krankenkassen_vergleich_status")
+}
+
+enum ComparisonGroup {
+  aktuelle_loesung
+  optimiert
+  angebot_1
+  angebot_2
+  angebot_3
+  angebot_4
+  angebot_5
+  manuell
+
+  @@map("comparison_group")
+}
+
+enum ComparisonSection {
+  grundversicherung
+  zusatzversicherung
+
+  @@map("comparison_section")
+}
+
+enum VergleichsAnalyseStatus {
+  analyse_laeuft
+  beratung_erfolgt
+  umgesetzt
+  abgelehnt
+  ueberpruefung
+
+  @@map("vergleichs_analyse_status")
+}
+
+enum AccountingEntryType {
+  commission
+  payout
+  storno
+  adjustment
+
+  @@map("accounting_entry_type")
+}
+
+enum AccountingEntryStatus {
+  pending
+  booked
+  paid
+  cancelled
+
+  @@map("accounting_entry_status")
+}
+
+enum AccountingReferenceType {
+  commission_entry
+  commission_split
+  payout
+  storno
+
+  @@map("accounting_reference_type")
+}
+
+enum PayoutStatus {
+  draft
+  approved
+  paid
+  cancelled
+
+  @@map("payout_status")
+}
+
+enum FinancePeriodStatus {
+  open
+  closed
+
+  @@map("finance_period_status")
+}
+
+enum AusschreibungStatus {
+  entwurf
+  vorbereitung
+  versendet
+  offenen_ausstehend
+  teilweise_erhalten
+  vollstaendig_erhalten
+  in_analyse
+  praesentation_erstellt
+  praesentiert
+  entscheidung_ausstehend
+  gewonnen
+  verloren
+  abgeschlossen
+
+  @@map("ausschreibung_status")
+}
+
+enum AusschreibungPrioritaet {
+  niedrig
+  mittel
+  hoch
+  dringend
+
+  @@map("ausschreibung_prioritaet")
+}
+
+enum AusschreibungBereich {
+  privat
+  gewerbe
+  industrie
+  landwirtschaft
+
+  @@map("ausschreibung_bereich")
+}
+
+enum OfferteStatus {
+  ausstehend
+  erhalten
+  analysiert
+  empfohlen
+  abgelehnt
+  angenommen
+
+  @@map("offerte_status")
+}
+
+enum PartnerCategory {
+  versicherung
+  bank
+  finanzierungspartner
+  vorsorgepartner
+  rechtsschutz
+  krankenkasse
+  sonstige
+
+  @@map("partner_category")
+}
+
+enum PartnerStatus {
+  aktiv
+  inaktiv
+
+  @@map("partner_status")
+}
+
+enum PartnerActivityType {
+  document_uploaded
+  document_deleted
+  document_modified
+  partner_created
+  partner_updated
+
+  @@map("partner_activity_type")
+}
+
+enum PartnerDocumentCategory {
+  vertragsdokumente
+  courtagevereinbarungen
+  provisionsabrechnungen
+  zielvereinbarungen
+  deals_spezialvereinbarungen
+  korrespondenz
+  schulungsunterlagen
+  verkaufsfoerderung
+  sonstige
+
+  @@map("partner_document_category")
+}
+
+enum ClaimStatus {
+  eingereicht
+  in_pruefung
+  genehmigt
+  abgelehnt
+  ausbezahlt
+
+  @@map("claim_status")
+}
+
+enum DealStage {
+  erstkontakt
+  bedarfsanalyse
+  angebot_versendet
+  verhandlung
+  abschluss
+  verloren
+
+  @@map("deal_stage")
+}
+
+enum DealInsuranceType {
+  KVG
+  VVG
+  Leben
+  Haftpflicht
+  Hausrat
+  Rechtsschutz
+  Motorfahrzeug
+  Gebaeude
+  Unfall
+  Krankentaggeld
+  BVG
+  Saeule_3a
+  Sonstige
+
+  @@map("deal_insurance_type")
+}
+
+enum DealSource {
+  empfehlung
+  website
+  kaltakquise
+  event
+  marketing
+  sonstiges
+
+  @@map("deal_source")
+}
+
+enum VerkaufschanceStatus {
+  neu
+  in_ausschreibung
+  offerten_erhalten
+  beratung_erfolgt
+  kunde_entscheidet
+  gewonnen
+  verloren
+  wiedervorlage
+
+  @@map("verkaufschance_status")
+}
+
+enum VerkaufschancePriority {
+  low
+  medium
+  high
+
+  @@map("verkaufschance_priority")
+}
+
+enum AdvisoryDossierType {
+  kk_vergleich
+  vorsorge
+  sachversicherung
+  gesamtdossier
+
+  @@map("advisory_dossier_type")
+}
+
+enum AdvisoryDossierStatus {
+  entwurf
+  in_bearbeitung
+  bereit
+  archiviert
+
+  @@map("advisory_dossier_status")
+}
+
+enum ReviewStatus {
+  offen
+  ki_analysiert
+  in_pruefung
+  berater_angepasst
+  freigegeben
+  needs_reapproval
+
+  @@map("review_status")
+}
+
+enum AiRiskLevel {
+  low
+  medium
+  high
+  critical
+
+  @@map("ai_risk_level")
+}
+
+enum MutationRequestType {
+  address_change
+  coverage_change
+  vehicle_change
+  other
+
+  @@map("mutation_request_type")
+}
+
+enum MutationRequestStatus {
+  pending
+  approved
+  rejected
+
+  @@map("mutation_request_status")
+}
+
+enum PricingSuggestionPriority {
+  low
+  medium
+  high
+
+  @@map("pricing_suggestion_priority")
+}
+
+enum PricingSuggestionStatus {
+  pending
+  approved
+  rejected
+  implemented
+
+  @@map("pricing_suggestion_status")
+}
+
+enum EmailCampaignStatus {
+  draft
+  scheduled
+  sent
+  cancelled
+
+  @@map("email_campaign_status")
+}
+
+enum EmailCampaignFilterStatus {
+  all
+  active
+  inactive
+  prospect
+
+  @@map("email_campaign_filter_status")
+}
+
+enum EmailTemplateCategory {
+  cancellation
+  renewal
+  appointment
+  document_request
+  claim
+  general
+
+  @@map("email_template_category")
+}
+
+enum InteractionType {
+  anruf
+  meeting
+  email
+  notiz
+  dokument
+
+  @@map("interaction_type")
+}
+
+enum InteractionRequestStatus {
+  offen
+  in_bearbeitung
+  erledigt
+
+  @@map("interaction_request_status")
+}
+
+enum PatternType {
+  field_signal
+  role_mapping
+  product_indicator
+  layout_rule
+  date_format
+  premium_location
+
+  @@map("pattern_type")
+}
+
+enum EnterpriseImprovementPriority {
+  critical
+  high
+  medium
+  low
+
+  @@map("enterprise_improvement_priority")
+}
+
+enum EnterpriseImprovementArea {
+  performance
+  relationship_integrity
+  ai_quality
+  query_governance
+  design
+  mobile
+  workflow
+
+  @@map("enterprise_improvement_area")
+}
+
+enum EnterpriseImprovementStatus {
+  proposed
+  approved
+  in_progress
+  implemented
+  verified
+  rejected
+
+  @@map("enterprise_improvement_status")
+}
+
+enum EffortLevel {
+  low
+  medium
+  high
+
+  @@map("effort_level")
+}
+
+enum EnterpriseIncidentPriority {
+  low
+  medium
+  high
+  critical
+
+  @@map("enterprise_incident_priority")
+}
+
+enum EnterpriseIncidentSeverity {
+  info
+  warning
+  critical
+  blocking
+
+  @@map("enterprise_incident_severity")
+}
+
+enum EnterpriseIncidentCategory {
+  export_gate
+  approval
+  snapshots
+  tenant_isolation
+  data_integrity
+  audit_trail
+  pdf_integrity
+  security
+  document_integrity
+  recovery
+  performance
+  sla_breach
+  other
+
+  @@map("enterprise_incident_category")
+}
+
+enum EnterpriseIncidentStatus {
+  open
+  investigating
+  root_cause_identified
+  mitigation_active
+  in_progress
+  resolved
+  closed
+  rejected
+  accepted_risk
+  auto_fixed
+
+  @@map("enterprise_incident_status")
+}
+
+enum RootCauseCluster {
+  approval_metadata
+  audit_trail_integrity
+  storno_financial_audit
+  data_relationship_integrity
+  governance_architecture
+  ai_transparency
+  security_boundaries
+  incident_management
+  none
+
+  @@map("root_cause_cluster")
+}
+
+enum SlaStatus {
+  ok
+  warning
+  breached
+
+  @@map("sla_status")
+}
+
+enum GovernanceRuleLayer {
+  WARNING
+  VALIDATION
+  GOVERNANCE_BLOCK
+  SECURITY_BLOCK
+
+  @@map("governance_rule_layer")
+}
+
+enum GovernanceBusinessCriticality {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+
+  @@map("governance_business_criticality")
+}
+
+enum GovernanceEnforcementMode {
+  monitor
+  enforce
+  strict
+
+  @@map("governance_enforcement_mode")
+}
+
+enum GovernanceRuleStatus {
+  draft
+  testing
+  active
+  deprecated
+  archived
+
+  @@map("governance_rule_status")
+}
+
+enum GovernanceRuleScope {
+  GLOBAL
+  ORGANIZATION
+  ENTITY
+  FEATURE
+
+  @@map("governance_rule_scope")
+}
+
+enum GovernanceEventType {
+  create
+  update
+  delete
+  read
+
+  @@map("governance_event_type")
+}
+
+enum GovernanceRiskLevel {
+  low
+  medium
+  high
+  critical
+
+  @@map("governance_risk_level")
+}
+
+enum GovernanceTrend {
+  up
+  down
+  stable
+
+  @@map("governance_trend")
+}
+
+enum DuplicateAlertEntityType {
+  customer
+  application
+  contract
+
+  @@map("duplicate_alert_entity_type")
+}
+
+enum DuplicateMatchCriteria {
+  email
+  phone
+  mobile
+  policy_number
+  name_birthdate
+  ahv_number
+
+  @@map("duplicate_match_criteria")
+}
+
+enum DuplicateAlertStatus {
+  new
+  verified
+  merged
+  dismissed
+  false_positive
+
+  @@map("duplicate_alert_status")
+}
+
+enum BackupType {
+  incremental
+  full
+  long_term
+  archive
+
+  @@map("backup_type")
+}
+
+enum BackupStatus {
+  completed
+  failed
+  partial
+
+  @@map("backup_status")
+}
+
+enum ErrorType {
+  upload_failed
+  automation_failed
+  ocr_error
+  loading_error
+  sync_error
+  dashboard_error
+  validation_error
+  other
+
+  @@map("error_type")
+}
+
+enum ErrorLogStatus {
+  new
+  reviewed
+  resolved
+  ignored
+
+  @@map("error_log_status")
+}
+
+enum ExtractionErrorType {
+  role_error
+  ocr_error
+  product_error
+  date_error
+  premium_error
+  address_error
+  coverage_error
+  unknown
+
+  @@map("extraction_error_type")
+}
+
+// No separate enum needed for PdfExportLog (immutable is a Boolean field)
+
+enum AutomationJobType {
+  ki_extraction
+  document_classification
+  customer_sync
+  commission_calc
+  notification
+  other
+
+  @@map("automation_job_type")
+}
+
+enum AutomationJobStatus {
+  pending
+  processing
+  done
+  failed
+
+  @@map("automation_job_status")
+}
+
+enum AiFindingType {
+  tenant_violation
+  missing_required_field
+  orphan_relationship
+  compliance_gap
+  data_quality
+  sla_risk
+  approval_missing
+  audit_gap
+  financial_inconsistency
+  duplicate_detected
+  pricing_anomaly
+  churn_risk
+  coverage_gap
+  other
+
+  @@map("ai_finding_type")
+}
+
+enum FindingSeverity {
+  info
+  warning
+  critical
+  blocking
+
+  @@map("finding_severity")
+}
+
+enum EvidenceStrength {
+  weak
+  moderate
+  strong
+  conclusive
+
+  @@map("evidence_strength")
+}
+
+enum FalsePositiveRisk {
+  low
+  medium
+  high
+
+  @@map("false_positive_risk")
+}
+
+enum DetectionMethod {
+  rule_based
+  ai_inference
+  statistical
+  hybrid
+
+  @@map("detection_method")
+}
+
+enum HallucinationRisk {
+  none
+  low
+  medium
+  high
+
+  @@map("hallucination_risk")
+}
+
+enum FindingStatus {
+  new
+  under_review
+  confirmed
+  resolved
+  false_positive
+  accepted_risk
+
+  @@map("finding_status")
+}
+
+enum ReviewDecision {
+  pending
+  confirmed
+  rejected_false_positive
+  escalated
+
+  @@map("review_decision")
+}
+
+enum AiReviewLevel {
+  quick
+  operational
+  enterprise
+
+  @@map("ai_review_level")
+}
+
+enum AiReviewStatus {
+  completed
+  in_progress
+
+  @@map("ai_review_status")
+}
+
+enum ContractAdvisorRole {
+  primary
+  co_advisor
+  assistant
+  specialist
+
+  @@map("contract_advisor_role")
+}
+
+enum CustomerAdvisorRole {
+  primary
+  co_advisor
+  assistant
+  specialist
+
+  @@map("customer_advisor_role")
+}
+
+enum SystemLogLevel {
+  info
+  warn
+  error
+  critical
+
+  @@map("system_log_level")
+}
+
+enum AuditEventType {
+  create
+  update
+  delete
+  archive
+  restore
+  block
+  skip
+  allow
+  reject
+
+  @@map("audit_event_type")
+}
+
+enum AuditEntityType {
+  customer
+  application
+  contract
+  commission
+  task
+  document
+  organization
+  advisor
+
+  @@map("audit_entity_type")
+}
+
+enum TriggerType {
+  entity_create
+  entity_update
+  entity_delete
+  scheduled
+  manual
+  api
+  migration
+
+  @@map("trigger_type")
+}
+
+enum ActorType {
+  user
+  automation
+  scheduler
+  system
+  migration
+  api
+
+  @@map("actor_type")
+}
+
+enum GuardResult {
+  allowed
+  blocked
+  skipped
+  error
+
+  @@map("guard_result")
+}
+
+enum BusinessSeverityType {
+  financial
+  compliance
+  customer_impact
+  operational
+  critical
+
+  @@map("business_severity_type")
+}
+
+enum BusinessSeverityLevel {
+  critical
+  high
+  medium
+  low
+  info
+
+  @@map("business_severity_level")
+}
+
+enum TechnicalSeverityType {
+  error
+  warning
+  info
+  debug
+
+  @@map("technical_severity_type")
+}
+
+enum TechnicalSeverityLevel {
+  critical
+  high
+  medium
+  low
+
+  @@map("technical_severity_level")
+}
+
+enum RecoveryStrategy {
+  retry
+  fallback
+  manual_intervention
+
+  @@map("recovery_strategy")
+}
+
+enum AnomalyType {
+  duplicate_spike
+  task_flood
+  renewal_loop
+  status_churn
+
+  @@map("anomaly_type")
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+// --------------------------------------------------------------------------
+// 1. Organization
+// --------------------------------------------------------------------------
+model Organization {
+  id                      String           @id @default(uuid())
+  name                    String
+  type                    OrganizationType @default(broker)
+  status                  String           @default("active")
+  finma_number            String?
+  street                  String?
+  zip_code                String?
+  city                    String?
+  phone                   String?
+  email                   String?
+  website                 String?
+  works_with_address_brokers Boolean        @default(false)
+  notes                   String?
+  created_at              DateTime         @default(now())
+  updated_at              DateTime         @updatedAt
+  archived                Boolean          @default(false)
+  archived_at             DateTime?
+  archived_by             String?
+
+  // Relations
+  users                   User[]
+  advisors                Advisor[]
+  customers               Customer[]
+  contracts               Contract[]
+  applications            Application[]
+  commissions             Commission[]
+  documents               Document[]
+  tasks                   Task[]
+  leads                   Lead[]
+  notifications           Notification[]
+  messages                Message[]
+  status_definitions      StatusDefinition[]
+  status_histories        StatusHistory[]
+  accounting_entries      AccountingEntry[]
+  payouts                 Payout[]
+  finance_periods         FinancePeriod[]
+  bag_praemien_daten      BAGPraemienDaten[]
+  krankenkassen_vergleiche KrankenkassenVergleich[]
+  vergleichs_analysen     VergleichsAnalyse[]
+  ausschreibungen         Ausschreibung[]
+  offerten                Offerte[]
+  versicherer             VersichererDB[]
+  partner                 Partner[]
+  partner_activities      PartnerActivity[]
+  partner_documents       PartnerDocument[]
+  claims                  Claim[]
+  deals                   Deal[]
+  verkaufschancen         Verkaufschance[]
+  advisory_dossiers       AdvisoryDossier[]
+  dossier_snapshots       DossierSnapshot[]
+  mutation_requests       MutationRequest[]
+  pricing_suggestions     PricingSuggestion[]
+  email_campaigns         EmailCampaign[]
+  email_templates         EmailTemplate[]
+  interactions            Interaction[]
+  insurance_knowledge_patterns InsuranceKnowledgePattern[]
+  enterprise_improvements EnterpriseImprovement[]
+  enterprise_incidents    EnterpriseIncident[]
+  governance_rules        GovernanceRule[]
+  governance_score_snapshots GovernanceScoreSnapshot[]
+  duplicate_alerts        DuplicateAlert[]
+  backuplogs              BackupLog[]
+  errorlogs               ErrorLog[]
+  extraction_correction_logs ExtractionCorrectionLog[]
+  pdf_export_logs         PdfExportLog[]
+  automation_queues       AutomationQueue[]
+  ai_findings             AiFinding[]
+  ai_reviews              AiReview[]
+  contract_advisors       ContractAdvisor[]
+  customer_advisors       CustomerAdvisor[]
+  storno_configs          StornoConfig[]
+  system_logs             SystemLog[]
+  audit_logs              AuditLog[]
+  commission_entries      CommissionEntry[]
+  commission_rates_templates CommissionRate[]
+  commission_splits       CommissionSplit[]
+
+  @@map("organization")
+}
+
+// --------------------------------------------------------------------------
+// 2. User
+// --------------------------------------------------------------------------
+model User {
+  id                    String     @id @default(uuid())
+  organization_id       String?
+  role                  String     @default("broker")
+  team_id               String?
+  is_active             Boolean    @default(true)
+  phone                 String?
+  mobile                String?
+  department            String?
+  email                 String     @unique
+  name                  String?
+  password_hash         String?
+  last_login            DateTime?
+  reset_token_hash      String?
+  reset_token_expires_at DateTime?
+  created_at            DateTime   @default(now())
+  updated_at            DateTime   @updatedAt
+  archived              Boolean    @default(false)
+  archived_at           DateTime?
+  archived_by           String?
+
+  // Relations
+  organization           Organization?  @relation(fields: [organization_id], references: [id])
+  customers_as_primary_advisor Customer[] @relation("PrimaryAdvisor")
+  customers_as_advisor   Customer[]      @relation("AdvisorCustomers")
+  contracts_as_primary_broker Contract[]  @relation("PrimaryBroker")
+  tasks_assigned         Task[]          @relation("TaskAssignee")
+  refresh_tokens         RefreshToken[]
+
+  @@index([organization_id])
+  @@map("user")
+}
+
+// --------------------------------------------------------------------------
+// Refresh Token — secure token rotation for JWT refresh flow
+// --------------------------------------------------------------------------
+model RefreshToken {
+  id              String    @id @default(uuid())
+  token_hash      String
+  user_id         String
+  organization_id String?
+  expires_at      DateTime
+  revoked         Boolean   @default(false)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  // Relations
+  user            User      @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([token_hash])
+  @@map("refresh_token")
+}
+
+// --------------------------------------------------------------------------
+// 3. Advisor
+// --------------------------------------------------------------------------
+model Advisor {
+  id                String       @id @default(uuid())
+  firstname         String
+  lastname          String
+  email             String
+  phone             String?
+  organization_id   String
+  organization_name String?
+  role              AdvisorRole  @default(advisor)
+  status            String       @default("active")
+  finma_number      String?
+  vbv_number        String?
+  total_commission  Float        @default(0)
+  paid_commission   Float        @default(0)
+  open_commission   Float        @default(0)
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+  archived          Boolean      @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization @relation(fields: [organization_id], references: [id])
+
+  @@index([organization_id])
+  @@map("advisor")
+}
+
+// --------------------------------------------------------------------------
+// 4. Broker
+// --------------------------------------------------------------------------
+model Broker {
+  id              String   @id @default(uuid())
+  name            String
+  email           String?
+  is_active       Boolean  @default(true)
+  firstname       String?
+  lastname        String?
+  phone           String?
+  organization_id String?
+  organization_name String?
+  finma_number    String?
+  status          String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  archived        Boolean  @default(false)
+  archived_at     DateTime?
+  archived_by     String?
+
+  @@map("broker")
+}
+
+// --------------------------------------------------------------------------
+// 5. Customer
+// --------------------------------------------------------------------------
+model Customer {
+  id                        String          @id @default(uuid())
+  customer_number            String?
+  first_name                String
+  last_name                 String
+  email                     String?
+  phone                     String?
+  mobile                    String?
+  street                    String?
+  zip_code                  String?
+  city                      String?
+  canton                    SwissCanton?
+  birthdate                 DateTime?
+  ahv_number                String?
+  civil_status              CivilStatus?
+  profession                String?
+  nationality               String?
+  drivers_license_date      DateTime?
+  bank_account              String?
+  risk_profile              String?
+  customer_type             CustomerType    @default(private)
+  status                    CustomerStatus  @default(active)
+  mandate_status            MandateStatus   @default(pending)
+  association_membership    String?
+  permit_type               String?
+  is_family_member          Boolean         @default(false)
+  primary_customer_id       String?
+  family_role               String          @default("primary")
+  notes                     String?
+  assigned_broker           String?
+  portal_enabled            Boolean         @default(false)
+  portal_password_hash      String?
+  portal_must_change_password Boolean       @default(true)
+  portal_password_last_changed DateTime?
+  portal_last_login         DateTime?
+  company_name              String?
+  legal_form                String?
+  uid_number                String?
+  industry                  String?
+  contact_person_firstname  String?
+  contact_person_lastname   String?
+  organization_id           String
+  teamlead_id               String?
+  advisor_id                String?
+  total_premium             Float           @default(0)
+  import_batch_id           String?
+  imported_at               DateTime?
+  imported_by               String?
+  primary_advisor_id        String?
+  assigned_advisors         String[]
+  assigned_assistants       String[]
+  access_level              String          @default("assigned_advisors_only")
+  change_history            Json?
+  created_at                DateTime        @default(now())
+  updated_at                DateTime        @updatedAt
+  archived                  Boolean         @default(false)
+  archived_at               DateTime?
+  archived_by               String?
+
+  // Relations
+  organization              Organization      @relation(fields: [organization_id], references: [id])
+  primary_customer          Customer?         @relation("CustomerFamily", fields: [primary_customer_id], references: [id])
+  family_members            Customer[]        @relation("CustomerFamily")
+  primary_advisor           User?             @relation("PrimaryAdvisor", fields: [primary_advisor_id], references: [id])
+  assigned_advisor          User?             @relation("AdvisorCustomers", fields: [advisor_id], references: [id])
+  contracts                 Contract[]
+  applications              Application[]
+  documents                 Document[]
+  tasks                     Task[]
+  leads                     Lead[]
+  claims                    Claim[]
+  deals                     Deal[]
+  verkaufschancen           Verkaufschance[]
+  advisory_dossiers         AdvisoryDossier[]
+  dossier_snapshots         DossierSnapshot[]
+  mutation_requests         MutationRequest[]
+  pricing_suggestions       PricingSuggestion[]
+  interactions              Interaction[]
+  messages                  Message[]
+  krankenkassen_vergleiche  KrankenkassenVergleich[]
+  vergleichs_analysen       VergleichsAnalyse[]
+  customer_advisors         CustomerAdvisor[]
+  accounting_entries        AccountingEntry[]
+  ausschreibungen           Ausschreibung[]
+
+  @@index([organization_id, status])
+  @@index([organization_id, advisor_id])
+  @@index([organization_id, archived])
+  @@index([organization_id, primary_advisor_id])
+  @@map("customer")
+}
+
+// --------------------------------------------------------------------------
+// 6. Contract
+// --------------------------------------------------------------------------
+model Contract {
+  id                              String          @id @default(uuid())
+  customer_id                    String
+  customer_name                   String?
+  primary_customer_id             String?
+  is_family_member                Boolean         @default(false)
+  organization_id                 String
+  advisor_id                      String?
+  insurer                         String
+  policy_number                   String?
+  version_number                  Float           @default(1)
+  parent_policy_id                String?
+  insurance_type                  InsuranceType
+  product                         String?
+  premium_monthly                 Float?
+  premium_yearly                  Float?
+  premium_current                 Float?
+  premium_previous                Float?
+  premium_benchmark               Float?
+  start_date                      DateTime?
+  end_date                        DateTime?
+  acceptance_date                 DateTime?
+  renewal_date                    DateTime?
+  auto_renew                      Boolean         @default(true)
+  cancellation_deadline           DateTime?
+  cancel_date                     DateTime?
+  cancel_reason                   String?
+  storno_period_months            Float           @default(12)
+  status                          ContractStatus  @default(active)
+  process_status                  ProcessStatus   @default(neu)
+  custom_status                   String?
+  sparte                          String?
+  sparte_data                     Json?
+  commission_rate                 Float?
+  commission_amount               Float?
+  assigned_broker                 String?
+  policy_document_url             String?
+  source_application_id           String?
+  renewal_alert_start_date        DateTime?
+  renewal_status                  String          @default("none")
+  renewal_last_reminder           DateTime?
+  renewal_priority                String          @default("low")
+  renewal_stage                   String          @default("early")
+  renewal_stage_updated           DateTime?
+  renewal_offer_created           Boolean         @default(false)
+  renewal_offer_status            String          @default("none")
+  renewal_offer_date              DateTime?
+  renewal_offer_policy_id         String?
+  renewal_customer_accepted       Boolean         @default(false)
+  renewal_accepted_date           DateTime?
+  renewal_last_activity           DateTime?
+  upsell_stage                    String          @default("identified")
+  upsell_stage_updated            DateTime?
+  upsell_identified_reason        String?
+  upsell_potential_value          Float?
+  upsell_potential_percent        Float?
+  upsell_offer_created            Boolean         @default(false)
+  upsell_offer_status             String          @default("none")
+  upsell_offer_date               DateTime?
+  upsell_offer_value              Float?
+  upsell_accepted_date            DateTime?
+  upsell_last_activity            DateTime?
+  pricing_status                  String          @default("normal")
+  pricing_suggestion_id           String?
+  last_review_date                DateTime?
+  next_review_date                DateTime?
+  notes                           String?
+  primary_broker_id               String?
+  assigned_brokers                String[]
+  assigned_team                   String[]
+  access_level                    String          @default("assigned_brokers_only")
+  requires_review                 Boolean         @default(false)
+  date_quality_status             String          @default("verified")
+  change_history                  Json?
+  non_renewal_reason              String?
+  ai_non_renewal_suggestion       String?
+  exclude_from_renewal_statistics Boolean         @default(false)
+  renewal_statistics_note         String?
+  cancellation_status             String          @default("none")
+  cancellation_type               String?
+  cancellation_structured_reason  String?
+  cancellation_submitted_at       DateTime?
+  cancellation_effective_date     DateTime?
+  cancellation_notice_period_days Float?
+  cancellation_deadline_ok        Boolean?
+  cancellation_confirmed_by_insurer Boolean        @default(false)
+  cancellation_confirmation_date  DateTime?
+  cancellation_doc_url            String?
+  cancellation_notes              String?
+  retention_attempted             Boolean         @default(false)
+  retention_counter_offer_created Boolean         @default(false)
+  retention_result                String          @default("none")
+  retention_notes                 String?
+  successor_contract_id           String?
+  created_at                      DateTime        @default(now())
+  updated_at                      DateTime        @updatedAt
+  archived                        Boolean         @default(false)
+  archived_at                     DateTime?
+  archived_by                     String?
+
+  // Relations
+  customer                        Customer        @relation(fields: [customer_id], references: [id])
+  organization                    Organization    @relation(fields: [organization_id], references: [id])
+  primary_broker                  User?           @relation("PrimaryBroker", fields: [primary_broker_id], references: [id])
+  commissions                     Commission[]
+  documents                       Document[]
+  tasks                           Task[]
+  claims                          Claim[]
+  mutation_requests               MutationRequest[]
+  pricing_suggestions             PricingSuggestion[]
+  contract_advisors               ContractAdvisor[]
+  accounting_entries              AccountingEntry[]
+  applications_as_contract        Application[]   @relation("LinkedContract")
+
+  @@index([organization_id, status])
+  @@index([organization_id, customer_id])
+  @@index([organization_id, advisor_id])
+  @@index([organization_id, renewal_status])
+  @@map("contract")
+}
+
+// --------------------------------------------------------------------------
+// 7. Application
+// --------------------------------------------------------------------------
+model Application {
+  id                       String           @id @default(uuid())
+  customer_id                    String
+  customer_name            String?
+  primary_customer_id      String?
+  is_family_member         Boolean          @default(false)
+  organization_id          String
+  advisor_id               String?
+  kundentyp                String           @default("privat")
+  sparte                   String?
+  sparte_data              Json?
+  insurance_type           String?
+  product                  String?
+  insurer                  String
+  status                   ApplicationStatus @default(new)
+  custom_status            String?
+  status_changed_at        DateTime?
+  status_history           Json?
+  estimated_premium_monthly Float?
+  estimated_premium_yearly  Float?
+  requested_start_date     DateTime?
+  policy_number            String?
+  contract_start_date      DateTime?
+  contract_end_date        DateTime?
+  commission_estimate      Float?
+  assigned_broker          String?
+  linked_contract_id       String?
+  abloese_contract_id      String?
+  notes                    String?
+  created_at               DateTime         @default(now())
+  updated_at               DateTime         @updatedAt
+  archived                 Boolean          @default(false)
+  archived_at              DateTime?
+  archived_by              String?
+
+  // Relations
+  customer                 Customer         @relation(fields: [customer_id], references: [id])
+  organization             Organization     @relation(fields: [organization_id], references: [id])
+  linked_contract          Contract?        @relation("LinkedContract", fields: [linked_contract_id], references: [id])
+  documents                Document[]
+
+  @@index([organization_id, status])
+  @@index([organization_id, advisor_id])
+  @@map("application")
+}
+
+// --------------------------------------------------------------------------
+// 8. Commission
+// --------------------------------------------------------------------------
+model Commission {
+  id                String           @id @default(uuid())
+  contract_id                    String
+  customer_id       String?
+  customer_name     String?
+  broker_email      String?
+  broker_name       String?
+  type              CommissionType
+  amount            Float
+  insurance_type    String?
+  provider          String?
+  date              DateTime?
+  status            CommissionStatus @default(offen)
+  organization_id   String?
+  advisor_id        String?
+  insurer           String?
+  policy_number     String?
+  rate              Float?
+  period_start      DateTime?
+  period_end        DateTime?
+  calculated_at     DateTime?
+  paid_at           DateTime?
+  paid_by           String?
+  storno_risk_months Int?
+  storno_status     String?
+  storno_date       DateTime?
+  notes             String?
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+  archived          Boolean          @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  contract          Contract         @relation(fields: [contract_id], references: [id])
+  organization      Organization?    @relation(fields: [organization_id], references: [id])
+
+  @@index([organization_id, contract_id])
+  @@index([organization_id, advisor_id])
+  @@map("commission")
+}
+
+// --------------------------------------------------------------------------
+// 9. CommissionEntry
+// --------------------------------------------------------------------------
+model CommissionEntry {
+  id                            String               @id @default(uuid())
+  policy_id                      String?
+  policy_number                 String?
+  advisor_id                    String
+  advisor_name                  String?
+  organization_id               String
+  organization_name             String?
+  customer_id                   String?
+  customer_name                 String?
+  insurer                       String
+  product_category              String?
+  premium_yearly                Float
+  start_date                    DateTime?
+  company_courtage_amount       Float?
+  advisor_courtage_percentage   Float?
+  advisor_courtage_amount       Float?
+  courtage_storno_percentage    Float                @default(10)
+  courtage_storno_amount        Float?
+  courtage_payout_amount        Float?
+  courtage_received_date        DateTime?
+  courtage_status               CommissionEntryStatus @default(pending)
+  courtage_invoiced_date        DateTime?
+  courtage_earned_date          DateTime?
+  courtage_paid_date            DateTime?
+  company_provision_amount      Float?
+  advisor_provision_percentage  Float?
+  advisor_provision_amount      Float?
+  provision_storno_percentage   Float                @default(10)
+  provision_storno_amount       Float?
+  provision_payout_amount       Float?
+  provision_received_date       DateTime?
+  provision_status              CommissionEntryStatus @default(pending)
+  provision_invoiced_date       DateTime?
+  provision_earned_date         DateTime?
+  provision_paid_date           DateTime?
+  abschlussprovision_courtage   Float?
+  abschlussprovision_provision  Float?
+  bruttoentschaedigung_courtage Float?
+  bruttoentschaedigung_provision Float?
+  storno_datum                  DateTime?
+  storno_reference_id           String?
+  storno_ursprung_courtage_brutto Float?
+  storno_ursprung_provision_brutto Float?
+  storno_ursprung_courtage_netto  Float?
+  storno_ursprung_provision_netto Float?
+  storno_war_ausbezahlt         Boolean              @default(false)
+  storno_rueckforderungsbetrag  Float?
+  storno_grund                  String?
+  status                        CommissionEntryStatus @default(pending)
+  entry_date                    DateTime?
+  commission_percentage         Float?
+  commission_amount             Float?
+  received_amount               Float?
+  received_date                 DateTime?
+  invoiced_date                 DateTime?
+  earned_date                   DateTime?
+  paid_date                     DateTime?
+  payout_id                     String?
+  storno_period_months          Float?
+  storno_eligible_until         DateTime?
+  is_storno                     Boolean              @default(false)
+  is_paid                       Boolean              @default(false)
+  notes                         String?
+  created_at                    DateTime             @default(now())
+  updated_at                    DateTime             @updatedAt
+  archived                      Boolean              @default(false)
+  archived_at                   DateTime?
+  archived_by                   String?
+
+  // Relations
+  organization                  Organization?        @relation(fields: [organization_id], references: [id])
+  commission_splits             CommissionSplit[]
+
+  @@index([organization_id, advisor_id])
+  @@index([organization_id, policy_id])
+  @@map("commission_entry")
+}
+
+// --------------------------------------------------------------------------
+// 10. CommissionRate
+// --------------------------------------------------------------------------
+model CommissionRate {
+  id              String   @id @default(uuid())
+  broker_email    String
+  broker_name     String?
+  sparte          String
+  rate_percent    Float
+  is_active       Boolean  @default(true)
+  organization_id String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  archived        Boolean  @default(false)
+  archived_at     DateTime?
+  archived_by     String?
+
+  // Relations
+  organization    Organization? @relation(fields: [organization_id], references: [id])
+
+  @@map("commission_rate")
+}
+
+// --------------------------------------------------------------------------
+// 11. CommissionSplit
+// --------------------------------------------------------------------------
+model CommissionSplit {
+  id                     String   @id @default(uuid())
+  commission_entry_id            String
+  advisor_id             String
+  advisor_name           String?
+  teamlead_id            String?
+  teamlead_name          String?
+  organization_id        String
+  advisor_share_percent  Float    @default(70)
+  advisor_share_amount   Float
+  teamlead_share_percent Float    @default(30)
+  teamlead_share_amount  Float?
+  total_amount           Float
+  status                 String   @default("pending")
+  created_date           DateTime?
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+  archived               Boolean  @default(false)
+  archived_at            DateTime?
+  archived_by            String?
+
+  // Relations
+  organization           Organization? @relation(fields: [organization_id], references: [id])
+  commission_entry       CommissionEntry @relation(fields: [commission_entry_id], references: [id])
+
+  @@map("commission_split")
+}
+
+// --------------------------------------------------------------------------
+// 12. Document
+// --------------------------------------------------------------------------
+model Document {
+  id                        String                       @id @default(uuid())
+  customer_id               String?
+  customer_name             String?
+  primary_customer_id       String?
+  is_family_member          Boolean                      @default(false)
+  customer_locked           Boolean                      @default(false)
+  processing_stage          DocumentProcessingStage       @default(uploaded)
+  policy_holder_name        String?
+  driver_name               String?
+  insured_person_name       String?
+  name                      String
+  file_url                  String
+  file_key                  String?
+  file_size                 Int?
+  mime_type                 String?
+  file_hash                 String?
+  version                   Float                        @default(1)
+  immutable                 Boolean                      @default(false)
+  category                  DocumentCategory?
+  doc_type                  DocumentDocType               @default(unbekannt)
+  classification_status     DocumentClassificationStatus  @default(ausstehend)
+  classification_confidence Float?
+  classification_reason     String?
+  linked_contract_id        String?
+  linked_application_id     String?
+  uploaded_by               String?
+  uploaded_at               DateTime?
+  notes                     String?
+  access_advisors           String[]
+  access_teams              String[]
+  access_level              String                       @default("assigned_advisors_only")
+  organization_id           String?
+  created_at                DateTime                     @default(now())
+  updated_at                DateTime                     @updatedAt
+  archived                  Boolean                      @default(false)
+  archived_at               DateTime?
+  archived_by               String?
+
+  // Relations
+  customer                  Customer?                    @relation(fields: [customer_id], references: [id])
+  contract                  Contract?                    @relation(fields: [linked_contract_id], references: [id])
+  application               Application?                 @relation(fields: [linked_application_id], references: [id])
+  organization              Organization?                @relation(fields: [organization_id], references: [id])
+
+  @@index([organization_id, customer_id])
+  @@index([organization_id, category])
+  @@map("document")
+}
+
+// --------------------------------------------------------------------------
+// 13. Task
+// --------------------------------------------------------------------------
+model Task {
+  id                String       @id @default(uuid())
+  title             String
+  description       String?
+  customer_id       String?
+  customer_name     String?
+  contract_id       String?
+  application_id    String?
+  application_name  String?
+  assigned_to       String?
+  priority          TaskPriority @default(medium)
+  status            TaskStatus   @default(open)
+  due_date          DateTime?
+  completion_date   DateTime?
+  task_type         TaskType     @default(general)
+  notes             String?
+  organization_id   String?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+  archived          Boolean      @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  customer          Customer?    @relation(fields: [customer_id], references: [id])
+  contract          Contract?    @relation(fields: [contract_id], references: [id])
+  assignee          User?        @relation("TaskAssignee", fields: [assigned_to], references: [email])
+  organization      Organization? @relation(fields: [organization_id], references: [id])
+
+  @@index([organization_id, assigned_to, status])
+  @@index([organization_id, due_date])
+  @@map("task")
+}
+
+// --------------------------------------------------------------------------
+// 14. Lead
+// --------------------------------------------------------------------------
+model Lead {
+  id                     String              @id @default(uuid())
+  first_name             String
+  last_name              String
+  name                   String?
+  email                  String?
+  phone                  String?
+  birthdate              DateTime?
+  company                String?
+  source                 LeadSource
+  advisor_id             String?
+  advisor_name           String?
+  organization_id        String?
+  status                 LeadStatus          @default(new)
+  customer_id            String?
+  notes                  String?
+  last_contact_date      DateTime?
+  converted_at           DateTime?
+  lost_reason            String?
+  lead_score             Float               @default(0)
+  autopilot_status       LeadAutopilotStatus @default(off)
+  offer_status           LeadOfferStatus     @default(none)
+  offer_prepared_date    DateTime?
+  offer_sent_date        DateTime?
+  last_followup_sent     DateTime?
+  conversion_probability Float?
+  documents              Json?
+  created_at             DateTime            @default(now())
+  updated_at             DateTime            @updatedAt
+  archived               Boolean             @default(false)
+  archived_at            DateTime?
+  archived_by            String?
+
+  // Relations
+  customer               Customer?           @relation(fields: [customer_id], references: [id])
+  organization           Organization?       @relation(fields: [organization_id], references: [id])
+
+  @@index([organization_id, status])
+  @@index([organization_id, advisor_id])
+  @@map("lead")
+}
+
+// --------------------------------------------------------------------------
+// 15. AuditLog
+// --------------------------------------------------------------------------
+model AuditLog {
+  id                        String              @id @default(uuid())
+  audit_schema_version      String              @default("1.0")
+  audit_id                  String
+  audit_level               Int                 @default(2)
+  audit_level_name          String              @default("lifecycle_transition")
+  timestamp                 DateTime
+  trigger_type              TriggerType
+  trigger_source            String?
+  actor_type                ActorType
+  actor_id                  String?
+  actor_name                String?
+  organization_id           String?
+  process_id                String?
+  process_type              String?
+  process_stage             String?
+  event_id                  String?
+  event_type                String?
+  event_sequence            Float               @default(1)
+  entity_type               AuditEntityType
+  entity_id                 String
+  action                    AuditEventType
+  decision_code             String?
+  decision_logic            String?
+  guard_evaluated           String?
+  guard_result              GuardResult?
+  guard_reason              String?
+  business_severity_type    BusinessSeverityType?
+  business_severity_level   BusinessSeverityLevel?
+  technical_severity_type   TechnicalSeverityType?
+  technical_severity_level  TechnicalSeverityLevel?
+  previous_state_summary    Json?
+  new_state_summary         Json?
+  side_effects              Json?
+  business_impact_financial_chf Float?
+  business_impact_description String?
+  retry_attempt             Float               @default(0)
+  retry_of_event_id         String?
+  recovered                 Boolean             @default(false)
+  recovery_strategy         RecoveryStrategy?
+  original_error            String?
+  anomaly_detected          Boolean             @default(false)
+  anomaly_type              AnomalyType?
+  anomaly_score             Float?
+  correlation_id            String?
+  related_entities          Json?
+  ip_address                String?
+  duration_ms               Float?
+  error_message             String?
+  metadata                  Json?
+  created_at                DateTime            @default(now())
+  updated_at                DateTime            @updatedAt
+  archived                  Boolean             @default(false)
+  archived_at               DateTime?
+  archived_by               String?
+
+  // Relations
+  organization              Organization?       @relation(fields: [organization_id], references: [id])
+
+  @@index([organization_id, timestamp])
+  @@index([organization_id, entity_type, entity_id])
+  @@map("audit_log")
+}
+
+// --------------------------------------------------------------------------
+// 16. SystemLog
+// --------------------------------------------------------------------------
+model SystemLog {
+  id                  String         @id @default(uuid())
+  level               SystemLogLevel @default(info)
+  source              String
+  message             String
+  details             String?
+  related_entity_type String?
+  related_entity_id   String?
+  user_email          String?
+  resolved            Boolean        @default(false)
+  organization_id     String?
+  created_at          DateTime       @default(now())
+  updated_at          DateTime       @updatedAt
+  archived            Boolean        @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  organization        Organization?  @relation(fields: [organization_id], references: [id])
+
+  @@map("system_log")
+}
+
+// --------------------------------------------------------------------------
+// 17. Notification
+// --------------------------------------------------------------------------
+model Notification {
+  id                String           @id @default(uuid())
+  type              NotificationType
+  recipient_email   String
+  recipient_name    String?
+  subject           String
+  body              String?
+  reference_id      String?
+  reference_type    String?
+  status            NotificationStatus @default(sent)
+  organization_id   String?
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+  archived          Boolean          @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization?    @relation(fields: [organization_id], references: [id])
+
+  @@map("notification")
+}
+
+// --------------------------------------------------------------------------
+// 18. Message
+// --------------------------------------------------------------------------
+model Message {
+  id                String                @id @default(uuid())
+  customer_id       String?
+  sender_email      String?
+  sender_name       String?
+  content           String
+  is_from_customer  Boolean               @default(false)
+  read              Boolean               @default(false)
+  reference_id      String?
+  reference_type    MessageReferenceType  @default(general)
+  reference_title   String?
+  organization_id   String?
+  created_at        DateTime              @default(now())
+  updated_at        DateTime              @updatedAt
+  archived          Boolean               @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  customer          Customer?             @relation(fields: [customer_id], references: [id])
+  organization      Organization?         @relation(fields: [organization_id], references: [id])
+
+  @@map("message")
+}
+
+// --------------------------------------------------------------------------
+// 19. StatusDefinition
+// --------------------------------------------------------------------------
+model StatusDefinition {
+  id              String              @id @default(uuid())
+  type            StatusDefinitionType
+  key             String
+  label           String
+  color           StatusColor         @default(gray)
+  category        StatusCategory      @default(offen)
+  is_active       Boolean             @default(true)
+  sort_order      Float               @default(0)
+  metadata_fields String?
+  organization_id String?
+  created_at      DateTime            @default(now())
+  updated_at      DateTime            @updatedAt
+  archived        Boolean             @default(false)
+  archived_at     DateTime?
+  archived_by     String?
+
+  // Relations
+  organization    Organization?       @relation(fields: [organization_id], references: [id])
+
+  @@map("status_definition")
+}
+
+// --------------------------------------------------------------------------
+// 20. StatusHistory
+// --------------------------------------------------------------------------
+model StatusHistory {
+  id                String                 @id @default(uuid())
+  entity_type       StatusHistoryEntityType
+  entity_id         String
+  customer_id       String?
+  from_status       String?
+  to_status         String
+  to_status_label   String?
+  changed_by_email  String?
+  note              String?
+  metadata          String?
+  organization_id   String?
+  created_at        DateTime               @default(now())
+  updated_at        DateTime               @updatedAt
+  archived          Boolean                @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization?          @relation(fields: [organization_id], references: [id])
+
+  @@map("status_history")
+}
+
+// --------------------------------------------------------------------------
+// 21. BAGPraemienDaten
+// --------------------------------------------------------------------------
+model BAGPraemienDaten {
+  id                String       @id @default(uuid())
+  jahr              Int
+  krankenkasse      String
+  kanton            String
+  region            String?
+  modell            BAGModell
+  modell_label      String
+  franchise         Int
+  unfall            Boolean      @default(false)
+  altersklasse      BAGAltersklasse?
+  praemie_erwachsene Float
+  praemie_kinder    Float?
+  geschlecht        BAGGeschlecht?
+  alter_von         Int?
+  alter_bis         Int?
+  datenquelle       String       @default("BAG")
+  importiert_am     DateTime?
+  importiert_von    String?
+  gueltig_ab        DateTime?
+  gueltig_bis       DateTime?
+  aktiv             Boolean      @default(true)
+  organization_id   String?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+  archived          Boolean      @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization? @relation(fields: [organization_id], references: [id])
+
+  @@map("bag_praemien_daten")
+}
+
+// --------------------------------------------------------------------------
+// 22. KrankenkassenVergleich
+// --------------------------------------------------------------------------
+model KrankenkassenVergleich {
+  id                  String                      @id @default(uuid())
+  customer_id                    String
+  customer_name       String?
+  advisor_id          String?
+  advisor_name        String?
+  organization_id     String
+  vergleichsdatum     DateTime
+  persoenliche_daten  Json?
+  aktuelle_versicherung Json?
+  vergleichsoptionen  Json?
+  vergleichsergebnisse Json?
+  ki_analyse          Json?
+  status              KrankenkassenVergleichStatus @default(durchgefuehrt)
+  pdf_url             String?
+  wiedervorlage_datum DateTime?
+  notizen             String?
+  created_at          DateTime                    @default(now())
+  updated_at          DateTime                    @updatedAt
+  archived            Boolean                     @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  customer            Customer                    @relation(fields: [customer_id], references: [id])
+  organization        Organization                @relation(fields: [organization_id], references: [id])
+
+  @@map("krankenkassen_vergleich")
+}
+
+// --------------------------------------------------------------------------
+// 23. ComparisonEntry
+// --------------------------------------------------------------------------
+model ComparisonEntry {
+  id                  String           @id @default(uuid())
+  dossier_id                     String
+  person_name         String
+  family_member_id    String?
+  gruppe              ComparisonGroup  @default(manuell)
+  gruppe_label        String?
+  section             ComparisonSection @default(grundversicherung)
+  gesellschaft        String
+  product_name        String?
+  praemie_monatlich   Float?
+  franchise           Float?
+  modell              String?
+  leistungs_score     Float?
+  deckung_details     String?
+  is_current          Boolean          @default(false)
+  is_recommended      Boolean          @default(false)
+  ai_extracted        Boolean          @default(false)
+  ai_confidence       Float?
+  ai_source_document  String?
+  manually_verified   Boolean          @default(false)
+  sort_order          Float            @default(0)
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
+  archived            Boolean          @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  @@map("comparison_entry")
+}
+
+// --------------------------------------------------------------------------
+// 24. VergleichsAnalyse
+// --------------------------------------------------------------------------
+model VergleichsAnalyse {
+  id                  String                   @id @default(uuid())
+  customer_id                    String
+  customer_name       String?
+  advisor_id          String?
+  advisor_name        String?
+  organization_id     String
+  analyse_datum       DateTime
+  persoenliche_daten  Json?
+  ausgangslage        Json?
+  empfehlung          Json?
+  beratungsergebnis   Json?
+  status              VergleichsAnalyseStatus  @default(analyse_laeuft)
+  pdf_url             String?
+  notizen             String?
+  created_at          DateTime                 @default(now())
+  updated_at          DateTime                 @updatedAt
+  archived            Boolean                  @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  customer            Customer                 @relation(fields: [customer_id], references: [id])
+  organization        Organization             @relation(fields: [organization_id], references: [id])
+
+  @@map("vergleichs_analyse")
+}
+
+// --------------------------------------------------------------------------
+// 25. AccountingEntry
+// --------------------------------------------------------------------------
+model AccountingEntry {
+  id                String                 @id @default(uuid())
+  entry_date        DateTime
+  entry_type        AccountingEntryType
+  amount            Float
+  advisor_id        String
+  advisor_name      String?
+  organization_id   String
+  organization_name String?
+  policy_id                      String?
+  policy_number     String?
+  insurer           String?
+  customer_id       String?
+  customer_name     String?
+  status            AccountingEntryStatus  @default(pending)
+  reference_type    AccountingReferenceType?
+  reference_id      String?
+  notes             String?
+  created_at        DateTime               @default(now())
+  updated_at        DateTime               @updatedAt
+  archived          Boolean                @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization           @relation(fields: [organization_id], references: [id])
+  customer          Customer?              @relation(fields: [customer_id], references: [id])
+  contract          Contract?              @relation(fields: [policy_id], references: [id])
+
+  @@map("accounting_entry")
+}
+
+// --------------------------------------------------------------------------
+// 26. Payout
+// --------------------------------------------------------------------------
+model Payout {
+  id                String       @id @default(uuid())
+  advisor_id        String
+  advisor_name      String?
+  organization_id   String
+  organization_name String?
+  payout_month      DateTime
+  total_amount      Float
+  commission_count  Float?
+  status            PayoutStatus @default(draft)
+  approved_date     DateTime?
+  approved_by       String?
+  paid_date         DateTime?
+  bank_reference    String?
+  notes             String?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+  archived          Boolean      @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization @relation(fields: [organization_id], references: [id])
+
+  @@map("payout")
+}
+
+// --------------------------------------------------------------------------
+// 27. FinancePeriod
+// --------------------------------------------------------------------------
+model FinancePeriod {
+  id                String             @id @default(uuid())
+  month             DateTime
+  status            FinancePeriodStatus @default(open)
+  closed_date       DateTime?
+  closed_by         String?
+  total_commissions Float?
+  total_payouts     Float?
+  notes             String?
+  organization_id   String?
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+  archived          Boolean            @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization?      @relation(fields: [organization_id], references: [id])
+
+  @@map("finance_period")
+}
+
+// --------------------------------------------------------------------------
+// 28. StornoConfig
+// --------------------------------------------------------------------------
+model StornoConfig {
+  id                    String   @id @default(uuid())
+  name                  String
+  global_storno_percent Float    @default(10)
+  is_current            Boolean  @default(true)
+  organization_id       String?
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  archived              Boolean  @default(false)
+  archived_at           DateTime?
+  archived_by           String?
+
+  // Relations
+  organization          Organization? @relation(fields: [organization_id], references: [id])
+
+  @@map("storno_config")
+}
+
+// --------------------------------------------------------------------------
+// 29. Ausschreibung
+// --------------------------------------------------------------------------
+model Ausschreibung {
+  id                        String                @id @default(uuid())
+  ausschreibung_nummer      String?
+  titel                     String
+  customer_id                    String
+  customer_name             String?
+  ansprechpartner           String?
+  broker_id                 String?
+  broker_name               String?
+  organization_id           String
+  versicherungsbereich      AusschreibungBereich?
+  sparten                   String[]
+  status                    AusschreibungStatus    @default(entwurf)
+  prioritaet                AusschreibungPrioritaet @default(mittel)
+  ausschreibungsdatum       DateTime?
+  versanddatum              DateTime?
+  fristdatum                DateTime?
+  praesentationsdatum       DateTime?
+  abschlussdatum            DateTime?
+  risiko_daten              Json?
+  ausgewaehlte_versicherer  Json?
+  bemerkungen               String?
+  ki_analyse                Json?
+  ki_empfehlung_text        String?
+  ki_empfohlener_versicherer String?
+  gewinner_versicherer      String?
+  gewinner_offerte_id       String?
+  verlust_grund             String?
+  dokument_urls             String[]
+  tags                      String[]
+  offerten_count            Float                  @default(0)
+  laufende_praemie          Float?
+  created_at                DateTime               @default(now())
+  updated_at                DateTime               @updatedAt
+  archived                  Boolean                @default(false)
+  archived_at               DateTime?
+  archived_by               String?
+
+  // Relations
+  customer                  Customer               @relation(fields: [customer_id], references: [id])
+  organization              Organization           @relation(fields: [organization_id], references: [id])
+  offerten                  Offerte[]
+
+  @@map("ausschreibung")
+}
+
+// --------------------------------------------------------------------------
+// 30. Offerte
+// --------------------------------------------------------------------------
+model Offerte {
+  id                    String         @id @default(uuid())
+  ausschreibung_id               String
+  ausschreibung_titel   String?
+  versicherer_id        String?
+  versicherer_name      String
+  customer_id           String?
+  organization_id       String
+  offert_nummer         String?
+  praemie_jaehrlich     Float?
+  praemie_monatlich     Float?
+  selbstbehalt          String?
+  deckung_beschreibung  String?
+  zusatzleistungen      String[]
+  ausschluesse          String[]
+  laufzeit              String?
+  kuendigungsfrist      String?
+  besondere_bedingungen String?
+  status                OfferteStatus  @default(ausstehend)
+  erfassungsdatum       DateTime?
+  gueltig_bis           DateTime?
+  dokument_url          String?
+  ki_score              Float?
+  ki_preis_score        Float?
+  ki_deckungs_score     Float?
+  ki_risiko_score       Float?
+  ki_service_score      Float?
+  ki_flexibilitaet_score Float?
+  ki_analyse_text       String?
+  ki_staerken           String[]
+  ki_schwaechen         String[]
+  ki_risiken            String[]
+  ist_empfohlen         Boolean        @default(false)
+  ist_guenstigste       Boolean        @default(false)
+  ist_beste_deckung     Boolean        @default(false)
+  deckungsluecken       String[]
+  sparten_daten         Json?
+  notizen               String?
+  created_at            DateTime       @default(now())
+  updated_at            DateTime       @updatedAt
+  archived              Boolean        @default(false)
+  archived_at           DateTime?
+  archived_by           String?
+
+  // Relations
+  ausschreibung         Ausschreibung  @relation(fields: [ausschreibung_id], references: [id])
+  organization          Organization   @relation(fields: [organization_id], references: [id])
+
+  @@map("offerte")
+}
+
+// --------------------------------------------------------------------------
+// 31. VersichererDB
+// --------------------------------------------------------------------------
+model VersichererDB {
+  id                             String   @id @default(uuid())
+  name                           String
+  kurzname                       String?
+  kontaktperson                  String?
+  funktion                       String?
+  email                          String?
+  telefon                        String?
+  adresse                        String?
+  plz                            String?
+  ort                            String?
+  website                        String?
+  bearbeitungszeit_tage          Float?
+  aktiv                          Boolean  @default(true)
+  bewertung                      Float?
+  spezialisierungen              String[]
+  bevorzugter_kanal              String?
+  portal_url                     String?
+  notizen                        String?
+  logo_url                       String?
+  ausschreibungen_gesamt         Float    @default(0)
+  ausschreibungen_gewonnen       Float    @default(0)
+  durchschnittliche_antwortzeit_tage Float?
+  organization_id                String?
+  created_at                     DateTime @default(now())
+  updated_at                     DateTime @updatedAt
+  archived                       Boolean  @default(false)
+  archived_at                    DateTime?
+  archived_by                    String?
+
+  // Relations
+  organization                   Organization? @relation(fields: [organization_id], references: [id])
+
+  @@map("versicherer_db")
+}
+
+// --------------------------------------------------------------------------
+// 32. Partner
+// --------------------------------------------------------------------------
+model Partner {
+  id                String          @id @default(uuid())
+  name              String
+  category          PartnerCategory
+  contact_person    String?
+  phone             String?
+  email             String?
+  street            String?
+  zip_code          String?
+  city              String?
+  website           String?
+  notes             String?
+  status            PartnerStatus   @default(aktiv)
+  organization_id   String?
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+  archived          Boolean         @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization?   @relation(fields: [organization_id], references: [id])
+  activities        PartnerActivity[]
+  documents         PartnerDocument[]
+
+  @@map("partner")
+}
+
+// --------------------------------------------------------------------------
+// 33. PartnerActivity
+// --------------------------------------------------------------------------
+model PartnerActivity {
+  id                String              @id @default(uuid())
+  partner_id                     String
+  partner_name      String?
+  activity_type     PartnerActivityType
+  description       String
+  document_id       String?
+  document_name     String?
+  performed_by      String?
+  performed_by_name String?
+  organization_id   String?
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  archived          Boolean             @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  partner           Partner             @relation(fields: [partner_id], references: [id])
+  organization      Organization?       @relation(fields: [organization_id], references: [id])
+
+  @@map("partner_activity")
+}
+
+// --------------------------------------------------------------------------
+// 34. PartnerDocument
+// --------------------------------------------------------------------------
+model PartnerDocument {
+  id                String                 @id @default(uuid())
+  partner_id                     String
+  partner_name      String?
+  file_name         String
+  file_url          String
+  category          PartnerDocumentCategory
+  uploaded_by       String?
+  uploaded_by_name  String?
+  file_size         Float?
+  notes             String?
+  organization_id   String?
+  created_at        DateTime               @default(now())
+  updated_at        DateTime               @updatedAt
+  archived          Boolean                @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  partner           Partner                @relation(fields: [partner_id], references: [id])
+  organization      Organization?          @relation(fields: [organization_id], references: [id])
+
+  @@map("partner_document")
+}
+
+// --------------------------------------------------------------------------
+// 35. Claim
+// --------------------------------------------------------------------------
+model Claim {
+  id                String       @id @default(uuid())
+  customer_id                    String
+  customer_name     String?
+  customer_email    String?
+  contract_id       String?
+  insurance_type    String?
+  provider          String?
+  title             String
+  description       String?
+  incident_date     DateTime
+  status            ClaimStatus  @default(eingereicht)
+  claim_number      String?
+  amount_claimed    Float?
+  amount_approved   Float?
+  documents         Json?
+  broker_notes      String?
+  organization_id   String?
+  advisor_id        String?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+  archived          Boolean      @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  customer          Customer     @relation(fields: [customer_id], references: [id])
+  contract          Contract?    @relation(fields: [contract_id], references: [id])
+  organization      Organization? @relation(fields: [organization_id], references: [id])
+
+  @@map("claim")
+}
+
+// --------------------------------------------------------------------------
+// 36. Deal
+// --------------------------------------------------------------------------
+model Deal {
+  id                String             @id @default(uuid())
+  title             String
+  customer_name     String
+  customer_email    String?
+  customer_phone    String?
+  stage             DealStage          @default(erstkontakt)
+  insurance_type    DealInsuranceType?
+  estimated_premium Float?
+  probability       Float?
+  assigned_broker   String?
+  next_action       String?
+  next_action_date  DateTime?
+  notes             String?
+  source            DealSource         @default(sonstiges)
+  customer_id       String?
+  organization_id   String?
+  advisor_id        String?
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+  archived          Boolean            @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  customer          Customer?          @relation(fields: [customer_id], references: [id])
+  organization      Organization?      @relation(fields: [organization_id], references: [id])
+
+  @@map("deal")
+}
+
+// --------------------------------------------------------------------------
+// 37. Verkaufschance
+// --------------------------------------------------------------------------
+model Verkaufschance {
+  id                  String               @id @default(uuid())
+  title               String
+  customer_id                    String
+  customer_name       String?
+  organization_id     String
+  advisor_id          String?
+  assigned_broker     String?
+  linked_contract_id  String?
+  contact_person      String?
+  sparte              String
+  insurance_type      String?
+  status              VerkaufschanceStatus @default(neu)
+  priority            VerkaufschancePriority @default(medium)
+  estimated_value     Float?
+  expected_close_date DateTime?
+  start_date_requested DateTime?
+  selected_insurer    String?
+  won_contract_id     String?
+  lost_reason         String?
+  wiedervorlage_date  DateTime?
+  gesellschaften      Json?
+  notes               String?
+  created_at          DateTime             @default(now())
+  updated_at          DateTime             @updatedAt
+  archived            Boolean              @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  customer            Customer             @relation(fields: [customer_id], references: [id])
+  organization        Organization         @relation(fields: [organization_id], references: [id])
+
+  @@map("verkaufschance")
+}
+
+// --------------------------------------------------------------------------
+// 38. AdvisoryDossier
+// --------------------------------------------------------------------------
+model AdvisoryDossier {
+  id                          String              @id @default(uuid())
+  customer_id                    String
+  customer_name               String?
+  advisor_id                  String?
+  organization_id             String?
+  title                       String
+  dossier_type                AdvisoryDossierType  @default(kk_vergleich)
+  status                      AdvisoryDossierStatus @default(entwurf)
+  review_status               ReviewStatus         @default(offen)
+  valid_from                  DateTime?
+  valid_until                 DateTime?
+  total_current_premium       Float?
+  total_proposed_premium      Float?
+  savings_monthly             Float?
+  recommendation_notes        String?
+  linked_verkaufschance_id    String?
+  version                     Float                @default(1)
+  is_latest                   Boolean              @default(true)
+  advisor_final_recommendation String?
+  advisor_recommendation_label String?
+  advisor_recommendation_reason String?
+  advisor_recommendation_highlights String?
+  advisor_approved            Boolean              @default(false)
+  approved_at                 DateTime?
+  approved_by                 String?
+  approved_version            Float?
+  approved_snapshot_id        String?
+  reapproval_required         Boolean              @default(false)
+  reapproval_reason           String?
+  revoked_at                  DateTime?
+  revoked_by                  String?
+  extraction_confidence       Float?
+  review_confidence           Float?
+  requires_manual_review      Boolean              @default(false)
+  ai_risk_level               AiRiskLevel?
+  confidence_reason           String?
+  final_pdf_url               String?
+  final_pdf_file_uri          String?
+  final_pdf_hash              String?
+  final_pdf_generated_by      String?
+  final_pdf_generated_at      DateTime?
+  final_pdf_version           Float?
+  approval_history            Json?
+  snap_org_name               String?
+  snap_org_street             String?
+  snap_org_zip                String?
+  snap_org_city               String?
+  snap_org_phone              String?
+  snap_org_email              String?
+  snap_org_website            String?
+  snap_org_finma              String?
+  snap_adv_firstname          String?
+  snap_adv_lastname           String?
+  snap_adv_function           String?
+  snap_adv_phone              String?
+  snap_adv_email              String?
+  snap_adv_finma              String?
+  snap_adv_vbv                String?
+  notes                       String?
+  created_at                  DateTime             @default(now())
+  updated_at                  DateTime             @updatedAt
+  archived                    Boolean              @default(false)
+  archived_at                 DateTime?
+  archived_by                 String?
+
+  // Relations
+  customer                    Customer             @relation(fields: [customer_id], references: [id])
+  organization                Organization?        @relation(fields: [organization_id], references: [id])
+  snapshots                   DossierSnapshot[]
+
+  @@map("advisory_dossier")
+}
+
+// --------------------------------------------------------------------------
+// 39. DossierSnapshot
+// --------------------------------------------------------------------------
+model DossierSnapshot {
+  id                String   @id @default(uuid())
+  dossier_id                     String
+  version           Float
+  snapshot_data     String?
+  pdf_url           String?
+  created_by_name   String?
+  notes             String?
+  customer_id       String?
+  organization_id   String?
+  advisor_id        String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  archived          Boolean  @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  dossier           AdvisoryDossier @relation(fields: [dossier_id], references: [id])
+  customer          Customer?       @relation(fields: [customer_id], references: [id])
+  organization      Organization?   @relation(fields: [organization_id], references: [id])
+
+  @@map("dossier_snapshot")
+}
+
+// --------------------------------------------------------------------------
+// 40. MutationRequest
+// --------------------------------------------------------------------------
+model MutationRequest {
+  id                String               @id @default(uuid())
+  customer_id                    String
+  policy_id         String
+  policy_number     String?
+  request_type      MutationRequestType
+  description       String
+  status            MutationRequestStatus @default(pending)
+  reviewed_by       String?
+  reviewed_at       DateTime?
+  new_policy_id     String?
+  notes             String?
+  organization_id   String?
+  created_at        DateTime              @default(now())
+  updated_at        DateTime              @updatedAt
+  archived          Boolean               @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  customer          Customer              @relation(fields: [customer_id], references: [id])
+  contract          Contract              @relation(fields: [policy_id], references: [id])
+  organization      Organization?         @relation(fields: [organization_id], references: [id])
+
+  @@map("mutation_request")
+}
+
+// --------------------------------------------------------------------------
+// 41. PricingSuggestion
+// --------------------------------------------------------------------------
+model PricingSuggestion {
+  id                  String                  @id @default(uuid())
+  policy_id           String
+  policy_number       String?
+  customer_id                    String
+  customer_name       String?
+  insurer             String?
+  product             String?
+  premium_current     Float
+  premium_benchmark   Float
+  premium_suggested   Float?
+  saving_amount       Float?
+  saving_percent      Float?
+  priority            PricingSuggestionPriority @default(low)
+  status              PricingSuggestionStatus   @default(pending)
+  approved_by         String?
+  approved_date       DateTime?
+  implemented_date    DateTime?
+  reason              String?
+  renewal_opportunity Boolean                  @default(false)
+  notes               String?
+  organization_id     String?
+  advisor_id          String?
+  created_at          DateTime                 @default(now())
+  updated_at          DateTime                 @updatedAt
+  archived            Boolean                  @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  contract            Contract                 @relation(fields: [policy_id], references: [id])
+  customer            Customer                 @relation(fields: [customer_id], references: [id])
+  organization        Organization?            @relation(fields: [organization_id], references: [id])
+
+  @@map("pricing_suggestion")
+}
+
+// --------------------------------------------------------------------------
+// 42. EmailCampaign
+// --------------------------------------------------------------------------
+model EmailCampaign {
+  id                String                   @id @default(uuid())
+  name              String
+  subject           String
+  body              String
+  status            EmailCampaignStatus      @default(draft)
+  scheduled_at      DateTime?
+  sent_at           DateTime?
+  filter_status     EmailCampaignFilterStatus @default(all)
+  filter_canton     String?
+  recipients_count  Float?
+  sent_count        Float                    @default(0)
+  failed_count      Float                    @default(0)
+  organization_id   String?
+  created_at        DateTime                 @default(now())
+  updated_at        DateTime                 @updatedAt
+  archived          Boolean                  @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization?            @relation(fields: [organization_id], references: [id])
+
+  @@map("email_campaign")
+}
+
+// --------------------------------------------------------------------------
+// 43. EmailTemplate
+// --------------------------------------------------------------------------
+model EmailTemplate {
+  id                String                @id @default(uuid())
+  name              String
+  category          EmailTemplateCategory @default(general)
+  subject           String
+  body              String
+  description       String?
+  is_active         Boolean               @default(true)
+  organization_id   String?
+  created_at        DateTime              @default(now())
+  updated_at        DateTime              @updatedAt
+  archived          Boolean               @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization?         @relation(fields: [organization_id], references: [id])
+
+  @@map("email_template")
+}
+
+// --------------------------------------------------------------------------
+// 44. Interaction
+// --------------------------------------------------------------------------
+model Interaction {
+  id                  String                  @id @default(uuid())
+  customer_id                    String
+  customer_name       String?
+  type                InteractionType
+  subject             String
+  content             String?
+  date                DateTime?
+  request_status      InteractionRequestStatus @default(offen)
+  is_customer_request Boolean                 @default(false)
+  organization_id     String?
+  advisor_id          String?
+  created_at          DateTime                @default(now())
+  updated_at          DateTime                @updatedAt
+  archived            Boolean                 @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  customer            Customer                @relation(fields: [customer_id], references: [id])
+  organization        Organization?           @relation(fields: [organization_id], references: [id])
+
+  @@map("interaction")
+}
+
+// --------------------------------------------------------------------------
+// 45. InsuranceKnowledgePattern
+// --------------------------------------------------------------------------
+model InsuranceKnowledgePattern {
+  id                  String   @id @default(uuid())
+  insurer             String
+  document_type       String?
+  pattern_type        PatternType
+  signal              String
+  maps_to             String
+  maps_to_value       String?
+  confidence_boost    Float?
+  correction_count    Float    @default(1)
+  first_seen_date     DateTime?
+  last_confirmed_date DateTime?
+  description         String?
+  example             String?
+  source_correction_ids String[]
+  is_active           Boolean  @default(true)
+  version             Float    @default(1)
+  validated_by_admin  Boolean  @default(false)
+  admin_notes         String?
+  organization_id     String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+  archived            Boolean  @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  organization        Organization? @relation(fields: [organization_id], references: [id])
+
+  @@map("insurance_knowledge_pattern")
+}
+
+// --------------------------------------------------------------------------
+// 46. EnterpriseImprovement
+// --------------------------------------------------------------------------
+model EnterpriseImprovement {
+  id                      String                      @id @default(uuid())
+  audit_id                String?
+  title                   String
+  priority                EnterpriseImprovementPriority
+  area                    EnterpriseImprovementArea
+  current_state           String
+  target_state            String
+  ki_recommendation       String?
+  implementation_steps    String[]
+  estimated_impact        Json?
+  affected_entities       String[]
+  affected_pages          String[]
+  success_metrics         Json?
+  risks                   String[]
+  rollback_plan           String?
+  status                  EnterpriseImprovementStatus @default(proposed)
+  proposed_by             String?
+  proposed_at             DateTime?
+  approved_by             String?
+  approved_at             DateTime?
+  implemented_at          DateTime?
+  verified_at             DateTime?
+  actual_impact           Json?
+  rejection_reason        String?
+  notes                   String?
+  organization_id         String?
+  created_at              DateTime                    @default(now())
+  updated_at              DateTime                    @updatedAt
+  archived                Boolean                     @default(false)
+  archived_at             DateTime?
+  archived_by             String?
+
+  // Relations
+  organization            Organization?               @relation(fields: [organization_id], references: [id])
+
+  @@map("enterprise_improvement")
+}
+
+// --------------------------------------------------------------------------
+// 47. EnterpriseIncident
+// --------------------------------------------------------------------------
+model EnterpriseIncident {
+  id                      String                    @id @default(uuid())
+  priority                EnterpriseIncidentPriority @default(medium)
+  severity                EnterpriseIncidentSeverity @default(warning)
+  category                EnterpriseIncidentCategory
+  module                  String?
+  entity_type             String?
+  entity_id               String?
+  organization_id         String?
+  title                   String
+  description             String
+  root_cause              String?
+  technical_details       String?
+  recommended_action      String?
+  auto_fix_possible       Boolean                   @default(false)
+  auto_fix_action         String?
+  manual_review_required  Boolean                   @default(true)
+  governance_block        Boolean                   @default(false)
+  status                  EnterpriseIncidentStatus   @default(open)
+  root_cause_cluster      RootCauseCluster           @default(none)
+  impact_governance       Float?
+  impact_financial        Float?
+  impact_compliance       Float?
+  impact_operational      Float?
+  impact_reputation       Float?
+  strategic_impact_score  Float?
+  assigned_to             String?
+  resolution_notes        String?
+  resolved_at             DateTime?
+  resolved_by             String?
+  detected_by             String?
+  detected_at             DateTime?
+  sla_due_at              DateTime?
+  sla_status              SlaStatus                  @default(ok)
+  sla_escalated           Boolean                    @default(false)
+  sla_escalated_at        DateTime?
+  affected_entities       Json?
+  incident_audit_log      Json?
+  validation_run_id       String?
+  created_at              DateTime                   @default(now())
+  updated_at              DateTime                   @updatedAt
+  archived                Boolean                    @default(false)
+  archived_at             DateTime?
+  archived_by             String?
+
+  // Relations
+  organization            Organization?              @relation(fields: [organization_id], references: [id])
+
+  @@map("enterprise_incident")
+}
+
+// --------------------------------------------------------------------------
+// 48. GovernanceRule
+// --------------------------------------------------------------------------
+model GovernanceRule {
+  id                          String                    @id @default(uuid())
+  name                        String
+  description                 String
+  rule_version                String                    @default("1.0")
+  effective_from              DateTime
+  effective_to                DateTime?
+  entity_type                 String
+  event_types                 GovernanceEventType[]
+  layer                       GovernanceRuleLayer
+  business_criticality        GovernanceBusinessCriticality @default(MEDIUM)
+  enforcement_mode            GovernanceEnforcementMode @default(monitor)
+  simulate_only               Boolean                   @default(true)
+  condition_json              Json?
+  custom_validator_function_name String?
+  error_message               String
+  resolution_guidance         String?
+  rule_status                 GovernanceRuleStatus      @default(draft)
+  rule_scope                  GovernanceRuleScope       @default(GLOBAL)
+  created_by                  String?
+  created_by_email            String?
+  updated_by                  String?
+  updated_by_email            String?
+  last_execution_at           DateTime?
+  last_execution_ms           Float?
+  execution_count             Float                     @default(0)
+  violation_count             Float                     @default(0)
+  simulate_count              Float                     @default(0)
+  timeout_ms                  Float                     @default(50)
+  notes                       String?
+  organization_id             String?
+  created_at                  DateTime                  @default(now())
+  updated_at                  DateTime                  @updatedAt
+  archived                    Boolean                   @default(false)
+  archived_at                 DateTime?
+  archived_by                 String?
+
+  // Relations
+  organization                Organization?             @relation(fields: [organization_id], references: [id])
+
+  @@map("governance_rule")
+}
+
+// --------------------------------------------------------------------------
+// 49. GovernanceScoreSnapshot
+// --------------------------------------------------------------------------
+model GovernanceScoreSnapshot {
+  id                String              @id @default(uuid())
+  snapshot_date     DateTime?
+  overall           Float
+  risk_level        GovernanceRiskLevel?
+  domains           Json?
+  alerts            Json?
+  weights           Json?
+  computed_at       DateTime
+  computed_by       String?
+  previous_overall  Float?
+  trend             GovernanceTrend?
+  trend_delta       Float?
+  organization_id   String?
+  notes             String?
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  archived          Boolean             @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization?       @relation(fields: [organization_id], references: [id])
+
+  @@map("governance_score_snapshot")
+}
+
+// --------------------------------------------------------------------------
+// 50. DuplicateAlert
+// --------------------------------------------------------------------------
+model DuplicateAlert {
+  id                  String                  @id @default(uuid())
+  entity_type         DuplicateAlertEntityType
+  primary_entity_id   String
+  duplicate_entity_id String
+  match_criteria      DuplicateMatchCriteria[]
+  confidence_score    Float?
+  detected_at         DateTime
+  detected_by         String?
+  status              DuplicateAlertStatus    @default(new)
+  action_taken        String?
+  resolved_at         DateTime?
+  organization_id     String?
+  created_at          DateTime                @default(now())
+  updated_at          DateTime                @updatedAt
+  archived            Boolean                 @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  organization        Organization?           @relation(fields: [organization_id], references: [id])
+
+  @@map("duplicate_alert")
+}
+
+// --------------------------------------------------------------------------
+// 51. BackupLog
+// --------------------------------------------------------------------------
+model BackupLog {
+  id                String       @id @default(uuid())
+  backup_id         String?
+  backup_type       BackupType
+  status            BackupStatus @default(completed)
+  timestamp         DateTime
+  error_message     String?
+  total_records     Float?
+  total_changes     Float?
+  checksum          String?
+  retention_days    Float?
+  created_by        String?
+  week_number       Float?
+  compliance_tags   String?
+  organization_id   String?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+  archived          Boolean      @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization? @relation(fields: [organization_id], references: [id])
+
+  @@map("backup_log")
+}
+
+// --------------------------------------------------------------------------
+// 52. ErrorLog
+// --------------------------------------------------------------------------
+model ErrorLog {
+  id                String        @id @default(uuid())
+  error_type        ErrorType
+  entity_type       String?
+  entity_id         String?
+  error_message     String
+  stack_trace       String?
+  occurred_at       DateTime
+  user_email        String?
+  function_name     String?
+  status            ErrorLogStatus @default(new)
+  resolution_notes  String?
+  resolved_at       DateTime?
+  organization_id   String?
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+  archived          Boolean        @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization?  @relation(fields: [organization_id], references: [id])
+
+  @@map("error_log")
+}
+
+// --------------------------------------------------------------------------
+// 53. ExtractionCorrectionLog
+// --------------------------------------------------------------------------
+model ExtractionCorrectionLog {
+  id                  String               @id @default(uuid())
+  insurer             String
+  document_type       String
+  file_name           String?
+  file_url            String?
+  original_extraction Json?
+  corrected_values    Json?
+  field_corrections   Json?
+  error_categories    String[]
+  correction_count    Float?
+  ai_analysis         String?
+  patterns_extracted  Json?
+  corrected_by_user_id String?
+  corrected_by_email  String?
+  reviewed            Boolean              @default(false)
+  review_notes        String?
+  organization_id     String?
+  created_at          DateTime             @default(now())
+  updated_at          DateTime             @updatedAt
+  archived            Boolean              @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  organization        Organization?        @relation(fields: [organization_id], references: [id])
+
+  @@map("extraction_correction_log")
+}
+
+// --------------------------------------------------------------------------
+// 54. PdfExportLog
+// --------------------------------------------------------------------------
+model PdfExportLog {
+  id                String   @id @default(uuid())
+  dossier_id                     String
+  dossier_title     String?
+  dossier_version   Float?
+  pdf_version       Float?
+  pdf_hash          String
+  file_uri          String?
+  filename          String?
+  generated_by_id   String?
+  generated_by_name String?
+  approved_by       String?
+  approved_at       DateTime?
+  snapshot_id       String?
+  customer_name     String?
+  exported_at       DateTime
+  ip_address        String?
+  session_id        String?
+  immutable         Boolean  @default(true)
+  organization_id   String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  archived          Boolean  @default(false)
+  archived_at       DateTime?
+  archived_by       String?
+
+  // Relations
+  organization      Organization? @relation(fields: [organization_id], references: [id])
+
+  @@map("pdf_export_log")
+}
+
+// --------------------------------------------------------------------------
+// 55. AutomationQueue
+// --------------------------------------------------------------------------
+model AutomationQueue {
+  id                  String             @id @default(uuid())
+  job_type            AutomationJobType
+  status              AutomationJobStatus @default(pending)
+  related_document_id String?
+  related_entity_type String?
+  related_entity_id   String?
+  payload             String?
+  result              String?
+  error_message       String?
+  retry_count         Float              @default(0)
+  started_at          DateTime?
+  completed_at        DateTime?
+  organization_id     String?
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  archived            Boolean            @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  organization        Organization?      @relation(fields: [organization_id], references: [id])
+
+  @@map("automation_queue")
+}
+
+// --------------------------------------------------------------------------
+// 56. AiFinding
+// --------------------------------------------------------------------------
+model AiFinding {
+  id                    String           @id @default(uuid())
+  review_id             String?
+  organization_id       String
+  finding_type          AiFindingType
+  severity              FindingSeverity  @default(warning)
+  confidence_score      Float?
+  evidence_strength     EvidenceStrength?
+  governance_risk_score Float?
+  false_positive_risk   FalsePositiveRisk @default(low)
+  explanation           Json?
+  evidence              Json?
+  explainability        Json?
+  audit                 Json?
+  status                FindingStatus    @default(new)
+  linked_incident_id    String?
+  entity_type           String?
+  entity_id             String?
+  title                 String?
+  description           String?
+  suggested_action      String?
+  detected_at           DateTime?
+  resolved_at           DateTime?
+  notes                 String?
+  created_at            DateTime         @default(now())
+  updated_at            DateTime         @updatedAt
+  archived              Boolean          @default(false)
+  archived_at           DateTime?
+  archived_by           String?
+
+  // Relations
+  organization          Organization     @relation(fields: [organization_id], references: [id])
+
+  @@map("ai_finding")
+}
+
+// --------------------------------------------------------------------------
+// 57. AiReview
+// --------------------------------------------------------------------------
+model AiReview {
+  id                  String         @id @default(uuid())
+  level               AiReviewLevel
+  status              AiReviewStatus @default(completed)
+  findings            Json
+  finding_count       Float?
+  critical_count      Float?
+  warning_count       Float?
+  opportunity_count   Float?
+  reviewed_at         DateTime
+  reviewed_by         String
+  previous_review_id  String?
+  notes               String?
+  organization_id     String?
+  entity_type         String?
+  entity_id           String?
+  input_data          Json?
+  output_data         Json?
+  confidence          Float?
+  model_version       String?
+  started_at          DateTime?
+  completed_at        DateTime?
+  error_message       String?
+  created_at          DateTime       @default(now())
+  updated_at          DateTime       @updatedAt
+  archived            Boolean        @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  organization        Organization?  @relation(fields: [organization_id], references: [id])
+
+  @@map("ai_review")
+}
+
+// --------------------------------------------------------------------------
+// 58. ContractAdvisor
+// --------------------------------------------------------------------------
+model ContractAdvisor {
+  id                  String             @id @default(uuid())
+  contract_id                    String
+  contract_policy_number String?
+  advisor_id          String
+  advisor_name        String?
+  advisor_email       String?
+  role                ContractAdvisorRole @default(primary)
+  is_primary          Boolean            @default(false)
+  specialization      String?
+  notes               String?
+  organization_id     String?
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  archived            Boolean            @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  contract            Contract           @relation(fields: [contract_id], references: [id])
+  organization        Organization?      @relation(fields: [organization_id], references: [id])
+
+  @@map("contract_advisor")
+}
+
+// --------------------------------------------------------------------------
+// 59. CustomerAdvisor
+// --------------------------------------------------------------------------
+model CustomerAdvisor {
+  id                  String              @id @default(uuid())
+  customer_id                    String
+  customer_name       String?
+  advisor_id          String
+  advisor_name        String?
+  advisor_email       String?
+  role                CustomerAdvisorRole @default(primary)
+  is_primary          Boolean             @default(false)
+  notes               String?
+  organization_id     String?
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  archived            Boolean             @default(false)
+  archived_at         DateTime?
+  archived_by         String?
+
+  // Relations
+  customer            Customer            @relation(fields: [customer_id], references: [id])
+  organization        Organization?       @relation(fields: [organization_id], references: [id])
+
+  @@map("customer_advisor")
+}

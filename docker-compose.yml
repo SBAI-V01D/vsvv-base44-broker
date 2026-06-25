@@ -1,0 +1,134 @@
+name: vsvv
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vsvv-postgres
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: vsvv
+      POSTGRES_USER: vsvv
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vsvv_dev_2026}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vsvv"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vsvv-network
+
+  # Redis is OPTIONAL — only needed for queues/sessions.
+  # Uncomment if Redis is available on this host.
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: vsvv-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - vsvv-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: vsvv-minio
+    restart: unless-stopped
+    volumes:
+      - miniodata:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - vsvv-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: vsvv-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - vsvv-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vsvv-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://vsvv:${DB_PASSWORD:-vsvv_dev_2026}@postgres:5432/vsvv
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-vsvv-dev-jwt-secret-min-32-chars-long!!}
+      JWT_ACCESS_EXPIRY: 15m
+      JWT_REFRESH_EXPIRY: 7d
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_BUCKET: vsvv-documents
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_FROM: noreply@vsvv.ch
+      CORS_ORIGIN: "*"
+      LOG_LEVEL: debug
+    volumes:
+      - ./backend/src:/app/src
+    networks:
+      - vsvv-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: vsvv-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3004:80"
+    environment:
+      VITE_API_URL: /api
+    networks:
+      - vsvv-network
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+  miniodata:
+    driver: local
+
+networks:
+  vsvv-network:
+    driver: bridge

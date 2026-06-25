@@ -1,0 +1,614 @@
+import React, { useState, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { base44 } from '@/api/base44Client'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Upload, Zap, Paperclip, Loader2, CheckCircle2, AlertCircle, FileText, Shield, ClipboardList, ScrollText } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+
+const MAX_FILE_SIZE_MB = 50
+const MAX_ANTRAG_SIZE_MB = 10 // LLM-Limit für KI-Extraktion
+const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg',
+  'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx']
+
+const sanitizeFilename = (name) =>
+  name.replace(/[^\w\s.\-_()äöüÄÖÜ]/g, '_').replace(/\s+/g, '_')
+
+export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, preselectedCustomerId }) {
+  const [uploadMode, setUploadMode] = useState(null)
+  const [file, setFile] = useState(null)
+  const [fileError, setFileError] = useState('')
+  const [form, setForm] = useState({ name: '', notes: '', customer_id: preselectedCustomerId || '', contract_id: '', primary_customer_id: '', is_family_member: false, end_date: '', excludeFromStats: false, statsNote: '', category: '' })
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0) // 0-100
+  const [uploadError, setUploadError] = useState('')
+  const [step, setStep] = useState('mode') // mode | form | uploading | success
+  const [dragOver, setDragOver] = useState(false)
+
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers'],
+    queryFn: () => base44.entities.Customer.list(),
+    enabled: open,
+  })
+
+  const { data: contracts = [] } = useQuery({
+    queryKey: ['contracts'],
+    queryFn: () => base44.entities.Contract.list(null, 1000),
+    enabled: open,
+  })
+
+  const selectedCustomer = customers.find(c => c.id === form.customer_id)
+  const isBusinessCustomer = selectedCustomer?.customer_type === 'business'
+
+  const CATEGORIES_PRIVATE = [
+    { value: 'police', label: 'Police / Vertragsdokument' },
+    { value: 'korrespondenz', label: 'Korrespondenz' },
+    { value: 'ausweis', label: 'Ausweis / Identifikation' },
+    { value: 'rechnung', label: 'Rechnung' },
+    { value: 'antrag', label: 'Antrag' },
+    { value: 'sonstiges', label: 'Sonstiges' },
+  ]
+  const CATEGORIES_BUSINESS = [
+    { value: 'police', label: 'Police / Vertragsdokument' },
+    { value: 'korrespondenz', label: 'Korrespondenz' },
+    { value: 'handelsregister', label: 'Handelsregisterauszug' },
+    { value: 'jahresabschluss', label: 'Jahresabschluss' },
+    { value: 'vollmacht', label: 'Vollmacht / Vertrag' },
+    { value: 'betriebsdokument', label: 'Betriebsdokument' },
+    { value: 'rechnung', label: 'Rechnung' },
+    { value: 'antrag', label: 'Antrag' },
+    { value: 'sonstiges', label: 'Sonstiges' },
+  ]
+  const categoryOptions = selectedCustomer ? (isBusinessCustomer ? CATEGORIES_BUSINESS : CATEGORIES_PRIVATE) : [...CATEGORIES_PRIVATE, { value: 'handelsregister', label: 'Handelsregisterauszug' }, { value: 'jahresabschluss', label: 'Jahresabschluss' }]
+  const selectedPrimaryCustomer = customers.find(c => c.id === form.primary_customer_id)
+  const customerContracts = contracts.filter(c => c.customer_id === form.customer_id)
+  const primaryCustomerContracts = contracts.filter(c => c.customer_id === form.primary_customer_id)
+
+  const reset = () => {
+    setUploadMode(null)
+    setFile(null)
+    setFileError('')
+    setForm({ name: '', notes: '', customer_id: preselectedCustomerId || '', contract_id: '', primary_customer_id: '', is_family_member: false, end_date: '', excludeFromStats: false, statsNote: '', category: '' })
+    setUploading(false)
+    setUploadProgress(0)
+    setUploadError('')
+    setStep('mode')
+    setDragOver(false)
+  }
+
+  const handleClose = () => { reset(); onOpenChange(false) }
+
+  const validateFile = (f, mode = uploadMode) => {
+    if (!f) return 'Keine Datei ausgewählt.'
+    const ext = '.' + f.name.split('.').pop().toLowerCase()
+    if (!ALLOWED_EXTENSIONS.includes(ext)) return `Dateityp nicht erlaubt. Erlaubt: ${ALLOWED_EXTENSIONS.join(', ')}`
+    if (f.size === 0) return 'Datei ist leer.'
+    if (mode === 'antrag' && f.size > MAX_ANTRAG_SIZE_MB * 1024 * 1024)
+      return `Versicherungsanträge dürfen max. ${MAX_ANTRAG_SIZE_MB} MB gross sein (für KI-Verarbeitung). Aktuelle Grösse: ${(f.size / 1024 / 1024).toFixed(1)} MB. Bitte PDF komprimieren.`
+    if (f.size > MAX_FILE_SIZE_MB * 1024 * 1024) return `Datei zu gross. Maximum: ${MAX_FILE_SIZE_MB} MB`
+    return ''
+  }
+
+  const applyFile = (f) => {
+    if (!f) return
+    const err = validateFile(f, uploadMode)
+    setFileError(err)
+    if (!err) {
+      setFile(f)
+      setForm(p => ({ ...p, name: p.name || sanitizeFilename(f.name.replace(/\.[^.]+$/, '')) }))
+    }
+  }
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault()
+    setDragOver(false)
+    applyFile(e.dataTransfer.files[0])
+  }, [])
+
+  const handleModeSelect = (mode) => {
+    setUploadMode(mode)
+    setStep('form')
+  }
+
+  const handleUpload = async (e) => {
+    e.preventDefault()
+    const err = validateFile(file, uploadMode)
+    if (err) { setFileError(err); return }
+    // Police muss immer einem Vertrag zugeordnet sein
+    if (uploadMode === 'police' && !form.contract_id) {
+      setUploadError('Eine Police muss immer einem Vertrag zugeordnet werden. Bitte Vertrag auswählen.')
+      return
+    }
+    if (uploadMode === 'police' && !form.end_date) {
+      setUploadError('Bitte Vertragsende eingeben — erforderlich für Vertragsablauf-Statistik.')
+      return
+    }
+
+    setUploading(true)
+    setUploadError('')
+    setUploadProgress(10)
+    setStep('uploading')
+
+    try {
+      // Step 1: Upload file
+      setUploadProgress(30)
+      const { file_url } = await base44.integrations.Core.UploadFile({ file })
+      setUploadProgress(60)
+
+      if (uploadMode === 'antrag') {
+        // Schnell-Klassifizierung per Dateiname: wenn "police" im Namen → als anlage/contract vormerken
+        const lowerName = (form.name || '').toLowerCase()
+        const looksLikePolice = lowerName.includes('police') || lowerName.includes('vertrag') || lowerName.includes('polic')
+        const doc = await base44.entities.Document.create({
+          name: form.name,
+          file_url,
+          category: looksLikePolice ? 'contract' : 'application',
+          doc_type: looksLikePolice ? 'anlage' : 'antrag',
+          classification_status: 'ausstehend',
+          notes: form.notes || undefined,
+          uploaded_by: 'broker',
+        })
+        setUploadProgress(85)
+        base44.entities.AutomationQueue.create({
+          job_type: 'ki_extraction',
+          status: 'pending',
+          related_document_id: doc.id,
+          related_entity_type: 'Document',
+          related_entity_id: doc.id,
+          payload: JSON.stringify({ file_url, file_name: form.name, document_id: doc.id }),
+        }).catch(err => console.error('Queue creation failed:', err))
+      } else {
+        // Kategorie je nach Modus
+        const docCategory =
+          uploadMode === 'police'    ? 'contract' :
+          uploadMode === 'mandat'    ? 'correspondence' :
+          uploadMode === 'vag45'     ? 'correspondence' :
+          uploadMode === 'antrag_dok'? 'application' :
+          form.category || 'other'
+        const docType = 'anlage'
+        await base44.entities.Document.create({
+          name: form.name,
+          file_url,
+          category: docCategory,
+          doc_type: docType,
+          classification_status: 'klassifiziert',
+          notes: form.notes || undefined,
+          uploaded_by: 'broker',
+          customer_id: form.customer_id || undefined,
+          customer_name: selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}` : undefined,
+          linked_contract_id: form.contract_id || undefined,
+          primary_customer_id: form.primary_customer_id || undefined,
+          is_family_member: form.is_family_member,
+        })
+        setUploadProgress(90)
+        // Police: Vertragsende auf verknüpftem Vertrag aktualisieren wenn noch leer/Platzhalter
+        if (uploadMode === 'police' && form.contract_id) {
+          const linked = contracts.find(c => c.id === form.contract_id)
+          const updates = {}
+          if (form.end_date && (!linked?.end_date || linked.end_date.startsWith('9999'))) {
+            updates.end_date = form.end_date
+            updates.date_quality_status = 'estimated'
+            updates.requires_review = false
+          }
+          if (form.excludeFromStats) {
+            updates.exclude_from_renewal_statistics = true
+            if (form.statsNote) updates.renewal_statistics_note = form.statsNote
+          }
+          if (Object.keys(updates).length > 0) {
+            base44.entities.Contract.update(form.contract_id, updates).catch(() => {})
+          }
+        }
+      }
+
+      setUploadProgress(100)
+      setStep('success')
+      // Sofort schliessen und Callback auslösen — kein künstliches Delay
+      onSuccess()
+      handleClose()
+    } catch (uploadErr) {
+      console.error('[DocumentUpload] Upload failed:', uploadErr)
+      const status = uploadErr?.response?.status || uploadErr?.status
+      let msg = uploadErr?.response?.data?.message || uploadErr?.message || 'Unbekannter Fehler'
+      if (status === 413 || msg.toLowerCase().includes('size') || msg.toLowerCase().includes('too large')) {
+        msg = `Die Datei ist zu gross für die KI-Verarbeitung (max. ${MAX_ANTRAG_SIZE_MB} MB). Bitte komprimieren Sie das PDF und versuchen Sie es erneut.`
+      }
+      setUploadError(msg)
+      setStep('form')
+      setUploading(false)
+      setUploadProgress(0)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Dokument hochladen</DialogTitle>
+        </DialogHeader>
+
+        {/* Step 1: Mode selection */}
+        {step === 'mode' && (
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">Was möchten Sie hochladen?</p>
+            <button
+              onClick={() => handleModeSelect('antrag')}
+              className="w-full flex items-start gap-4 p-4 rounded-xl border-2 border-green-200 bg-green-50 hover:bg-green-100 hover:border-green-400 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Zap className="w-5 h-5 text-green-700" />
+              </div>
+              <div>
+                <p className="font-semibold text-green-800">Versicherungsantrag</p>
+                <p className="text-xs text-green-700 mt-0.5">
+                  Automatische KI-Extraktion, Kunden-Matching &amp; Antragserstellung nach dem Upload.
+                </p>
+              </div>
+            </button>
+            <button
+              onClick={() => handleModeSelect('police')}
+              className="w-full flex items-start gap-4 p-4 rounded-xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Shield className="w-5 h-5 text-blue-700" />
+              </div>
+              <div>
+                <p className="font-semibold text-blue-800">Police / Vertragsdokument</p>
+                <p className="text-xs text-blue-700 mt-0.5">Wird als Kategorie «Vertrag» gespeichert. Kein Schaden-Bezug.</p>
+              </div>
+            </button>
+            <button
+              onClick={() => handleModeSelect('mandat')}
+              className="w-full flex items-start gap-4 p-4 rounded-xl border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-400 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <ClipboardList className="w-5 h-5 text-amber-700" />
+              </div>
+              <div>
+                <p className="font-semibold text-amber-800">Mandat</p>
+                <p className="text-xs text-amber-700 mt-0.5">Vollmacht / Maklermandat – Kategorie: Korrespondenz.</p>
+              </div>
+            </button>
+            <button
+              onClick={() => handleModeSelect('vag45')}
+              className="w-full flex items-start gap-4 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 hover:border-violet-400 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <FileText className="w-5 h-5 text-violet-700" />
+              </div>
+              <div>
+                <p className="font-semibold text-violet-800">VAG 45 (Kundeninformation)</p>
+                <p className="text-xs text-violet-700 mt-0.5">Gesetzliche Kundeninformation gemäss VAG Art. 45.</p>
+              </div>
+            </button>
+            <button
+              onClick={() => handleModeSelect('antrag_dok')}
+              className="w-full flex items-start gap-4 p-4 rounded-xl border-2 border-orange-200 bg-orange-50 hover:bg-orange-100 hover:border-orange-400 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <ScrollText className="w-5 h-5 text-orange-700" />
+              </div>
+              <div>
+                <p className="font-semibold text-orange-800">Antrag (Dokument)</p>
+                <p className="text-xs text-orange-700 mt-0.5">Ausgefüllter Antrag ohne KI-Verarbeitung – Kategorie: Antrag.</p>
+              </div>
+            </button>
+            <button
+              onClick={() => handleModeSelect('anlage')}
+              className="w-full flex items-start gap-4 p-4 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Paperclip className="w-5 h-5 text-slate-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-slate-700">Anlage / Zusatzdokument</p>
+                <p className="text-xs text-slate-500 mt-0.5">Keine automatische Verarbeitung. Nur Speicherung.</p>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* Step 2: File form */}
+        {step === 'form' && (
+          <form onSubmit={handleUpload} className="space-y-4">
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${
+              uploadMode === 'antrag'     ? 'bg-green-50 text-green-700' :
+              uploadMode === 'police'     ? 'bg-blue-50 text-blue-700' :
+              uploadMode === 'mandat'     ? 'bg-amber-50 text-amber-700' :
+              uploadMode === 'vag45'      ? 'bg-violet-50 text-violet-700' :
+              uploadMode === 'antrag_dok' ? 'bg-orange-50 text-orange-700' :
+              'bg-slate-100 text-slate-600'
+            }`}>
+              {uploadMode === 'antrag'     ? <Zap className="w-4 h-4" /> :
+               uploadMode === 'police'     ? <Shield className="w-4 h-4" /> :
+               uploadMode === 'mandat'     ? <ClipboardList className="w-4 h-4" /> :
+               uploadMode === 'vag45'      ? <FileText className="w-4 h-4" /> :
+               uploadMode === 'antrag_dok' ? <ScrollText className="w-4 h-4" /> :
+               <Paperclip className="w-4 h-4" />}
+              {uploadMode === 'antrag'     ? 'Versicherungsantrag – KI verarbeitet automatisch' :
+               uploadMode === 'police'     ? 'Police / Vertragsdokument' :
+               uploadMode === 'mandat'     ? 'Mandat / Vollmacht' :
+               uploadMode === 'vag45'      ? 'VAG 45 – Kundeninformation' :
+               uploadMode === 'antrag_dok' ? 'Antrag (Dokument)' :
+               'Anlage / Zusatzdokument'}
+              <button type="button" onClick={() => setStep('mode')} className="ml-auto text-xs underline opacity-60 hover:opacity-100">Ändern</button>
+            </div>
+
+            {/* Drag & Drop File Area */}
+            <div>
+              <Label>Datei (PDF / JPG / PNG / DOCX) — max. {uploadMode === 'antrag' ? MAX_ANTRAG_SIZE_MB : MAX_FILE_SIZE_MB} MB{uploadMode === 'antrag' ? ' (KI-Limit)' : ''}</Label>
+              <div
+                onDrop={handleDrop}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                onDragLeave={() => setDragOver(false)}
+                className={`mt-1 border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
+                  dragOver ? 'border-primary bg-primary/5' :
+                  fileError ? 'border-red-400 bg-red-50' :
+                  file ? 'border-emerald-400 bg-emerald-50' :
+                  'border-border hover:border-primary/40 hover:bg-muted/30'
+                }`}
+                onClick={() => document.getElementById('doc-file-input').click()}
+              >
+                <input
+                  id="doc-file-input"
+                  type="file"
+                  accept={ALLOWED_EXTENSIONS.join(',')}
+                  className="hidden"
+                  onChange={e => applyFile(e.target.files[0])}
+                />
+                {file ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <FileText className="w-5 h-5 text-emerald-600" />
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-emerald-800">{file.name}</p>
+                      <p className="text-xs text-emerald-600">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 ml-2" />
+                  </div>
+                ) : (
+                  <div>
+                    <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Datei hier ablegen oder <span className="text-primary font-medium">auswählen</span></p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">{ALLOWED_EXTENSIONS.join(' · ')}</p>
+                  </div>
+                )}
+              </div>
+              {fileError && (
+                <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                  <p className="text-xs text-red-700 font-medium">{fileError}</p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <Label>Name</Label>
+              <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required placeholder="Dokumentname" className="mt-1" />
+            </div>
+            {(uploadMode === 'anlage' || uploadMode === 'police' || uploadMode === 'mandat' || uploadMode === 'vag45' || uploadMode === 'antrag_dok') && (
+              <>
+                <div>
+                  <Label>Kunde (optional)</Label>
+                  <Select value={form.customer_id} onValueChange={v => setForm(p => ({ ...p, customer_id: v, contract_id: '', is_family_member: false, primary_customer_id: '', category: '' }))}>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="Kunden auswählen..." /></SelectTrigger>
+                    <SelectContent>
+                      {customers.map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <span className="flex items-center gap-2">
+                            <span className={`text-[10px] font-bold px-1 py-0.5 rounded flex-shrink-0 ${c.customer_type === 'business' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                              {c.customer_type === 'business' ? '🏢' : '👤'}
+                            </span>
+                            {c.customer_type === 'business' ? (c.company_name || `${c.first_name} ${c.last_name}`) : `${c.first_name} ${c.last_name}`}
+                            {c.is_family_member ? ` (Familienmitglied)` : ''}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedCustomer && (
+                    <div className={`mt-1 px-2 py-1 rounded text-[11px] font-semibold inline-flex items-center gap-1 ${isBusinessCustomer ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                      {isBusinessCustomer ? '🏢 Unternehmen' : '👤 Privatkunde'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Kategorie je Kundentyp — nur für Anlage/Zusatzdokument */}
+                {uploadMode === 'anlage' && (
+                  <div>
+                    <Label>Kategorie</Label>
+                    {selectedCustomer && (
+                      <p className="text-[11px] mt-0.5 mb-1 font-medium"
+                        style={{ color: isBusinessCustomer ? '#1d4ed8' : '#059669' }}>
+                        {isBusinessCustomer ? '🏢 Unternehmenskunde — Geschäftskategorien verfügbar' : '👤 Privatkunde — Privatkategorien'}
+                      </p>
+                    )}
+                    <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v }))}>
+                      <SelectTrigger className="mt-1"><SelectValue placeholder="Kategorie wählen..." /></SelectTrigger>
+                      <SelectContent>
+                        {categoryOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {form.customer_id && selectedCustomer?.is_family_member && (
+                  <div>
+                    <Label>Dem Hauptkontakt zuweisen</Label>
+                    <Select value={form.primary_customer_id} onValueChange={v => setForm(p => ({ ...p, primary_customer_id: v, is_family_member: !!v }))}>
+                      <SelectTrigger className="mt-1"><SelectValue placeholder="Hauptkontakt auswählen..." /></SelectTrigger>
+                      <SelectContent>
+                        {customers.filter(c => c.id === selectedCustomer.primary_customer_id).map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {/* Police: Vertrag ist PFLICHTFELD — kein Schaden-Bezug erlaubt */}
+                {uploadMode === 'police' && form.customer_id && customerContracts.length === 0 && (
+                  <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-700">
+                    Dieser Kunde hat noch keine Verträge. Bitte zuerst einen Vertrag erfassen.
+                  </div>
+                )}
+                {uploadMode === 'police' && !form.customer_id && (
+                  <div className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-700">
+                    Bitte zuerst einen Kunden auswählen, um den zugehörigen Vertrag zu verknüpfen.
+                  </div>
+                )}
+                {form.customer_id && customerContracts.length > 0 && (
+                  <div>
+                    <Label>
+                      Vertrag (Police)
+                      {uploadMode === 'police' && <span className="text-red-500 ml-1">*</span>}
+                      {uploadMode !== 'police' && <span className="text-muted-foreground text-xs ml-1">(optional)</span>}
+                    </Label>
+                    {uploadMode === 'police' && (
+                      <p className="text-[11px] text-muted-foreground mt-0.5 mb-1">Police-Dokumente müssen immer einem Vertrag zugeordnet werden.</p>
+                    )}
+                    <Select value={form.contract_id} onValueChange={v => {
+                      const c = contracts.find(x => x.id === v)
+                      const existingEnd = c?.end_date && !c.end_date.startsWith('9999') ? c.end_date : ''
+                      setForm(p => ({ ...p, contract_id: v, end_date: existingEnd }))
+                    }}>
+                      <SelectTrigger className="mt-1"><SelectValue placeholder="Vertrag auswählen..." /></SelectTrigger>
+                      <SelectContent>
+                        {customerContracts.map(c => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.insurer} – {c.insurance_type || c.product || ''}
+                            {c.policy_number ? ` (${c.policy_number})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Police: Aus Ablaufstatistik ausschliessen */}
+                {uploadMode === 'police' && form.contract_id && (
+                  <div className="px-3 py-3 rounded-lg border border-slate-200 bg-slate-50 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="exclude-stats"
+                        checked={form.excludeFromStats}
+                        onCheckedChange={v => setForm(p => ({ ...p, excludeFromStats: !!v }))}
+                      />
+                      <label htmlFor="exclude-stats" className="text-sm font-medium text-slate-700 cursor-pointer">
+                        Aus Vertragsablauf-Statistik ausschliessen
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-slate-500 ml-6">
+                      Vertrag erscheint weiterhin unter Verträge, wird aber nicht mehr in der Ablaufpipeline bearbeitet.
+                    </p>
+                    {form.excludeFromStats && (
+                      <div className="ml-6">
+                        <label className="text-xs text-slate-600 font-medium">Begründung (optional)</label>
+                        <input
+                          type="text"
+                          value={form.statsNote}
+                          onChange={e => setForm(p => ({ ...p, statsNote: e.target.value }))}
+                          placeholder="z.B. Wird aus gesundheitlichen Gründen weitergeführt"
+                          className="mt-1 w-full text-xs border border-input rounded-md px-3 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-ring"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Police: Vertragsende Pflichtfeld */}
+                {uploadMode === 'police' && form.contract_id && (
+                  <div>
+                    <Label>Vertragsende <span className="text-red-500">*</span></Label>
+                    {form.end_date ? (
+                      <p className="text-[11px] text-emerald-700 mt-0.5 mb-1">Aus Vertrag übernommen — bei Bedarf anpassen.</p>
+                    ) : (
+                      <p className="text-[11px] text-amber-700 mt-0.5 mb-1">Kein Datum im Vertrag hinterlegt — bitte aus Dokument eintragen.</p>
+                    )}
+                    <Input
+                      type="date"
+                      value={form.end_date}
+                      onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))}
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            <div>
+              <Label>Bemerkungen (optional)</Label>
+              <Textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} className="mt-1" />
+            </div>
+
+            {uploadMode === 'antrag' && (
+              <div className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-700">
+                Nach dem Upload wird die KI automatisch Daten extrahieren und den passenden Kunden zuordnen.
+              </div>
+            )}
+
+            {uploadError && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                <p className="text-xs text-red-700 font-medium">{uploadError}</p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={handleClose}>Abbrechen</Button>
+              <Button type="submit" disabled={uploading || !!fileError || !file}>
+                <Upload className="w-4 h-4 mr-2" /> Hochladen
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Step 3: Uploading with progress */}
+        {step === 'uploading' && (
+          <div className="py-8 flex flex-col items-center gap-5 text-center">
+            <div className="relative w-16 h-16">
+              <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="28" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
+                <circle cx="32" cy="32" r="28" fill="none" stroke="hsl(var(--primary))" strokeWidth="6"
+                  strokeDasharray={`${2 * Math.PI * 28}`}
+                  strokeDashoffset={`${2 * Math.PI * 28 * (1 - uploadProgress / 100)}`}
+                  className="transition-all duration-500"
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-primary">{uploadProgress}%</span>
+            </div>
+            <div>
+              <p className="font-semibold">Dokument wird hochgeladen...</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {uploadProgress < 60 ? 'Datei wird übertragen...' :
+                 uploadProgress < 90 ? 'Dokument wird gespeichert...' :
+                 uploadMode === 'antrag' ? 'KI-Verarbeitung wird gestartet...' : 'Fast fertig...'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Success */}
+        {step === 'success' && (
+          <div className="py-8 flex flex-col items-center gap-4 text-center">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+            </div>
+            <div>
+              <p className="font-bold text-emerald-800">Erfolgreich gespeichert!</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {uploadMode === 'antrag' ? 'KI-Verarbeitung läuft im Hintergrund.' : 'Dokument wurde gespeichert.'}
+              </p>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}

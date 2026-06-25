@@ -1,0 +1,740 @@
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Search, X, Loader2, TrendingDown, RefreshCw, Printer, Save,
+  CheckCircle2, Building2, User, Info, BarChart2, FolderOpen
+} from 'lucide-react';
+import CustomerSelector from '@/components/krankenkassen/CustomerSelector';
+import OfferList, { nettoPreis, getProduktName, getDisplayName, normalizeModel, matchesInsurer } from '@/components/krankenkassen/OfferList';
+import VergleichPrintView from '@/components/krankenkassen/VergleichPrintView';
+import VergleichsAnalysenListe from './VergleichsAnalysenListe';
+import { getModelsForKasse, ALL_STANDARD_MODELS } from '@/lib/kkvConfig';
+
+const FILTER_MODELLE_OPTIONS = [
+  { key: 'Standard', label: 'Standard', desc: 'Freie Arztwahl' },
+  { key: 'Hausarzt', label: 'Hausarzt', desc: 'inkl. GP, Managed Care' },
+  { key: 'HMO', label: 'HMO', desc: 'Gruppenpraxis' },
+  { key: 'Telmed', label: 'Telmed', desc: 'Telemedizin' },
+];
+
+const ALLE_KRANKENKASSEN = [
+  'Agrisano','Aquilana','Assura','Atupri','Avenir (Groupe Mutuel)','CMVEO','Concordia',
+  'CSS','Curaulta','EGK','Einsiedler Krankenkasse','Galenos (Visana)',
+  'Glarner Krankenversicherung','Helsana','KPT','Krankenkasse Birchmeier',
+  'Krankenkasse Luzerner Hinterland','Krankenkasse Steffisburg','Krankenkasse Wädenswil',
+  'Mutuel (Groupe Mutuel)','ÖKK','Philos (Groupe Mutuel)','rhenusana','sana24 (Visana)',
+  'Sanitas','SLKK','sodalis','Sumiswalder Krankenkasse','SWICA','Visana','Vivao Sympany',
+  'easy sana (Groupe Mutuel)','AMB Assurance (Groupe Mutuel)',
+].sort();
+
+// Muss identisch zu FILTER_MODELLE_OPTIONS keys sein
+const MODELL_OPTIONS = ['Standard', 'Hausarzt', 'HMO', 'Telmed'];
+const FRANCHISE_ERWACHSENE = [300, 500, 1000, 1500, 2000, 2500];
+const FRANCHISE_KINDER = [0, 100, 200, 300, 400, 500, 600];
+
+function calcAge(birthdate) {
+  if (!birthdate) return null;
+  const birth = new Date(birthdate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+export default function KrankenkassenVergleich() {
+  const queryClient = useQueryClient();
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [kasseSearch, setKasseSearch] = useState('');
+  const [showKasseDropdown, setShowKasseDropdown] = useState(false);
+  const kasseRef = useRef(null);
+  const printRef = useRef(null);
+
+  const [formData, setFormData] = useState({
+    vorname: 'Peter Martin', nachname: 'Adam', geburtsdatum: '1968-10-07',
+    plz: '4055', wohnort: 'Basel', kanton: 'BS',
+    aktuelle_krankenkasse: 'Mutuel (Groupe Mutuel)', aktuelles_modell: 'Telmed', aktuelle_franchise: '300', unfall: false,
+  });
+  const [filterModelle, setFilterModelle] = useState(['Standard', 'Hausarzt', 'HMO', 'Telmed']);
+
+  const [vergleichResults, setVergleichResults] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState('');
+  const [selectedResult, setSelectedResult] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const alter = calcAge(formData.geburtsdatum);
+  const isKind = alter !== null && alter <= 25;
+  const franchiseOptions = isKind ? FRANCHISE_KINDER : FRANCHISE_ERWACHSENE;
+
+  const filteredKassen = kasseSearch.length >= 1
+    ? ALLE_KRANKENKASSEN.filter(k => k.toLowerCase().includes(kasseSearch.toLowerCase()))
+    : ALLE_KRANKENKASSEN;
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (kasseRef.current && !kasseRef.current.contains(e.target)) setShowKasseDropdown(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const canCompare = !!(formData.plz && formData.geburtsdatum && formData.aktuelle_franchise);
+
+  // PrimAI API — offizielle BAG-Daten via Backend-Proxy (yob-Parameter)
+  const handleVergleich = async () => {
+    if (!canCompare) return;
+    setIsLoading(true);
+    setApiError('');
+    setVergleichResults(null);
+    setSelectedResult(null);
+    try {
+      const yob = new Date(formData.geburtsdatum).getFullYear();
+      const response = await base44.functions.invoke('queryBAGLive', {
+        plz: formData.plz,
+        yob,
+        deductible: Number(formData.aktuelle_franchise),
+        accident: formData.unfall,
+      });
+      // Robuste Extraktion — unterstützt alle möglichen Response-Strukturen
+      const respData = response.data;
+      const rawOffers = Array.isArray(respData)
+        ? respData
+        : Array.isArray(respData?.data) ? respData.data
+        : Array.isArray(respData?.offers) ? respData.offers
+        : [];
+
+      if (!rawOffers.length) throw new Error('Keine Daten von der API erhalten');
+
+      // Normalisiere Preis-Feld
+      const mapped = rawOffers.map(o => {
+        const price = o.price?.total ?? o.price?.base ?? o.monthly_premium ?? 0;
+        return { ...o, monthly_premium: price };
+      }).filter(o => o.monthly_premium > 0 && o.insurer && o.model);
+
+      // Dedup: Nur exakte regionale Duplikate entfernen (gleicher Insurer + Modell + Preis + Franchise).
+      // WICHTIG: Helsana liefert z.B. "Hausarzt" zweimal mit identischem Preis (Flexmed R1 + Hausarzt R1)
+      // → beide behalten! Rangnummer unterscheidet sie visuell.
+      // Regionale Duplikate (z.B. verschiedene Regionen mit identischem Insurer+Modell+Preis) werden entfernt.
+      const seenKeys = new Set();
+      const deduped = [];
+      for (const o of mapped) {
+        const key = `${o.insurer}|||${o.model}|||${o.monthly_premium}|||${o.deductible}`;
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          deduped.push(o);
+        }
+      }
+
+      setVergleichResults({ offers: deduped });
+    } catch (err) {
+      setApiError('Vergleich konnte nicht geladen werden: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const allOffers = vergleichResults?.offers || [];
+
+  // "Weitere" Modelle = normalisierte Modelle die nicht in den Standard-4 sind
+  // z.B. 'other' → 'Weitere' (PrimaFlex/Sanatel bei Groupe Mutuel)
+  const weitereModelle = useMemo(() => {
+    const found = new Set();
+    allOffers.forEach(o => {
+      const norm = normalizeModel(o.model);
+      if (!ALL_STANDARD_MODELS.includes(norm)) found.add(norm);
+    });
+    return [...found].sort();
+  }, [allOffers]);
+
+  // Neue Weitere-Modelle automatisch in filterModelle aktivieren sobald API-Daten geladen
+  useEffect(() => {
+    if (weitereModelle.length === 0) return;
+    setFilterModelle(prev => {
+      const toAdd = weitereModelle.filter(m => !prev.includes(m));
+      if (toAdd.length === 0) return prev;
+      return [...prev, ...toAdd];
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(weitereModelle)]);
+
+  const _currentModellNorm = formData.aktuelles_modell ? normalizeModel(formData.aktuelles_modell) : null;
+
+  // Wenn aktuelles Modell ein "Weitere"-Modell ist, sicherstellen dass es immer im Filter ist
+  useEffect(() => {
+    if (!_currentModellNorm) return;
+    if (ALL_STANDARD_MODELS.includes(_currentModellNorm)) return;
+    setFilterModelle(prev => prev.includes(_currentModellNorm) ? prev : [...prev, _currentModellNorm]);
+  }, [_currentModellNorm]);
+
+  // Alle aktiven Filter-Keys inkl. Weitere
+  const allActiveFilterKeys = [...ALL_STANDARD_MODELS, ...weitereModelle];
+
+  // Modell-Filter
+  const filteredOffers = filterModelle.length === allActiveFilterKeys.length
+    ? allOffers
+    : allOffers.filter(o => filterModelle.includes(normalizeModel(o.model)));
+
+  // Sortierung nach Preis — das ist die EINZIGE Sortierung (OfferList sortiert nicht mehr)
+  const offers = [...filteredOffers].sort((a, b) => (a.monthly_premium || 0) - (b.monthly_premium || 0));
+  const cheapestOffer = offers[0] || null;
+
+  // Suche aktuelle Kasse in allOffers (Modell-Filter berücksichtigt für Preis-Anzeige nicht)
+  const currentOfferForPrice = (() => {
+    const exactMatch = allOffers.find(o =>
+      matchesInsurer(o.insurer, formData.aktuelle_krankenkasse) &&
+      _currentModellNorm &&
+      normalizeModel(o.model) === _currentModellNorm
+    );
+    if (exactMatch) return exactMatch;
+    return allOffers.find(o => matchesInsurer(o.insurer, formData.aktuelle_krankenkasse));
+  })();
+
+  const currentOffer = currentOfferForPrice;
+  const currentPraemie = currentOfferForPrice?.monthly_premium;
+  const currentNet = currentPraemie ? nettoPreis(currentPraemie) : null;
+
+  // Rang der aktuellen Kasse in der gefilterten, sortierten Liste
+  const currentKasseRang = useMemo(() => {
+    if (!currentOfferForPrice) return null;
+    const idx = offers.findIndex(o =>
+      matchesInsurer(o.insurer, formData.aktuelle_krankenkasse) &&
+      (_currentModellNorm ? normalizeModel(o.model) === _currentModellNorm : true)
+    );
+    return idx === -1 ? null : idx + 1;
+  }, [offers, currentOfferForPrice, formData.aktuelle_krankenkasse, _currentModellNorm]);
+
+  // Ist das aktuelle Modell in der gefilterten Liste sichtbar (oder ausgefiltert)?
+  const currentModellInFilter = _currentModellNorm ? filterModelle.includes(_currentModellNorm) : true;
+  const currentNetForSave = currentOfferForPrice ? nettoPreis(currentOfferForPrice.monthly_premium) : currentNet;
+  const selectedNet = selectedResult ? nettoPreis(selectedResult.monthly_premium) : null;
+  const cheapestNet = cheapestOffer ? nettoPreis(cheapestOffer.monthly_premium) : null;
+
+  // Ersparnis Auswahl vs. aktuell (kann negativ sein — Kundenwunsch)
+  const ersparnisMonat = currentNet && selectedNet ? currentNet - selectedNet : null;
+  const ersparnisJahr = ersparnisMonat !== null ? Math.round(ersparnisMonat * 12) : null;
+  // Max. Ersparnis (günstigste vs. aktuell)
+  const maxErsparnis = currentNet && cheapestNet ? Math.round((currentNet - cheapestNet) * 12) : null;
+
+  // Direktes Speichern ohne Dialog
+  const handleSave = useCallback(async () => {
+    if (!selectedResult || isSaving) return;
+    setIsSaving(true);
+    try {
+      const user = await base44.auth.me();
+      const organizationId = selectedCustomer?.organization_id || user?.organization_id || user?.data?.organization_id || 'default';
+      await base44.entities.VergleichsAnalyse.create({
+        customer_id: selectedCustomer?.id,
+        customer_name: `${formData.vorname} ${formData.nachname}`.trim() || selectedCustomer?.first_name,
+        advisor_id: user.id,
+        advisor_name: user.full_name || user.email,
+        organization_id: organizationId,
+        analyse_datum: new Date().toISOString(),
+        persoenliche_daten: {
+          vorname: formData.vorname,
+          nachname: formData.nachname,
+          geburtsdatum: formData.geburtsdatum,
+          plz: formData.plz,
+          kanton: formData.kanton,
+        },
+        ausgangslage: {
+          krankenkasse: formData.aktuelle_krankenkasse,
+          modell: formData.aktuelles_modell,
+          franchise: Number(formData.aktuelle_franchise) || 0,
+          praemie_aktuell: currentNetForSave || 0,
+        },
+        empfehlung: {
+          empfohlene_krankenkasse: getDisplayName(selectedResult.insurer),
+          empfohlenes_modell: getProduktName(selectedResult.insurer, selectedResult.model),
+          empfohlenes_modell_kategorie: normalizeModel(selectedResult.model),
+          empfohlene_franchise: selectedResult.deductible || Number(formData.aktuelle_franchise),
+          praemie_empfohlen: selectedNet,
+          ersparnis_jaehrlich: ersparnisJahr || 0,
+          ersparnis_prozent: currentNet ? ((ersparnisMonat / currentNet) * 100) : 0,
+        },
+        status: 'beratung_erfolgt',
+      });
+      queryClient.invalidateQueries({ queryKey: ['vergleichs-analysen'] });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      alert('Fehler beim Speichern: ' + error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [selectedResult, isSaving, formData, currentNet, selectedNet, ersparnisJahr, ersparnisMonat, selectedCustomer, queryClient]);
+
+  const [isSavingDoc, setIsSavingDoc] = useState(false);
+  const [docSaved, setDocSaved] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const aktuellRef = useRef(null);
+
+  // PDF Druck — öffnet Druckdialog
+  const handlePrint = () => {
+    if (!printRef.current) return;
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <html><head><title>KK-Vergleich</title>
+      <style>body{margin:0;padding:0;font-family:Arial,sans-serif;} @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
+      </head><body>${printRef.current.innerHTML}</body></html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 300);
+  };
+
+  // PDF als HTML-Dokument in Document-Entity des Kunden speichern
+  const handleSaveDocument = useCallback(async () => {
+    if (!printRef.current || !selectedCustomer?.id || isSavingDoc) return;
+    setIsSavingDoc(true);
+    setDocSaved(false);
+    try {
+      const user = await base44.auth.me();
+      const htmlContent = `
+        <html><head><title>KK-Vergleich</title>
+        <style>body{margin:20px;font-family:Arial,sans-serif;font-size:12px;} @media print{body{-webkit-print-color-adjust:exact;}}</style>
+        </head><body>${printRef.current.innerHTML}</body></html>
+      `;
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const file = new File([blob], `KK-Vergleich_${formData.nachname || selectedCustomer.last_name}_${new Date().toISOString().split('T')[0]}.html`, { type: 'text/html' });
+
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+      const docName = `KK-Vergleich ${formData.vorname || selectedCustomer.first_name} ${formData.nachname || selectedCustomer.last_name} · ${new Date().toLocaleDateString('de-CH')}`;
+      await base44.entities.Document.create({
+        customer_id: selectedCustomer.id,
+        customer_name: `${selectedCustomer.first_name} ${selectedCustomer.last_name}`,
+        name: docName,
+        file_url,
+        category: 'correspondence',
+        uploaded_by: user.email,
+        uploaded_at: new Date().toISOString(),
+        notes: `Krankenkassenvergleich OKP 2026 — ${formData.aktuelle_krankenkasse || '–'} → ${selectedResult?.insurer || '–'}`,
+        access_level: 'assigned_advisors_only',
+      });
+
+      setDocSaved(true);
+      setTimeout(() => setDocSaved(false), 3000);
+    } catch (err) {
+      alert('Fehler beim Speichern als Dokument: ' + err.message);
+    } finally {
+      setIsSavingDoc(false);
+    }
+  }, [printRef, selectedCustomer, formData, selectedResult, isSavingDoc]);
+
+
+
+  return (
+    <div className="max-w-6xl mx-auto p-6 space-y-4">
+      <Tabs defaultValue="vergleich">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <TrendingDown className="w-6 h-6 text-primary" />
+              Krankenkassenvergleich OKP 2026
+            </h1>
+            <p className="text-muted-foreground mt-0.5 text-sm">
+              Nettoprämien — offiziell BAG-Daten (priminfo.admin.ch)
+            </p>
+          </div>
+          <TabsList>
+            <TabsTrigger value="vergleich" className="flex items-center gap-1.5">
+              <TrendingDown className="w-3.5 h-3.5" />Vergleich
+            </TabsTrigger>
+            <TabsTrigger value="auswertung" className="flex items-center gap-1.5">
+              <BarChart2 className="w-3.5 h-3.5" />Auswertung
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="vergleich" className="mt-0">
+          <div className="grid gap-5 lg:grid-cols-3">
+            {/* Linke Spalte: Eingabe */}
+            <div className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4 text-primary" />Kundendaten
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CustomerSelector formData={formData} setFormData={setFormData} onSelect={setSelectedCustomer} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Building2 className="w-4 h-4 text-primary" />Aktuelle Versicherung
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {/* Krankenkasse */}
+                  <div>
+                    <Label className="text-xs">Krankenkasse</Label>
+                    <div className="relative mt-1" ref={kasseRef}>
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                      <input type="text"
+                        value={formData.aktuelle_krankenkasse}
+                        onChange={e => { setKasseSearch(e.target.value); setFormData(p => ({ ...p, aktuelle_krankenkasse: e.target.value })); setShowKasseDropdown(true); }}
+                        onFocus={() => setShowKasseDropdown(true)}
+                        placeholder="Krankenkasse suchen..."
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent pl-9 pr-8 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      />
+                      {formData.aktuelle_krankenkasse && (
+                        <button type="button" onClick={() => { setFormData(p => ({ ...p, aktuelle_krankenkasse: '' })); setKasseSearch(''); }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {showKasseDropdown && (
+                        <div className="absolute top-full left-0 right-0 mt-1 z-50 max-h-48 overflow-y-auto rounded-md border bg-popover shadow-lg">
+                          {filteredKassen.map(k => (
+                            <button key={k} type="button"
+                              onMouseDown={() => {
+                                const availableModels = getModelsForKasse(k);
+                                setFormData(p => ({
+                                  ...p,
+                                  aktuelle_krankenkasse: k,
+                                  // Modell beibehalten wenn gültig, sonst erstes verfügbares
+                                  aktuelles_modell: availableModels.includes(p.aktuelles_modell) ? p.aktuelles_modell : availableModels[0],
+                                }));
+                                setKasseSearch('');
+                                setShowKasseDropdown(false);
+                              }}
+                              className="w-full px-3 py-2 text-left text-sm hover:bg-accent">{k}</button>
+                          ))}
+                          {filteredKassen.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">Keine gefunden</p>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs">Aktuelles Modell</Label>
+                    <Select
+                      value={formData.aktuelles_modell}
+                      onValueChange={v => setFormData(p => ({ ...p, aktuelles_modell: v }))}
+                    >
+                      <SelectTrigger className="mt-1 h-9 text-sm"><SelectValue placeholder="Modell wählen" /></SelectTrigger>
+                      <SelectContent>
+                        {getModelsForKasse(formData.aktuelle_krankenkasse).map(m => (
+                          <SelectItem key={m} value={m}>{m}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {formData.aktuelle_krankenkasse && (
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Verfügbare Modelle für {formData.aktuelle_krankenkasse}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label className="text-xs mb-2 block">Modelle im Vergleich anzeigen</Label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {FILTER_MODELLE_OPTIONS.map(({ key, label, desc }) => {
+                        const checked = filterModelle.includes(key);
+                        return (
+                          <label key={key} className={`flex flex-col gap-0.5 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-colors ${
+                            checked ? 'bg-primary/10 border-primary/30' : 'bg-white border-border hover:bg-muted/40'
+                          }`}>
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => setFilterModelle(prev =>
+                                  checked ? (prev.length > 1 ? prev.filter(x => x !== key) : prev) : [...prev, key]
+                                )}
+                                className="w-3 h-3 accent-primary shrink-0"
+                              />
+                              <span className={`text-xs font-semibold ${checked ? 'text-primary' : 'text-foreground'}`}>{label}</span>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground pl-4 leading-tight">{desc}</span>
+                          </label>
+                        );
+                      })}
+                      {/* Dynamische "Weitere Modelle" aus API */}
+                      {weitereModelle.map(key => {
+                        const checked = filterModelle.includes(key);
+                        return (
+                          <label key={key} className={`flex flex-col gap-0.5 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-colors ${
+                            checked ? 'bg-violet-50 border-violet-300' : 'bg-white border-border hover:bg-muted/40'
+                          }`}>
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => setFilterModelle(prev =>
+                                  checked ? (prev.length > 1 ? prev.filter(x => x !== key) : prev) : [...prev, key]
+                                )}
+                                className="w-3 h-3 accent-primary shrink-0"
+                              />
+                              <span className={`text-xs font-semibold ${checked ? 'text-violet-700' : 'text-foreground'}`}>{key}</span>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground pl-4 leading-tight">Weiteres Modell</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {weitereModelle.length === 0 && vergleichResults && (
+                      <p className="text-[10px] text-muted-foreground mt-1">Keine weiteren Modelle in diesen Resultaten</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label className="text-xs">
+                      Franchise <span className="text-destructive">*</span>
+                      {isKind && alter !== null && <span className="text-[10px] text-blue-600 ml-1">(bis 25 J.)</span>}
+                    </Label>
+                    <Select value={String(formData.aktuelle_franchise)} onValueChange={v => setFormData(p => ({ ...p, aktuelle_franchise: v }))} disabled={!formData.geburtsdatum}>
+                      <SelectTrigger className="mt-1 h-9 text-sm">
+                        <SelectValue placeholder={formData.geburtsdatum ? 'Franchise wählen' : 'Zuerst Geburtsdatum'} />
+                      </SelectTrigger>
+                      <SelectContent>{franchiseOptions.map(f => <SelectItem key={f} value={String(f)}>CHF {f}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" id="unfall" checked={formData.unfall}
+                      onChange={e => setFormData(p => ({ ...p, unfall: e.target.checked }))}
+                      className="w-4 h-4 rounded border-input" />
+                    <Label htmlFor="unfall" className="text-xs cursor-pointer">Mit Unfalldeckung</Label>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Button className="w-full" onClick={handleVergleich} disabled={!canCompare || isLoading}>
+                {isLoading
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Berechne...</>
+                  : <><RefreshCw className="w-4 h-4 mr-2" />Vergleich berechnen</>}
+              </Button>
+              {!canCompare && <p className="text-[11px] text-amber-600 text-center">PLZ, Geburtsdatum und Franchise erforderlich</p>}
+
+              <button onClick={() => window.open('https://www.priminfo.admin.ch/de/praemien', '_blank')}
+                className="w-full text-[11px] text-muted-foreground hover:text-primary underline text-center">
+                Offizieller BAG-Rechner ↗
+              </button>
+
+              {apiError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{apiError}</div>
+              )}
+            </div>
+
+            {/* Rechte 2 Spalten: Ergebnisse */}
+            <div className="lg:col-span-2 space-y-4">
+              {!vergleichResults && !isLoading && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Info className="w-4 h-4 text-primary" />Zusammenfassung
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 mb-4">
+                      {[
+                        ['Name', `${formData.vorname} ${formData.nachname}`.trim() || '–'],
+                        ['Geburtsdatum', formData.geburtsdatum ? `${new Date(formData.geburtsdatum).toLocaleDateString('de-CH')} · ${alter} J.` : '–'],
+                        ['PLZ / Ort', [formData.plz, formData.wohnort, formData.kanton].filter(Boolean).join(' ') || '–'],
+                        ['Krankenkasse', formData.aktuelle_krankenkasse || '–'],
+                        ['Franchise', formData.aktuelle_franchise ? `CHF ${formData.aktuelle_franchise}` : '–'],
+                      ].map(([label, value]) => (
+                        <div key={label} className="flex justify-between py-1.5 border-b border-border/30 last:border-0">
+                          <span className="text-xs text-muted-foreground">{label}</span>
+                          <span className="text-xs font-medium">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+                      <Info className="w-3.5 h-3.5 inline mr-1" />
+                      Daten eingeben → «Vergleich berechnen». Prämien 2026 aus offiziellen BAG-Daten.
+                      Angezeigt werden <strong>Nettoprämien</strong> (Bruttoprämie − CHF 5.15 Umweltabgabe).
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {isLoading && (
+                <Card>
+                  <CardContent className="flex items-center justify-center py-16">
+                    <div className="text-center">
+                      <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-3" />
+                      <p className="text-sm font-medium">Lade Prämien aus BAG-Daten...</p>
+                      <p className="text-xs text-muted-foreground mt-1">priminfo.admin.ch / PrimAI</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {vergleichResults && !isLoading && (
+                <>
+                  {/* Ergebnis-Banner: Aktuelle Kasse vs. Empfehlung */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Aktuelle Situation — Farbe je nach Status */}
+                    <div className={`p-4 rounded-xl border-2 ${
+                      !currentNet
+                        ? 'border-slate-300 bg-slate-50'
+                        : currentKasseRang !== null
+                          ? 'border-amber-300 bg-amber-50'
+                          : !currentModellInFilter
+                            ? 'border-orange-300 bg-orange-50'
+                            : 'border-amber-300 bg-amber-50'
+                    }`}>
+                      <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${
+                        !currentNet ? 'text-slate-500' : currentKasseRang !== null ? 'text-amber-600' : 'text-orange-600'
+                      }`}>Aktuelle Kasse</p>
+                      <p className={`text-base font-bold leading-tight ${
+                        !currentNet ? 'text-slate-700' : currentKasseRang !== null ? 'text-amber-900' : 'text-orange-900'
+                      }`}>
+                        {formData.aktuelle_krankenkasse || '–'}
+                      </p>
+                      <p className={`text-xs mt-0.5 ${
+                        !currentNet ? 'text-slate-500' : currentKasseRang !== null ? 'text-amber-700' : 'text-orange-700'
+                      }`}>
+                        {formData.aktuelles_modell || '–'} · Franchise CHF {formData.aktuelle_franchise || '–'}
+                      </p>
+                      <p className={`text-xl font-extrabold mt-2 ${
+                        !currentNet ? 'text-slate-500' : currentKasseRang !== null ? 'text-amber-800' : 'text-orange-800'
+                      }`}>
+                        {currentNet ? `CHF ${currentNet.toFixed(2)}/M.` : <span className="text-sm">Nicht in Region verfügbar</span>}
+                      </p>
+                      {currentKasseRang !== null ? (
+                        <p className="text-[11px] text-amber-600 mt-1">
+                          → Rang <strong>{currentKasseRang}</strong> von {offers.length} in der Liste ↓
+                        </p>
+                      ) : currentNet && !currentModellInFilter ? (
+                        <p className="text-[11px] mt-1 text-orange-600 font-semibold">
+                          ⚠ Modell «{formData.aktuelles_modell}» im Filter nicht aktiv → Preis aus allen Daten
+                        </p>
+                      ) : currentNet ? (
+                        <p className="text-[11px] text-amber-500 mt-1">
+                          Modell «{formData.aktuelles_modell}» nicht in Vergleichsliste
+                        </p>
+                      ) : allOffers.some(o => matchesInsurer(o.insurer, formData.aktuelle_krankenkasse)) ? (
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Modell «{formData.aktuelles_modell}» in PLZ {formData.plz} nicht verfügbar
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          {formData.aktuelle_krankenkasse} nicht in BAG-Daten für PLZ {formData.plz}
+                        </p>
+                      )}
+                    </div>
+                    {/* Günstigste Empfehlung */}
+                    <div className="p-4 rounded-xl border-2 border-emerald-300 bg-emerald-50">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-1">
+                        {selectedResult ? 'Ausgewählt' : 'Günstigstes Angebot'}
+                      </p>
+                      <p className="text-base font-bold text-emerald-900 leading-tight">
+                        {selectedResult ? getDisplayName(selectedResult.insurer) : cheapestOffer ? getDisplayName(cheapestOffer.insurer) : '–'}
+                      </p>
+                      <p className="text-xs text-emerald-700 mt-0.5">
+                        {selectedResult ? getProduktName(selectedResult.insurer, selectedResult.model) : cheapestOffer ? getProduktName(cheapestOffer.insurer, cheapestOffer.model) : '–'}
+                      </p>
+                      <p className="text-xl font-extrabold text-emerald-800 mt-2">
+                        {selectedNet ? `CHF ${selectedNet.toFixed(2)}/M.` : cheapestNet ? `CHF ${cheapestNet.toFixed(2)}/M.` : '–'}
+                      </p>
+                      {(ersparnisJahr !== null || maxErsparnis !== null) && (
+                        <p className={`text-xs font-bold mt-1 ${ersparnisJahr !== null ? (ersparnisJahr >= 0 ? 'text-emerald-700' : 'text-red-600') : 'text-emerald-700'}`}>
+                          {ersparnisJahr !== null
+                            ? `${ersparnisJahr >= 0 ? '−' : '+'}CHF ${Math.abs(ersparnisJahr).toLocaleString('de-CH')}/Jahr`
+                            : maxErsparnis !== null ? `−CHF ${maxErsparnis.toLocaleString('de-CH')}/Jahr möglich` : ''}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Angebotsliste — offers ist bereits sortiert */}
+                  <OfferList
+                    offers={offers}
+                    currentKasseInput={formData.aktuelle_krankenkasse}
+                    currentModellInput={formData.aktuelles_modell}
+                    currentOffer={currentOffer}
+                    currentPraemie={currentPraemie}
+                    selectedResult={selectedResult}
+                    onSelect={setSelectedResult}
+                    cheapestOffer={cheapestOffer}
+                    aktuellRef={aktuellRef}
+                    onScrollToAktuellReady={null}
+                  />
+
+                  {/* Auswahl-Bar mit Speichern + Drucken */}
+                  {selectedResult && (
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                        <div>
+                          <p className="text-sm font-bold">{selectedResult.insurer}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {getProduktName(selectedResult.insurer, selectedResult.model)}
+                            {' · '}CHF {selectedNet?.toFixed(2)}/M. netto
+                            {ersparnisJahr !== null && (
+                              <span className={`ml-2 font-semibold ${ersparnisJahr >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                {ersparnisJahr >= 0 ? '−' : '+'}CHF {Math.abs(ersparnisJahr).toLocaleString('de-CH')}/J.
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5">
+                            <Printer className="w-3.5 h-3.5" />PDF drucken
+                          </Button>
+                          {selectedCustomer?.id && (
+                            <Button
+                              variant="outline" size="sm"
+                              onClick={handleSaveDocument}
+                              disabled={isSavingDoc}
+                              className={`gap-1.5 ${docSaved ? 'border-emerald-400 text-emerald-700 bg-emerald-50' : ''}`}
+                            >
+                              {isSavingDoc
+                                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Speichert...</>
+                                : docSaved
+                                  ? <><CheckCircle2 className="w-3.5 h-3.5" />Gespeichert</>
+                                  : <><FolderOpen className="w-3.5 h-3.5" />In Dokumente</>}
+                            </Button>
+                          )}
+                          <Button size="sm" onClick={handleSave} disabled={isSaving}
+                            className={`gap-1.5 ${saveSuccess ? 'bg-emerald-600 hover:bg-emerald-700 border-emerald-700' : ''}`}>
+                            {isSaving
+                              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Speichert...</>
+                              : saveSuccess
+                                ? <><CheckCircle2 className="w-3.5 h-3.5" />In Auswertung gespeichert</>
+                                : <><Save className="w-3.5 h-3.5" />In Auswertung speichern</>}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="auswertung" className="mt-0">
+          <VergleichsAnalysenListe />
+        </TabsContent>
+      </Tabs>
+
+      {/* Versteckter Print-Container */}
+      <div style={{ display: 'none' }}>
+        <div ref={printRef}>
+          <VergleichPrintView
+            formData={formData}
+            offers={offers}
+            currentOffer={currentOffer}
+            currentPraemie={currentPraemie}
+            selectedResult={selectedResult}
+            printDate={new Date().toLocaleDateString('de-CH')}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

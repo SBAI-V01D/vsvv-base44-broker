@@ -1,0 +1,655 @@
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { base44 } from '@/api/base44Client'
+import { useAuth } from '@/lib/AuthContext'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { DialogFooter } from '@/components/ui/dialog'
+import { AlertTriangle } from 'lucide-react'
+import { lookupPostalCode, isValidPostalCode, fixOcrPostalCode } from '@/lib/swissPostalCodes'
+import PostalCodeInput from '@/components/common/PostalCodeInput'
+import DuplicateWarning from '@/components/customers/DuplicateWarning'
+
+const CANTONS = ["AG","AI","AR","BE","BL","BS","FR","GE","GL","GR","JU","LU","NE","NW","OW","SG","SH","SO","SZ","TG","TI","UR","VD","VS","ZG","ZH"]
+const FAMILY_ROLES = {
+  primary: 'Hauptkunde',
+  spouse: 'Ehepartner/in',
+  child: 'Kind',
+  parent: 'Eltern',
+  other: 'Sonstiges',
+}
+const MANDATE_STATUSES = {
+  valid: 'Gültig',
+  pending: 'Ausstehend',
+  invalid: 'Ungültig',
+  expired: 'Abgelaufen',
+}
+const ASSOCIATIONS = {
+  vsvv: 'VSVV',
+  skv: 'SKV',
+  reka: 'REKA',
+  vfs: 'VFS',
+  pro_life: 'Pro Life',
+  none: 'Keine',
+}
+const CIVIL_STATUSES = {
+  single: 'Ledig',
+  married: 'Verheiratet',
+  divorced: 'Geschieden',
+  widowed: 'Verwitwet',
+  registered_partnership: 'Eingetragene Partnerschaft',
+  dissolved_partnership: 'Aufgelöste Partnerschaft',
+}
+const PERMITS = {
+  b_permit: 'Aufenthaltsbewilligung (Kategorie B)',
+  l_permit: 'Kurzaufenthaltserlaubnis (Kategorie L)',
+  c_permit: 'Niederlassungsbewilligung (Kategorie C)',
+  ec_permit: 'Aufenthaltserlaubnis EU/EFTA',
+  ci_permit: 'Aufenthaltserlaubnis Grenzgänger',
+  g_permit: 'Aufenthaltserlaubnis Besucher',
+  none: 'Keine',
+}
+const COUNTRIES = [
+  { code: 'CH', label: 'Schweiz' },
+  { code: 'DE', label: 'Deutschland' },
+  { code: 'FR', label: 'Frankreich' },
+  { code: 'IT', label: 'Italien' },
+  { code: 'AT', label: 'Österreich' },
+  { code: 'BE', label: 'Belgien' },
+  { code: 'LU', label: 'Luxemburg' },
+  { code: 'NL', label: 'Niederlande' },
+  { code: 'PL', label: 'Polen' },
+  { code: 'ES', label: 'Spanien' },
+  { code: 'PT', label: 'Portugal' },
+  { code: 'GR', label: 'Griechenland' },
+  { code: 'SE', label: 'Schweden' },
+  { code: 'NO', label: 'Norwegen' },
+  { code: 'DK', label: 'Dänemark' },
+  { code: 'FI', label: 'Finnland' },
+  { code: 'CZ', label: 'Tschechien' },
+  { code: 'SK', label: 'Slowakei' },
+  { code: 'HU', label: 'Ungarn' },
+  { code: 'RO', label: 'Rumänien' },
+  { code: 'BG', label: 'Bulgarien' },
+  { code: 'HR', label: 'Kroatien' },
+  { code: 'SI', label: 'Slowenien' },
+  { code: 'LT', label: 'Litauen' },
+  { code: 'LV', label: 'Lettland' },
+  { code: 'EE', label: 'Estland' },
+  { code: 'GB', label: 'Vereinigtes Königreich' },
+  { code: 'IE', label: 'Irland' },
+  { code: 'US', label: 'USA' },
+  { code: 'CA', label: 'Kanada' },
+  { code: 'AU', label: 'Australien' },
+  { code: 'NZ', label: 'Neuseeland' },
+  { code: 'CN', label: 'China' },
+  { code: 'IN', label: 'Indien' },
+  { code: 'JP', label: 'Japan' },
+  { code: 'KR', label: 'Südkorea' },
+  { code: 'SG', label: 'Singapur' },
+  { code: 'MY', label: 'Malaysia' },
+  { code: 'TH', label: 'Thailand' },
+  { code: 'VN', label: 'Vietnam' },
+  { code: 'ID', label: 'Indonesien' },
+  { code: 'PH', label: 'Philippinen' },
+  { code: 'BR', label: 'Brasilien' },
+  { code: 'MX', label: 'Mexiko' },
+  { code: 'ZA', label: 'Südafrika' },
+  { code: 'AE', label: 'Vereinigte Arabische Emirate' },
+  { code: 'TR', label: 'Türkei' },
+  { code: 'RU', label: 'Russland' },
+  { code: 'RS', label: 'Serbien' },
+  { code: 'BA', label: 'Bosnien und Herzegowina' },
+  { code: 'MK', label: 'Nordmazedonien' },
+  { code: 'AL', label: 'Albanien' },
+  { code: 'XK', label: 'Kosovo' },
+  { code: 'ME', label: 'Montenegro' },
+  { code: 'UA', label: 'Ukraine' },
+  { code: 'MD', label: 'Moldau' },
+  { code: 'MA', label: 'Marokko' },
+  { code: 'TN', label: 'Tunesien' },
+  { code: 'DZ', label: 'Algerien' },
+  { code: 'EG', label: 'Ägypten' },
+  { code: 'NG', label: 'Nigeria' },
+  { code: 'ET', label: 'Äthiopien' },
+  { code: 'GH', label: 'Ghana' },
+  { code: 'KE', label: 'Kenia' },
+  { code: 'LK', label: 'Sri Lanka' },
+  { code: 'PK', label: 'Pakistan' },
+  { code: 'BD', label: 'Bangladesch' },
+  { code: 'NP', label: 'Nepal' },
+  { code: 'AF', label: 'Afghanistan' },
+  { code: 'IR', label: 'Iran' },
+  { code: 'IQ', label: 'Irak' },
+  { code: 'SY', label: 'Syrien' },
+  { code: 'LB', label: 'Libanon' },
+  { code: 'IL', label: 'Israel' },
+  { code: 'SA', label: 'Saudi-Arabien' },
+  { code: 'AR', label: 'Argentinien' },
+  { code: 'CO', label: 'Kolumbien' },
+  { code: 'PE', label: 'Peru' },
+  { code: 'VE', label: 'Venezuela' },
+  { code: 'CL', label: 'Chile' },
+  { code: 'EC', label: 'Ecuador' },
+  { code: 'BO', label: 'Bolivien' },
+  { code: 'DO', label: 'Dominikanische Republik' },
+  { code: 'CU', label: 'Kuba' },
+  { code: 'OTHER', label: 'Sonstiges' },
+]
+
+export default function CustomerForm({ customer, primaryCustomers = [], onSave, onCancel, saving }) {
+  const { user } = useAuth()
+
+  const normalizeCustomer = (c) => {
+    if (!c) return {
+      first_name: '', last_name: '', email: '', phone: '', mobile: '',
+      street: '', zip_code: '', city: '', canton: '', birthdate: '',
+      ahv_number: '', profession: '', civil_status: 'single', nationality: 'CH',
+      drivers_license_date: '', bank_account: '', risk_profile: 'medium',
+      customer_type: 'private', status: 'active', mandate_status: 'pending',
+      association_membership: 'none', permit_type: 'none', is_family_member: false,
+      primary_customer_id: '', family_role: 'primary', notes: '',
+      assigned_broker: '', organization_id: '', advisor_id: '',
+    }
+    const n = (v) => v == null ? '' : v
+    return {
+      ...c,
+      first_name: n(c.first_name), last_name: n(c.last_name), email: n(c.email),
+      phone: n(c.phone), mobile: n(c.mobile), street: n(c.street),
+      zip_code: n(c.zip_code), city: n(c.city), canton: n(c.canton),
+      birthdate: n(c.birthdate), ahv_number: n(c.ahv_number), profession: n(c.profession),
+      drivers_license_date: n(c.drivers_license_date), bank_account: n(c.bank_account),
+      notes: n(c.notes), assigned_broker: n(c.assigned_broker),
+      organization_id: n(c.organization_id), advisor_id: n(c.advisor_id),
+      primary_customer_id: n(c.primary_customer_id),
+      civil_status: c.civil_status || 'single', nationality: c.nationality || 'CH',
+      risk_profile: c.risk_profile || 'medium', status: c.status || 'active',
+      mandate_status: c.mandate_status || 'pending',
+      association_membership: c.association_membership || 'none',
+      permit_type: c.permit_type || 'none', family_role: c.family_role || 'primary',
+      is_family_member: c.is_family_member || false,
+    }
+  }
+
+  const [form, setForm] = useState(() => normalizeCustomer(customer))
+
+  useEffect(() => {
+    setForm(normalizeCustomer(customer))
+  }, [customer?.id])
+
+   const [autoFilled, setAutoFilled] = useState(false)
+   const [plzError, setPlzError] = useState('')
+   const [plzSuggestions, setPlzSuggestions] = useState(null)
+
+   // Direct PLZ lookup — no hook indirection
+   const doPlzLookup = useCallback((rawPlz, keepExisting = false) => {
+     if (!rawPlz) return
+     const plz = fixOcrPostalCode(rawPlz)
+     if (plz.length !== 4) return
+     if (!isValidPostalCode(plz)) { setPlzError('Ungültige PLZ'); return }
+     setPlzError('')
+     setPlzSuggestions(null)
+     const result = lookupPostalCode(plz)
+     if (!result) {
+       // PLZ not in DB — allow manual entry, no error
+       return
+     }
+     if (!Array.isArray(result)) {
+       // Single match — auto-fill
+       setForm(prev => ({
+         ...prev,
+         city: keepExisting && prev.city ? prev.city : result.ort,
+         canton: keepExisting && prev.canton ? prev.canton : result.kanton,
+       }))
+       setAutoFilled(true)
+     } else {
+       // Multiple — take first match or show picker
+       if (result.length === 1) {
+         setForm(prev => ({
+           ...prev,
+           city: keepExisting && prev.city ? prev.city : result[0].ort,
+           canton: keepExisting && prev.canton ? prev.canton : result[0].kanton,
+         }))
+         setAutoFilled(true)
+       } else {
+         setPlzSuggestions(result)
+       }
+     }
+   }, [])
+
+   // Auto-lookup on load if city/canton missing
+   useEffect(() => {
+     if (form.zip_code && (!form.city || !form.canton)) {
+       doPlzLookup(form.zip_code, true)
+     }
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [customer?.id])
+
+   // Auto-sync from primary customer for family members
+   const [syncedFromPrimary, setSyncedFromPrimary] = useState([])
+
+   const syncFromPrimary = useCallback((primaryId) => {
+     if (!primaryId) return
+     const primary = primaryCustomers.find(c => c.id === primaryId)
+     if (!primary) return
+     const synced = []
+     setForm(prev => {
+       const next = { ...prev }
+       // Email immer vom Hauptkunden übernehmen
+       if (primary.email) { next.email = primary.email; synced.push('email') }
+       if (!prev.phone && primary.phone) { next.phone = primary.phone; synced.push('phone') }
+       if (!prev.mobile && primary.mobile) { next.mobile = primary.mobile; synced.push('mobile') }
+       if (!prev.street && primary.street) { next.street = primary.street; synced.push('address') }
+       if (!prev.zip_code && primary.zip_code) { next.zip_code = primary.zip_code; next.city = primary.city || ''; next.canton = primary.canton || '' }
+       if (primary.status) next.status = primary.status
+       if (primary.mandate_status) next.mandate_status = primary.mandate_status
+       if (primary.organization_id) next.organization_id = primary.organization_id
+       if (primary.advisor_id) next.advisor_id = primary.advisor_id
+       return next
+     })
+     setSyncedFromPrimary(synced)
+   }, [primaryCustomers])
+
+   // Trigger sync wenn primary_customer_id sich ändert ODER beim ersten Laden (edit-Modus)
+   useEffect(() => {
+     if (form.is_family_member && form.primary_customer_id && primaryCustomers.length > 0) {
+       syncFromPrimary(form.primary_customer_id)
+     }
+   }, [form.primary_customer_id, form.is_family_member, primaryCustomers.length])
+
+   const { data: advisors = [] } = useQuery({
+     queryKey: ['advisors'],
+     queryFn: () => base44.entities.Advisor.filter({ status: 'active' }),
+   })
+
+  // Auto-fill Berater aus eingeloggtem User (nur bei neuen Kunden)
+  useEffect(() => {
+    if (!customer?.id && user && advisors.length > 0 && !form.advisor_id) {
+      const match = advisors.find(a => a.email === user.email)
+      if (match) setForm(prev => ({ ...prev, advisor_id: match.id }))
+    }
+  }, [advisors, user, customer?.id])
+
+  const isNewCustomer = !customer?.id
+  const [advisorError, setAdvisorError] = useState('')
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false)
+  const [forceCreate, setForceCreate] = useState(false)
+
+  // ── Live Duplicate Detection ──────────────────────────────────────────────
+  const normalize = (s) => (s || '').toLowerCase().replace(/\s+/g, '').trim()
+  const normalizePhone = (s) => (s || '').replace(/[^\d]/g, '')
+
+  const { duplicates, householdHints } = useMemo(() => {
+    if (!isNewCustomer || !primaryCustomers?.length) return { duplicates: [], householdHints: [] }
+    const fn = normalize(form.first_name)
+    const ln = normalize(form.last_name)
+    const email = normalize(form.email)
+    const phone = normalizePhone(form.phone)
+    const mobile = normalizePhone(form.mobile)
+    if (!fn && !ln && !email) return { duplicates: [], householdHints: [] }
+
+    const dupes = []
+    const household = []
+
+    for (const c of primaryCustomers) {
+      if (c.id === customer?.id) continue
+      if (c.archived) continue
+      const reasons = []
+
+      // Email match
+      if (email && email.length > 3 && normalize(c.email) === email) reasons.push('E-Mail')
+
+      // Name match (both first AND last)
+      const cFn = normalize(c.first_name)
+      const cLn = normalize(c.last_name)
+      if (fn.length >= 2 && ln.length >= 2 && cFn === fn && cLn === ln) reasons.push('Name')
+
+      // Phone match
+      const cPhone = normalizePhone(c.phone)
+      const cMobile = normalizePhone(c.mobile)
+      if (phone.length >= 8 && (cPhone === phone || cMobile === phone)) reasons.push('Telefon')
+      if (mobile.length >= 8 && (cPhone === mobile || cMobile === mobile)) reasons.push('Mobile')
+
+      // AHV match
+      if (form.ahv_number && form.ahv_number.length > 5 && c.ahv_number === form.ahv_number) reasons.push('AHV-Nr.')
+
+      if (reasons.length > 0) {
+        // Household hint: same last name but no strong match
+        const isHousehold = reasons.length === 0 ||
+          (reasons.length === 1 && reasons[0] === 'Name' && cLn === ln && cFn !== fn)
+        if (isHousehold) {
+          household.push({ customer: c, reasons })
+        } else {
+          dupes.push({ customer: c, reasons, advisorName: null })
+        }
+      } else if (
+        // Same last name + same city/street = household hint
+        ln.length >= 2 && cLn === ln &&
+        (normalize(c.city) === normalize(form.city) || normalize(c.street) === normalize(form.street))
+        && normalize(c.city) && normalize(form.city)
+      ) {
+        household.push({ customer: c, reasons: ['Nachname + Ort'] })
+      }
+    }
+    return { duplicates: dupes, householdHints: household }
+  }, [form.first_name, form.last_name, form.email, form.phone, form.mobile, form.ahv_number, form.city, form.street, primaryCustomers, isNewCustomer])
+
+  const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }))
+
+  const handlePlzChange = (plz) => {
+    setForm(prev => ({ ...prev, zip_code: plz }))
+    setAutoFilled(false)
+    setPlzSuggestions(null)
+    if (plz.length === 4) doPlzLookup(plz, false)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (isNewCustomer && !form.advisor_id) {
+      setAdvisorError('Pflichtfeld: Kunden muss ein Berater zugewiesen werden.')
+      return
+    }
+    setAdvisorError('')
+    if (isNewCustomer && !forceCreate && (duplicates.length > 0)) {
+      setShowDuplicateWarning(true)
+      return
+    }
+    onSave(form)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Family Member Selection */}
+      <div>
+        <Label>Kundentyp</Label>
+        <Select
+          value={form.is_family_member ? 'member' : 'primary'}
+          onValueChange={(v) => {
+            set('is_family_member', v === 'member')
+            if (v === 'primary') {
+              set('primary_customer_id', '')
+              set('family_role', 'primary')
+            }
+          }}
+        >
+          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="primary">Hauptkunde</SelectItem>
+            <SelectItem value="member">Familienmitglied</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {form.is_family_member && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>Hauptkunde *</Label>
+            <Select value={form.primary_customer_id} onValueChange={v => { set('primary_customer_id', v); setSyncedFromPrimary([]); syncFromPrimary(v); }}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {primaryCustomers.map(c => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.first_name} {c.last_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Rolle in Familie</Label>
+            <Select value={form.family_role} onValueChange={v => set('family_role', v)}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.entries(FAMILY_ROLES).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+
+      {syncedFromPrimary.length > 0 && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-700">
+          <span>🔗</span>
+          <span>Fehlende Felder automatisch vom Hauptkontakt übernommen: {syncedFromPrimary.join(', ')} · Status & Berater synchronisiert.</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Vorname *</Label>
+          <Input value={form.first_name} onChange={e => set('first_name', e.target.value)} required className="mt-1" />
+        </div>
+        <div>
+          <Label>Nachname *</Label>
+          <Input value={form.last_name} onChange={e => set('last_name', e.target.value)} required className="mt-1" />
+        </div>
+      </div>
+
+      <div>
+        <Label>E-Mail *</Label>
+        <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} required className="mt-1" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Telefon</Label>
+          <Input value={form.phone} onChange={e => set('phone', e.target.value)} className="mt-1" />
+        </div>
+        <div>
+          <Label>Mobilnummer</Label>
+          <Input value={form.mobile} onChange={e => set('mobile', e.target.value)} className="mt-1" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 mb-3">
+        <div>
+          <Label>Straße</Label>
+          <Input value={form.street} onChange={e => set('street', e.target.value)} className="mt-1" />
+        </div>
+      </div>
+
+      <PostalCodeInput
+        plz={form.zip_code}
+        city={form.city}
+        canton={form.canton}
+        cantons={CANTONS}
+        plzError={plzError}
+        plzSuggestions={plzSuggestions}
+        autoFilled={autoFilled}
+        onPlzChange={handlePlzChange}
+        onCityChange={(city) => { set('city', city); setAutoFilled(false) }}
+        onCantonChange={(canton) => set('canton', canton)}
+        onSelectSuggestion={(suggestion) => {
+          setForm(prev => ({ ...prev, city: suggestion.ort, canton: suggestion.kanton }))
+          setAutoFilled(true)
+          setPlzSuggestions(null)
+        }}
+      />
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Geburtsdatum</Label>
+          <Input type="date" value={form.birthdate} onChange={e => set('birthdate', e.target.value)} className="mt-1" />
+        </div>
+        <div>
+          <Label>AHV-Nummer</Label>
+          <Input value={form.ahv_number} onChange={e => set('ahv_number', e.target.value)} placeholder="756.1234.5678.90" className="mt-1" />
+        </div>
+      </div>
+
+      <div>
+        <Label>Bank- oder Postkontoverbindung</Label>
+        <Input value={form.bank_account} onChange={e => set('bank_account', e.target.value)} placeholder="IBAN oder Kontonummer" className="mt-1" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Nationalität</Label>
+          <Select value={form.nationality} onValueChange={v => set('nationality', v)}>
+            <SelectTrigger className="mt-1">
+              <SelectValue>{COUNTRIES.find(c => c.code === form.nationality)?.label || form.nationality}</SelectValue>
+            </SelectTrigger>
+            <SelectContent className="max-h-60 overflow-y-auto">
+              {COUNTRIES.map(c => <SelectItem key={c.code} value={c.code}>{c.label} ({c.code})</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Führerausweis Datum</Label>
+          <Input type="date" value={form.drivers_license_date} onChange={e => set('drivers_license_date', e.target.value)} className="mt-1" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Beruf</Label>
+          <Input value={form.profession} onChange={e => set('profession', e.target.value)} className="mt-1" />
+        </div>
+        <div>
+          <Label>Zivilstand</Label>
+          <Select value={form.civil_status} onValueChange={v => set('civil_status', v)}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="single">Ledig</SelectItem>
+              <SelectItem value="married">Verheiratet</SelectItem>
+              <SelectItem value="divorced">Geschieden</SelectItem>
+              <SelectItem value="widowed">Verwitwet</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Risikoprofil</Label>
+          <Select value={form.risk_profile} onValueChange={v => set('risk_profile', v)}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">Niedrig</SelectItem>
+              <SelectItem value="medium">Mittel</SelectItem>
+              <SelectItem value="high">Hoch</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Status</Label>
+          <Select value={form.status} onValueChange={v => set('status', v)}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Aktiv</SelectItem>
+              <SelectItem value="inactive">Inaktiv</SelectItem>
+              <SelectItem value="prospect">Interessent</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {showDuplicateWarning && (
+        <DuplicateWarning
+          duplicates={duplicates}
+          householdHints={householdHints}
+          onForceCreate={() => { setForceCreate(true); setShowDuplicateWarning(false); onSave(form) }}
+          onDismiss={() => setShowDuplicateWarning(false)}
+        />
+      )}
+
+      {!showDuplicateWarning && duplicates.length > 0 && form.first_name && form.last_name && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-700">
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+          <span>{duplicates.length} mögliche Dublette{duplicates.length > 1 ? 'n' : ''} gefunden — wird beim Speichern angezeigt.</span>
+        </div>
+      )}
+
+      <div>
+        <Label>Beratender Berater {isNewCustomer && <span className="text-destructive">*</span>}</Label>
+        <Select value={form.advisor_id || ''} onValueChange={v => { set('advisor_id', v === '' ? '' : v); setAdvisorError('') }}>
+          <SelectTrigger className={`mt-1 ${advisorError ? 'border-destructive ring-1 ring-destructive' : ''}`}><SelectValue placeholder="Berater auswählen..." /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value={null}>– Kein Berater –</SelectItem>
+            {advisors
+              .sort((a, b) => {
+                const roleOrder = { team_lead: 0, advisor: 1, address_broker: 2 }
+                return (roleOrder[a.data?.role || a.role] ?? 9) - (roleOrder[b.data?.role || b.role] ?? 9)
+              })
+              .map(a => {
+                const role = a.data?.role || a.role
+                const roleLabel = role === 'address_broker' ? ' (Adressvermittler)' : role === 'team_lead' ? ' (Teamleiter)' : ''
+                return (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.data?.firstname || a.firstname} {a.data?.lastname || a.lastname}{roleLabel}
+                  </SelectItem>
+                )
+              })
+            }
+          </SelectContent>
+        </Select>
+        {advisorError && (
+          <p className="text-[11px] text-destructive mt-1 flex items-center gap-1">
+            <span>⚠</span> {advisorError}
+          </p>
+        )}
+        {isNewCustomer && !form.advisor_id && !advisorError && (
+          <p className="text-[10px] text-amber-600 mt-1">Ohne Berater-Zuweisung kann dieser Kunde durch RLS unsichtbar werden.</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Status Mandat</Label>
+          <Select value={form.mandate_status} onValueChange={v => set('mandate_status', v)}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(MANDATE_STATUSES).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Verbandzugehörigkeit</Label>
+          <Select value={form.association_membership} onValueChange={v => set('association_membership', v)}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(ASSOCIATIONS).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        <div>
+          <Label>Bewilligung</Label>
+          <Select value={form.permit_type} onValueChange={v => set('permit_type', v)}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(PERMITS).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div>
+        <Label>Notizen</Label>
+        <Textarea value={form.notes} onChange={e => set('notes', e.target.value)} className="mt-1" rows={3} />
+      </div>
+
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={saving}>
+          Abbrechen
+        </Button>
+        <Button type="submit" disabled={saving}>
+          {saving ? 'Speichern...' : (customer ? 'Aktualisieren' : 'Erstellen')}
+        </Button>
+      </DialogFooter>
+    </form>
+  )
+}
