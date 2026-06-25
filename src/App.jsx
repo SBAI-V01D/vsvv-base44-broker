@@ -2,12 +2,13 @@ import React from 'react'
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom'
 import PageNotFound from './lib/PageNotFound'
 import { AuthProvider, useAuth } from '@/lib/AuthContext'
 import UserNotRegisteredError from '@/components/UserNotRegisteredError'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import ScrollToTop from './lib/ScrollToTop'
+import ProtectedRoute from '@/components/ProtectedRoute'
 
 import AppLayout from './components/layout/AppLayout'
 import Dashboard from './pages/Dashboard.jsx'
@@ -56,6 +57,7 @@ import TestKrankenkassenVergleich from './pages/TestKrankenkassenVergleich'
 import ComplianceSchreiben from './pages/ComplianceSchreiben'
 import ChatExport from './pages/ChatExport'
 import ArchiveDownload from './pages/ArchiveDownload'
+import EnterpriseImprovements from './pages/EnterpriseImprovements'
 
 // Portal
 import PortalRoot from './pages/portal/PortalRoot'
@@ -159,7 +161,29 @@ const AuthenticatedApp = () => {
         <Route path="/compliance-schreiben" element={<ComplianceSchreiben />} />
         <Route path="/chat-export" element={<ChatExport />} />
         <Route path="/archive-download" element={<ArchiveDownload />} />
+
+        {/* ── ADMIN ROUTES (admin-only) ───────────────────────────── */}
+        <Route path="/admin/team" element={<ProtectedRoute allowedRoles={['admin']}><AdminTeamAccess /></ProtectedRoute>} />
+        <Route path="/admin/control-center" element={<ProtectedRoute allowedRoles={['admin']}><AdminEnterpriseControlCenter /></ProtectedRoute>} />
+        <Route path="/admin/audit" element={<ProtectedRoute allowedRoles={['admin']}><EnterpriseAudit /></ProtectedRoute>} />
+        <Route path="/admin/audit-logs" element={<ProtectedRoute allowedRoles={['admin']}><AdminLogs /></ProtectedRoute>} />
+        <Route path="/admin/system-check" element={<ProtectedRoute allowedRoles={['admin']}><EnterpriseSystemCheck /></ProtectedRoute>} />
+        <Route path="/admin/improvements" element={<ProtectedRoute allowedRoles={['admin']}><EnterpriseImprovements /></ProtectedRoute>} />
+        <Route path="/admin/logs" element={<ProtectedRoute allowedRoles={['admin']}><SystemLogs /></ProtectedRoute>} />
+        <Route path="/admin/insurance-learning" element={<ProtectedRoute allowedRoles={['admin']}><InsuranceLearningCenter /></ProtectedRoute>} />
+        <Route path="/admin/security" element={<ProtectedRoute allowedRoles={['admin']}><div className="p-12 text-center text-muted-foreground">🔒 Sicherheit & Governance — kommt in Phase 3</div></ProtectedRoute>} />
+        <Route path="/admin/backup" element={<ProtectedRoute allowedRoles={['admin']}><div className="p-12 text-center text-muted-foreground">💾 Backup & Recovery — kommt in Phase 3</div></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Navigate to="/admin/control-center" replace /></ProtectedRoute>} />
       </Route>
+
+      {/* ── LEGACY ROUTE REDIRECTS ───────────────────────────── */}
+      <Route path="/admin/team-zugriffsrechte" element={<Navigate to="/admin/team" replace />} />
+      <Route path="/admin/enterprise-control-center" element={<Navigate to="/admin/control-center" replace />} />
+      <Route path="/admin/enterprise-audit" element={<Navigate to="/admin/audit" replace />} />
+      <Route path="/admin-logs" element={<Navigate to="/admin/audit-logs" replace />} />
+      <Route path="/system-logs" element={<Navigate to="/admin/logs" replace />} />
+      <Route path="/admin/insurance-learning" element={<Navigate to="/admin/insurance-learning" replace />} />
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   )

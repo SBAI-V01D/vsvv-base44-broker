@@ -5,7 +5,8 @@ import {
   ChevronLeft, ChevronRight, Shield, LogOut, ExternalLink,
   User, Briefcase, TrendingUp, Lock, BookOpen, Activity,
   Brain, BarChart2, UserPlus, FolderOpen, RefreshCw, Building2,
-  Database
+  Database, Server, HardDrive, ShieldAlert, FileSearch,
+  Megaphone, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
@@ -118,9 +119,24 @@ const navGroups = [
   {
     label: 'Enterprise',
     items: [
-      { label: 'Berater & Partner',     icon: Briefcase, path: '/berater-organisation' },
-      { label: 'Team & Zugriffsrechte', icon: Lock,      path: '/admin/team-zugriffsrechte', adminOnly: true },
-      { label: 'Admin Dashboard',       icon: Shield,    path: '/admin/enterprise-control-center', adminOnly: true },
+      { label: 'Berater & Partner', icon: Briefcase, path: '/berater-organisation' },
+    ],
+  },
+  {
+    label: 'Administration',
+    adminOnly: true,
+    items: [
+      { label: 'Admin Hub',            icon: Shield,       path: '/admin' },
+      { label: 'System-Health',        icon: Activity,     path: '/admin/control-center' },
+      { label: 'Team & Zugriffe',      icon: Lock,         path: '/admin/team' },
+      { label: 'Audit',                icon: BarChart2,    path: '/admin/audit' },
+      { label: 'Audit Logs',           icon: FileSearch,   path: '/admin/audit-logs' },
+      { label: 'System Check',         icon: Server,       path: '/admin/system-check' },
+      { label: 'System Logs',          icon: FileText,     path: '/admin/logs' },
+      { label: 'KI-Verbesserungen',    icon: Brain,        path: '/admin/improvements' },
+      { label: 'Sicherheit',           icon: ShieldAlert,  path: '/admin/security' },
+      { label: 'Backup',               icon: HardDrive,    path: '/admin/backup' },
+      { label: 'Lernzentrum',          icon: BookOpen,     path: '/admin/insurance-learning' },
     ],
   },
 ];
@@ -188,7 +204,10 @@ export default function Sidebar({ onNavigate }) {
 
       {/* ── Navigation ─────────────────────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto py-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-        {navGroups.map((group) => (
+        {navGroups.map((group) => {
+          // Hide entire group if admin-only and user is not admin
+          if (group.adminOnly && !isAdmin) return null;
+          return (
           <div key={group.label} className="mb-0.5">
             {!collapsed ? (
               <p
@@ -313,7 +332,8 @@ export default function Sidebar({ onNavigate }) {
                 })}
             </div>
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* ── Footer ────────────────────────────────────────────────────── */}
