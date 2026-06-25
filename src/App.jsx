@@ -58,6 +58,8 @@ import ComplianceSchreiben from './pages/ComplianceSchreiben'
 import ChatExport from './pages/ChatExport'
 import ArchiveDownload from './pages/ArchiveDownload'
 import AdminHub from './pages/AdminHub'
+import AdminSecurity from './pages/AdminSecurity'
+import AdminBackup from './pages/AdminBackup'
 import EnterpriseImprovements from './pages/EnterpriseImprovements'
 
 // Portal
@@ -172,8 +174,8 @@ const AuthenticatedApp = () => {
         <Route path="/admin/improvements" element={<ProtectedRoute allowedRoles={['admin']}><EnterpriseImprovements /></ProtectedRoute>} />
         <Route path="/admin/logs" element={<ProtectedRoute allowedRoles={['admin']}><SystemLogs /></ProtectedRoute>} />
         <Route path="/admin/insurance-learning" element={<ProtectedRoute allowedRoles={['admin']}><InsuranceLearningCenter /></ProtectedRoute>} />
-        <Route path="/admin/security" element={<ProtectedRoute allowedRoles={['admin']}><div className="p-12 text-center text-muted-foreground">🔒 Sicherheit & Governance — kommt in Phase 3</div></ProtectedRoute>} />
-        <Route path="/admin/backup" element={<ProtectedRoute allowedRoles={['admin']}><div className="p-12 text-center text-muted-foreground">💾 Backup & Recovery — kommt in Phase 3</div></ProtectedRoute>} />
+        <Route path="/admin/security" element={<ProtectedRoute allowedRoles={['admin']}><AdminSecurity /></ProtectedRoute>} />
+        <Route path="/admin/backup" element={<ProtectedRoute allowedRoles={['admin']}><AdminBackup /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminHub /></ProtectedRoute>} />
       </Route>
 
