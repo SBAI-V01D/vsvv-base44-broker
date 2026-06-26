@@ -7,12 +7,12 @@
 ## 1️⃣ AUTHENTIFIZIERUNG & AUTORISIERUNG
 
 ### 1.1 Benutzer-Authentifizierung
-- [x] Base44 Auth integriert
+- [x] avaai Auth integriert
 - [x] Session Management vorhanden
 - [ ] Multi-Factor Auth vorbereitet (optional)
 - [ ] Session Timeout konfigurierbar (nach X Min inaktiv)
 
-**Status:** ✅ GRÜN – Base44 Auth im Production Mode
+**Status:** ✅ GRÜN – avaai Auth im Production Mode
 
 ---
 
@@ -57,7 +57,7 @@ TODO: Alle anderen Entity-Pages (Customers, Contracts, etc.) similar schützen
   - [x] `approveAndPayoutCommissions` – Admin-only ✓
   - [x] `guardCommissionAccess` – Auth required ✓
 - [ ] Payload Validierung überall
-- [ ] SQL-Injection Protection (Base44 SDK safe)
+- [ ] SQL-Injection Protection (avaai SDK safe)
 - [ ] Rate Limiting (optional, bei Load)
 
 **Status:** ✅ GRÜN – Kritische Functions geschützt
@@ -66,7 +66,7 @@ TODO: Alle anderen Entity-Pages (Customers, Contracts, etc.) similar schützen
 - [x] Nur gesicherte Endpoints aufgerufen
 - [x] Error Handling vorhanden
 - [ ] Sensitive Data nicht in Logs
-- [ ] API Key nicht hardcoded (✓ Base44 SDK handle)
+- [ ] API Key nicht hardcoded (✓ avaai SDK handle)
 
 **Status:** ✅ GRÜN
 
@@ -241,7 +241,7 @@ TODO: Optimization wenn needed
 - [x] validateCommissionForm()
 - [x] Range Checks (%)
 - [ ] XSS Protection (React safe, aber sanitize user input)
-- [ ] SQL Injection (Base44 ORM safe)
+- [ ] SQL Injection (avaai ORM safe)
 
 **Status:** ✅ GRÜN
 
@@ -254,7 +254,7 @@ TODO: Optimization wenn needed
 **Status:** ⚠️ GELB – Error Messages OK, aber könnte verbessert werden
 
 ### 9.3 Dependencies Security
-- [x] Base44 SDK aktuell (@0.8.25)
+- [x] avaai SDK aktuell (@0.8.25)
 - [x] React Query aktuell (@5.x)
 - [ ] Regelmäßige Security Audits
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { ChevronDown, ChevronUp, Upload, FileText, Trash2, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,11 +29,11 @@ export default function ContractDocumentsPanel({ contract }) {
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents', 'contract', contract.id],
-    queryFn: () => avasys.entities.Document.filter({ linked_contract_id: contract.id }, '-created_date'),
+    queryFn: () => avaai.entities.Document.filter({ linked_contract_id: contract.id }, '-created_date'),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avasys.entities.Document.delete(id),
+    mutationFn: (id) => avaai.entities.Document.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents', 'contract', contract.id] }),
   })
 
@@ -48,8 +48,8 @@ export default function ContractDocumentsPanel({ contract }) {
     e.preventDefault()
     if (!file) return
     setUploading(true)
-    const { file_url } = await avasys.integrations.Core.UploadFile({ file })
-    await avasys.entities.Document.create({
+    const { file_url } = await avaai.integrations.Core.UploadFile({ file })
+    await avaai.entities.Document.create({
       customer_id: contract.customer_id,
       customer_name: contract.customer_name,
       primary_customer_id: contract.primary_customer_id,

@@ -1,5 +1,5 @@
 # KrankenkassenVergleich CRM — Complete Rebuild Documentation
-> Version: 1.0 · Stand: 2026-06-08 · Base44 Platform (React + Deno)
+> Version: 1.0 · Stand: 2026-06-08 · avaai Platform (React + Deno)
 
 ---
 
@@ -15,11 +15,11 @@
 | PDF | jsPDF, html2pdf.js |
 | Excel | xlsx (Browser + Deno) |
 | Animation | Framer Motion |
-| Backend | Deno Deploy (Base44 Functions) |
-| Database | Base44 Entities (NoSQL JSON) |
-| AI | Base44 InvokeLLM (Gemini/Claude) |
-| Email | Base44 SendEmail (Resend) |
-| Auth | Base44 AuthProvider |
+| Backend | Deno Deploy (avaai Functions) |
+| Database | avaai Entities (NoSQL JSON) |
+| AI | avaai InvokeLLM (Gemini/Claude) |
+| Email | avaai SendEmail (Resend) |
+| Auth | avaai AuthProvider |
 
 ---
 
@@ -465,8 +465,8 @@
 ## 3. BACKEND FUNCTIONS (Deno Deploy)
 
 Alle Functions sind unter `functions/` als JS-Dateien.
-Aufruf: `avasys.functions.invoke('functionName', payload)`
-Auth: `createClientFromRequest(req)` + `avasys.auth.me()`
+Aufruf: `avaai.functions.invoke('functionName', payload)`
+Auth: `createClientFromRequest(req)` + `avaai.auth.me()`
 
 ### 3.1 BAG Import
 | Function | Zweck |
@@ -667,7 +667,7 @@ App.jsx → Router
 ├── /system-logs               → SystemLogs
 ├── /admin-logs                → AdminLogs
 │
-└── /portal/*                  → Portal (PUBLIC — kein Base44 Auth)
+└── /portal/*                  → Portal (PUBLIC — kein avaai Auth)
     ├── /portal                → PortalDashboard
     ├── /portal/vertraege      → PortalContracts
     ├── /portal/antraege       → PortalApplications
@@ -742,7 +742,7 @@ App.jsx → Router
 | `assistenz` | Lesen + begrenzte Schreibrechte |
 | `user` | Nur eigene Daten (Portal-Kunden) |
 
-### RLS-Pattern (Base44)
+### RLS-Pattern (avaai)
 ```json
 {
   "read": {
@@ -763,40 +763,40 @@ App.jsx → Router
 ### Frontend → Backend
 ```javascript
 // Entities direkt
-const data = await avasys.entities.Customer.filter({ organization_id: org.id });
+const data = await avaai.entities.Customer.filter({ organization_id: org.id });
 
 // Backend Function
-const result = await avasys.functions.invoke('analyzeKrankenkassenVergleich', {
+const result = await avaai.functions.invoke('analyzeKrankenkassenVergleich', {
   kanton: 'ZH', franchise: 300, modell: 'standard'
 });
 
 // File Upload
-const { file_url } = await avasys.integrations.Core.UploadFile({ file });
+const { file_url } = await avaai.integrations.Core.UploadFile({ file });
 
 // AI
-const analysis = await avasys.integrations.Core.InvokeLLM({
+const analysis = await avaai.integrations.Core.InvokeLLM({
   prompt: '...', response_json_schema: { type: 'object', properties: {...} }
 });
 ```
 
 ### Backend Function Template
 ```javascript
-import { createClientFromRequest } from 'npm:@avasys/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@avaai/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const avasys = createClientFromRequest(req);
-    const user = await avasys.auth.me();
+    const avaai = createClientFromRequest(req);
+    const user = await avaai.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     // if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     const { param1, param2 } = await req.json();
 
     // User-scoped
-    const items = await avasys.entities.Customer.list();
+    const items = await avaai.entities.Customer.list();
 
     // Service-role (admin)
-    const allItems = await avasys.asServiceRole.entities.Customer.list();
+    const allItems = await avaai.asServiceRole.entities.Customer.list();
 
     return Response.json({ success: true, items });
   } catch (error) {
@@ -808,14 +808,14 @@ Deno.serve(async (req) => {
 ### BAG Import Pattern (Frontend-seitig optimal)
 ```javascript
 // 1. Upload Datei
-const { file_url } = await avasys.integrations.Core.UploadFile({ file: selectedFile });
+const { file_url } = await avaai.integrations.Core.UploadFile({ file: selectedFile });
 
 // 2. Sequenziell alle 26 Kantone
 const KANTONE = ['ZH','BE','LU','UR','SZ','OW','NW','GL','ZG','FR','SO','BS',
                  'BL','SH','AR','AI','SG','GR','AG','TG','TI','VD','VS','NE','GE','JU'];
 
 for (const kanton of KANTONE) {
-  const response = await avasys.functions.invoke('importBAGDatenFromURL', {
+  const response = await avaai.functions.invoke('importBAGDatenFromURL', {
     file_url, jahr: 2026, kanton
   });
   await new Promise(r => setTimeout(r, 100)); // Pause zwischen Kantonen
@@ -828,7 +828,7 @@ for (const kanton of KANTONE) {
 
 | Package | Version | Verwendung |
 |---------|---------|------------|
-| `@avasys/sdk` | ^0.8.31 | Platform SDK |
+| `@avaai/sdk` | ^0.8.31 | Platform SDK |
 | `xlsx` | ^0.18.5 | Excel Parsing |
 | `jspdf` | ^4.0.0 | PDF Generierung |
 | `recharts` | ^2.15.4 | Charts & Grafiken |
@@ -848,7 +848,7 @@ for (const kanton of KANTONE) {
 ## 10. REBUILD CHECKLIST
 
 ```
-[ ] 1. Base44 App erstellen (React + Vite)
+[ ] 1. avaai App erstellen (React + Vite)
 [ ] 2. Alle 19+ Entities anlegen (JSON Schemas)
 [ ] 3. RLS-Regeln pro Entity konfigurieren
 [ ] 4. Rollen definieren: admin, broker, assistenz

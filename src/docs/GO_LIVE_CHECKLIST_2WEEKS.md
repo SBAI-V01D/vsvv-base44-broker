@@ -91,7 +91,7 @@ IMPACT: Data Breach, Compliance Failure, Go-Live Blocker
 ```javascript
 // PATTERN: Alle Backend-Funktionen MÜSSEN folgendes prüfen:
 
-1. [ ] AUTHENTICATE: user = await avasys.auth.me()
+1. [ ] AUTHENTICATE: user = await avaai.auth.me()
    if (!user) return 403
 
 2. [ ] AUTHORIZE: canAccessEntity(user, record)
@@ -154,7 +154,7 @@ IMPACT: Data Breach, Compliance Failure, Go-Live Blocker
 **Checklist:**
 - [ ] Input Validation in allen Backend-Funktionen
 - [ ] Error Messages – no sensitive data leaks
-- [ ] SQL Injection Protection (Base44 SDK?)
+- [ ] SQL Injection Protection (avaai SDK?)
 - [ ] CORS Policy Review
 - [ ] Rate Limiting Check
 

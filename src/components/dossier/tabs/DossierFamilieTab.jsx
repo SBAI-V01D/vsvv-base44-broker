@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Users, Shield, User } from 'lucide-react';
 
 const FAMILY_ROLE = {
@@ -89,13 +89,13 @@ export default function DossierFamilieTab({ dossier }) {
 
   const { data: mainCustomer } = useQuery({
     queryKey: ['dossier_customer_ro', customerId],
-    queryFn: () => avasys.entities.Customer.filter({ id: customerId }).then(r => r[0]),
+    queryFn: () => avaai.entities.Customer.filter({ id: customerId }).then(r => r[0]),
     enabled: !!customerId,
   });
 
   const { data: familyMembers = [], isLoading } = useQuery({
     queryKey: ['dossier_family_ro', customerId],
-    queryFn: () => avasys.entities.Customer.filter({ primary_customer_id: customerId }),
+    queryFn: () => avaai.entities.Customer.filter({ primary_customer_id: customerId }),
     enabled: !!customerId,
   });
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -35,7 +35,7 @@ export default function GesellschaftenTabelle({ verkaufschance, onUpdate }) {
   const gesellschaften = verkaufschance.gesellschaften || []
 
   const updateMutation = useMutation({
-    mutationFn: (data) => avasys.entities.Verkaufschance.update(verkaufschance.id, data),
+    mutationFn: (data) => avaai.entities.Verkaufschance.update(verkaufschance.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] })
       queryClient.invalidateQueries({ queryKey: ['verkaufschancen', verkaufschance.customer_id] })
@@ -80,7 +80,7 @@ export default function GesellschaftenTabelle({ verkaufschance, onUpdate }) {
 
   const handleUpload = async (id, file) => {
     setUploading(id)
-    const { file_url } = await avasys.integrations.Core.UploadFile({ file })
+    const { file_url } = await avaai.integrations.Core.UploadFile({ file })
     saveGesellschaften(gesellschaften.map(g => g.id === id ? { ...g, dokument_url: file_url, dokument_name: file.name } : g))
     setUploading(null)
   }

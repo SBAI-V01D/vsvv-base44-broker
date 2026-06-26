@@ -1,6 +1,6 @@
 #!/bin/sh
 # =============================================================================
-# avaSysAIByNik Backend — Docker Entrypoint
+# avaai Backend — Docker Entrypoint
 # Runs Prisma migrations on startup, then starts the server.
 # =============================================================================
 
@@ -18,5 +18,5 @@ npx prisma migrate deploy 2>/dev/null || npx prisma db push 2>/dev/null
 echo "✅ Schema applied"
 
 # Start the application
-echo "🚀 Starting avaSysAIByNik Backend..."
+echo "🚀 Starting avaai Backend..."
 exec node dist/app.js

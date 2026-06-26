@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Brain, BookOpen, CheckCircle2, AlertTriangle, TrendingUp, Filter, Shield, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -131,16 +131,16 @@ export default function InsuranceLearningCenter() {
 
   const { data: patterns = [], isLoading: loadingPatterns } = useQuery({
     queryKey: ['insurance_patterns'],
-    queryFn: () => avasys.entities.InsuranceKnowledgePattern.filter({ is_active: true }, '-correction_count', 100),
+    queryFn: () => avaai.entities.InsuranceKnowledgePattern.filter({ is_active: true }, '-correction_count', 100),
   })
 
   const { data: corrections = [], isLoading: loadingCorrections } = useQuery({
     queryKey: ['extraction_corrections'],
-    queryFn: () => avasys.entities.ExtractionCorrectionLog.list('-created_date', 50),
+    queryFn: () => avaai.entities.ExtractionCorrectionLog.list('-created_date', 50),
   })
 
   const validateMutation = useMutation({
-    mutationFn: (id) => avasys.entities.InsuranceKnowledgePattern.update(id, { validated_by_admin: true }),
+    mutationFn: (id) => avaai.entities.InsuranceKnowledgePattern.update(id, { validated_by_admin: true }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['insurance_patterns'] }),
   })
 

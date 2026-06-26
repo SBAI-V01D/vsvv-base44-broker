@@ -6,9 +6,9 @@
 
 ---
 
-Sehr geehrtes Base44-Team
+Sehr geehrtes avaai-Team
 
-Wir beabsichtigen, über Base44 ein CRM-System für die Verwaltung von Kundendaten im Versicherungsbereich zu betreiben.
+Wir beabsichtigen, über avaai ein CRM-System für die Verwaltung von Kundendaten im Versicherungsbereich zu betreiben.
 
 Da wir **Personendaten** und **besonders schützenswerte Daten** verarbeiten (Gesundheitsdaten, Versicherungsdeckungen, Policen, Schadendaten, Krankenkassen-Daten), benötigen wir eine schriftliche Bestätigung zu folgenden Punkten:
 
@@ -24,12 +24,12 @@ Da wir **Personendaten** und **besonders schützenswerte Daten** verarbeiten (Ge
 ## 2. Datenzugriff und Zugriffskontrolle
 
 * Wer hat Zugriff auf unsere Kundendaten?
-* Haben Base44-Mitarbeiter Zugriff auf Kundendaten?
+* Haben avaai-Mitarbeiter Zugriff auf Kundendaten?
 * Falls ja, unter welchen Voraussetzungen? (Support, Wartung, etc.)
 * Werden sämtliche Zugriffe protokolliert (Audit Log)?
 * Können wir auf diese Audit-Logs zugreifen?
 * Wie lange werden Audit-Logs aufbewahrt?
-* Unterstützt Base44 **Row-Level Security** für mandantenfähige Datentrennung?
+* Unterstützt avaai **Row-Level Security** für mandantenfähige Datentrennung?
 * Können Benutzerrechte granular gesteuert werden (RBAC)?
 
 ## 3. Verschlüsselung
@@ -80,10 +80,10 @@ Bitte bestätigen Sie **schriftlich** und stellen Sie aktuelle Dokumente zur Ver
 
 Bitte bestätigen Sie **schriftlich**:
 
-* Ob Base44 für **FINMA-regulierte Unternehmen** eingesetzt werden kann.
-* Welche Kunden aus dem **Finanz- oder Versicherungssektor** Base44 bereits nutzen. (Referenzen)
+* Ob avaai für **FINMA-regulierte Unternehmen** eingesetzt werden kann.
+* Welche Kunden aus dem **Finanz- oder Versicherungssektor** avaai bereits nutzen. (Referenzen)
 * Welche organisatorischen und technischen Massnahmen zur Erfüllung der Anforderungen gemäss **FINMA-Rundschreiben** und **Schweizer Datenschutzgesetz** vorhanden sind.
-* Ob Base44 die Anforderungen an **Auslagerung von Geschäftstätigkeiten** (FINMA RS 2018/3) erfüllt.
+* Ob avaai die Anforderungen an **Auslagerung von Geschäftstätigkeiten** (FINMA RS 2018/3) erfüllt.
 * Ob ein **Notfallplan** und **Business Continuity Plan** vorhanden sind.
 * Wie die **Datenverfügbarkeit** gewährleistet wird (SLA, Uptime-Garantien).
 * Ob **regelmässige Penetrationstests** durchgeführt werden und Ergebnisse verfügbar sind.
@@ -107,7 +107,7 @@ Bitte bestätigen Sie **schriftlich**:
 
 ## 10. Vertragliche und rechtliche Aspekte
 
-* Wo ist Base44 rechtlich domiziliert? (USA, Schweiz, anderes Land?)
+* Wo ist avaai rechtlich domiziliert? (USA, Schweiz, anderes Land?)
 * Welches Recht findet Anwendung?
 * Gibt es eine **Haftungsbeschränkung** bei Datenpannen?
 * Ist eine **Cyber-Versicherung** vorhanden?

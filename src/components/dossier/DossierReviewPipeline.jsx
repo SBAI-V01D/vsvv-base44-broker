@@ -7,7 +7,7 @@
  */
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { CheckCircle2, Circle, ChevronRight } from 'lucide-react';
 
 const STAGES = [
@@ -61,7 +61,7 @@ export default function DossierReviewPipeline({ dossier }) {
   const currentIndex = Math.max(0, getStageIndex(effectiveStatus));
 
   const mutation = useMutation({
-    mutationFn: (review_status) => avasys.entities.AdvisoryDossier.update(dossier.id, { review_status }),
+    mutationFn: (review_status) => avaai.entities.AdvisoryDossier.update(dossier.id, { review_status }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['advisory_dossier', dossier.id] });
       qc.invalidateQueries({ queryKey: ['advisory_dossiers'] });

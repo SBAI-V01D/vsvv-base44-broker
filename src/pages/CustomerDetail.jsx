@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { useParams, useNavigate } from 'react-router-dom'
 import html2pdf from 'html2pdf.js'
 import { useAccessControl } from '@/hooks/useAccessControl'
@@ -65,7 +65,7 @@ export default function CustomerDetail() {
   // Fast: nur aktuellen Kunden laden
   const { data: customerDirect, isLoading: customerLoading, isSuccess: customerSuccess } = useQuery({
     queryKey: ['customer', id],
-    queryFn: () => avasys.entities.Customer.filter({ id }, null, 1).then(r => r?.[0]),
+    queryFn: () => avaai.entities.Customer.filter({ id }, null, 1).then(r => r?.[0]),
     enabled: !!id,
     staleTime: 0,
   })
@@ -79,14 +79,14 @@ export default function CustomerDetail() {
   const [needAllCustomers, setNeedAllCustomers] = useState(false)
   const { data: allCustomers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avasys.entities.Customer.list('-created_date', 500),
+    queryFn: () => avaai.entities.Customer.list('-created_date', 500),
     enabled: needAllCustomers,
     staleTime: 5 * 60 * 1000,
   })
 
   const { data: allAdvisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avasys.entities.Advisor.list(),
+    queryFn: () => avaai.entities.Advisor.list(),
   })
 
   useQuery({
@@ -109,7 +109,7 @@ export default function CustomerDetail() {
   // NUR den aktuellen Kunden laden (schnell)
   const { data: relatedContracts = [], isSuccess: contractsSuccess } = useQuery({
     queryKey: ['contracts', id],
-    queryFn: () => avasys.entities.Contract.filter({ customer_id: id, archived: false }),
+    queryFn: () => avaai.entities.Contract.filter({ customer_id: id, archived: false }),
     enabled: !!id,
     staleTime: 0,
   })
@@ -118,7 +118,7 @@ export default function CustomerDetail() {
 
   const { data: relatedApplications = [], isSuccess: applicationsSuccess } = useQuery({
     queryKey: ['applications', id],
-    queryFn: () => avasys.entities.Application.filter({ customer_id: id }),
+    queryFn: () => avaai.entities.Application.filter({ customer_id: id }),
     enabled: !!id,
     staleTime: 0,
   })
@@ -127,14 +127,14 @@ export default function CustomerDetail() {
 
   const { data: messages = [] } = useQuery({
     queryKey: ['messages', id],
-    queryFn: () => avasys.entities.Message.filter({ customer_id: id }),
+    queryFn: () => avaai.entities.Message.filter({ customer_id: id }),
     enabled: !!id,
     staleTime: 60 * 1000,
   })
 
   const { data: relatedDocuments = [], isSuccess: documentsSuccess } = useQuery({
     queryKey: ['documents', id],
-    queryFn: () => avasys.entities.Document.filter({ customer_id: id }),
+    queryFn: () => avaai.entities.Document.filter({ customer_id: id }),
     enabled: !!id,
     staleTime: 0,
   })
@@ -143,26 +143,26 @@ export default function CustomerDetail() {
 
   const { data: statusDefs = [] } = useQuery({
     queryKey: ['statusDefinitions'],
-    queryFn: () => avasys.entities.StatusDefinition.filter({ type: 'contract' }),
+    queryFn: () => avaai.entities.StatusDefinition.filter({ type: 'contract' }),
     staleTime: 10 * 60 * 1000,
   })
 
   const { data: organizations = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => avasys.entities.Organization.list(),
+    queryFn: () => avaai.entities.Organization.list(),
     staleTime: 10 * 60 * 1000,
   })
 
   const { data: custTasks = [] } = useQuery({
     queryKey: ['tasks', id],
-    queryFn: () => avasys.entities.Task.filter({ customer_id: id }),
+    queryFn: () => avaai.entities.Task.filter({ customer_id: id }),
     enabled: !!id,
     staleTime: 3 * 60 * 1000,
   })
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['verkaufschancen', id],
-    queryFn: () => avasys.entities.Verkaufschance.filter({ customer_id: id }),
+    queryFn: () => avaai.entities.Verkaufschance.filter({ customer_id: id }),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
   })
@@ -175,7 +175,7 @@ export default function CustomerDetail() {
     try {
       // Bei Hauptkontakt: Analyse für gesamte Familie, bei Familienmitglied: nur individuell
       const analysisCustomerId = customer?.is_family_member ? id : primaryCustomerId
-      const result = await avasys.functions.invoke('aiCustomerInsights', { customer_id: analysisCustomerId })
+      const result = await avaai.functions.invoke('aiCustomerInsights', { customer_id: analysisCustomerId })
       setAiAnalysis(result.data)
     } catch (error) {
       console.error('AI Analysis failed:', error)
@@ -190,8 +190,8 @@ export default function CustomerDetail() {
     queryFn: async () => {
       if (!primaryCustomerId) return []
       const [primary, members] = await Promise.all([
-        avasys.entities.Customer.filter({ id: primaryCustomerId }, null, 1),
-        avasys.entities.Customer.filter({ primary_customer_id: primaryCustomerId }),
+        avaai.entities.Customer.filter({ id: primaryCustomerId }, null, 1),
+        avaai.entities.Customer.filter({ primary_customer_id: primaryCustomerId }),
       ])
       return [...(primary || []), ...(members || [])].filter((c, i, a) => a.findIndex(x => x.id === c.id) === i)
     },
@@ -219,7 +219,7 @@ export default function CustomerDetail() {
   })
 
   const updateCustomerMutation = useMutation({
-    mutationFn: ({ id: cid, data }) => avasys.entities.Customer.update(cid, data),
+    mutationFn: ({ id: cid, data }) => avaai.entities.Customer.update(cid, data),
     onSuccess: (_, { data }) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       queryClient.invalidateQueries({ queryKey: ['customer', id] })
@@ -229,7 +229,7 @@ export default function CustomerDetail() {
   })
 
   const createAppMutation = useMutation({
-    mutationFn: (data) => avasys.entities.Application.create(data),
+    mutationFn: (data) => avaai.entities.Application.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications', id] })
       setShowAppForm(false); setEditingApp(null)
@@ -237,7 +237,7 @@ export default function CustomerDetail() {
   })
 
   const updateAppMutation = useMutation({
-    mutationFn: ({ id: aid, data }) => avasys.entities.Application.update(aid, data),
+    mutationFn: ({ id: aid, data }) => avaai.entities.Application.update(aid, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications', id] })
       setShowAppForm(false); setEditingApp(null)
@@ -245,7 +245,7 @@ export default function CustomerDetail() {
   })
 
   const updateContractMutation = useMutation({
-    mutationFn: ({ id: cid, data }) => avasys.entities.Contract.update(cid, data),
+    mutationFn: ({ id: cid, data }) => avaai.entities.Contract.update(cid, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts', id] })
       setEditingContract(null)
@@ -255,7 +255,7 @@ export default function CustomerDetail() {
   const handleContractStatusChange = async ({ status, statusDef, note, metadata }) => {
     if (!statusChangingContract) return
     const contract = statusChangingContract
-    await avasys.entities.StatusHistory.create({
+    await avaai.entities.StatusHistory.create({
       entity_type: 'contract',
       entity_id: contract.id,
       customer_id: contract.customer_id,
@@ -265,7 +265,7 @@ export default function CustomerDetail() {
       note,
       metadata: JSON.stringify(metadata),
     })
-    await avasys.entities.Contract.update(contract.id, { custom_status: status })
+    await avaai.entities.Contract.update(contract.id, { custom_status: status })
     queryClient.invalidateQueries({ queryKey: ['contracts', id] })
     setStatusChangingContract(null)
   }
@@ -835,7 +835,7 @@ export default function CustomerDetail() {
                           {OPEN_KEYS.includes(appStatus) && (
                             <button
                               onClick={async () => {
-                                const result = await avasys.functions.invoke('acceptApplicationAndCreateContract', { application_id: a.id })
+                                const result = await avaai.functions.invoke('acceptApplicationAndCreateContract', { application_id: a.id })
                                 if (result.data?.success) {
                                   queryClient.invalidateQueries({ queryKey: ['applications', id] })
                                   queryClient.invalidateQueries({ queryKey: ['contracts', id] })
@@ -935,7 +935,7 @@ export default function CustomerDetail() {
                         <ActionMenu items={[
                           { label: 'Bearbeiten', icon: Edit, onClick: () => navigate(`/aufgaben?edit=${task.id}`) },
                           { label: 'Als erledigt markieren', icon: CheckCircle2, onClick: async () => {
-                            await avasys.entities.Task.update(task.id, { status: 'completed', completion_date: new Date().toISOString().split('T')[0] })
+                            await avaai.entities.Task.update(task.id, { status: 'completed', completion_date: new Date().toISOString().split('T')[0] })
                             queryClient.invalidateQueries({ queryKey: ['tasks', id] })
                           }},
                         ]} />

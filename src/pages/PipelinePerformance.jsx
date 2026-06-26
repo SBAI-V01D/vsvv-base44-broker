@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Link } from 'react-router-dom';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -68,7 +68,7 @@ function StatCard({ label, value, sub, icon: Icon, color }) {
 export default function PipelinePerformance() {
   const { data: deals = [], isLoading } = useQuery({
     queryKey: ['deals'],
-    queryFn: () => avasys.entities.Deal.list('-created_date'),
+    queryFn: () => avaai.entities.Deal.list('-created_date'),
   });
 
   // ── 1. Monatlicher Umsatzverlauf (letzte 9 Monate) ──────────────────────

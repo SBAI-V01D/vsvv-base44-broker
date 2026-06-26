@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { AlertCircle, Search, Edit, Bell } from 'lucide-react';
 import { sendNotification, claimStatusEmailBody } from '@/lib/notifications';
 import { useToast } from '@/components/ui/use-toast';
@@ -33,12 +33,12 @@ export default function Claims() {
 
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['claims'],
-    queryFn: () => avasys.entities.Claim.list('-created_date'),
+    queryFn: () => avaai.entities.Claim.list('-created_date'),
   });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data, originalStatus, sendMail }) => {
-      await avasys.entities.Claim.update(id, data);
+      await avaai.entities.Claim.update(id, data);
       // Send email if status changed and customer email is available and broker opted in
       if (sendMail && data.customer_email && data.status !== originalStatus) {
         await sendNotification({

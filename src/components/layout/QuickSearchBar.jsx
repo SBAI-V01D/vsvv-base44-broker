@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Search, Users, FileText, Target, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { cn } from '@/lib/utils'
 
 /**
@@ -38,9 +38,9 @@ export default function QuickSearchBar() {
       try {
         const q = query.toLowerCase()
         const [customers, contracts, leads] = await Promise.all([
-          avasys.entities.Customer.list(),
-          avasys.entities.Contract.list(),
-          avasys.entities.Lead.list(),
+          avaai.entities.Customer.list(),
+          avaai.entities.Contract.list(),
+          avaai.entities.Lead.list(),
         ])
 
         const customerResults = customers

@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { useQuery } from '@tanstack/react-query';
 import { User, Building2, ChevronRight, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -58,7 +58,7 @@ export default function NewCustomersSection({ searchQuery = '' }) {
   const { data: newCustomers = [], isLoading } = useQuery({
     queryKey: ['new_customers_section', searchQuery],
     queryFn: async () => {
-      const all = await avasys.entities.Customer.filter({ archived: false }, '-created_date', 500);
+      const all = await avaai.entities.Customer.filter({ archived: false }, '-created_date', 500);
       return all.filter(c => {
         // Datumsvergleich als String (erste 10 Zeichen = YYYY-MM-DD) → kein Timezone-Problem
         const createdDate = (c.created_date || '').slice(0, 10);

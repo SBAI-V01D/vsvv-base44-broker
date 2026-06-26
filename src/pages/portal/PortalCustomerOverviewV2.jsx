@@ -26,14 +26,14 @@ export default function PortalCustomerOverviewV2() {
     <div style={{ background: '#f8f9fa', minHeight: '100vh' }}>
       {/* TEST ÜBERSCHRIFT */}
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 40px', background: '#fff3cd', borderBottom: '1px solid #ffeaa7' }}>
-        <h2 style={{ margin: 0, color: '#856404', fontSize: 14, fontWeight: 700 }}>TEST avaSysAIByNik SICHTBAR</h2>
+        <h2 style={{ margin: 0, color: '#856404', fontSize: 14, fontWeight: 700 }}>TEST avaai SICHTBAR</h2>
       </div>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '60px 40px' }}>
         {/* BEGRÜSSUNG */}
         <section>
           <h1 style={{ fontSize: 36, fontWeight: 700, margin: '0 0 16px', lineHeight: 1.2, color: '#0f172a' }}>
-            Willkommen bei avaSysAIByNik
+            Willkommen bei avaai
           </h1>
           <p style={{ fontSize: 16, color: '#4b5563', margin: '0 0 8px', lineHeight: 1.6 }}>
             Ihrem unabhängigen Partner für strukturierte und transparente Versicherungslösungen.
@@ -251,7 +251,7 @@ export default function PortalCustomerOverviewV2() {
 
       {/* FOOTER */}
       <footer style={{ padding: '40px', textAlign: 'center', fontSize: 12, color: '#9ca3af', borderTop: '1px solid #e5e7eb', marginTop: 80 }}>
-        © 2025 avaSysAIByNik – Ihre Versicherungsplattform
+        © 2025 avaai – Ihre Versicherungsplattform
       </footer>
 
       {/* FLOATING WHATSAPP BUTTON */}

@@ -1,5 +1,5 @@
 // ============================================================================
-// avaSysAIByNik Backend — Data Retention & Right-to-be-Forgotten Service
+// avaai Backend — Data Retention & Right-to-be-Forgotten Service
 //
 // DSGVO Art. 17 (Right to erasure / "Right to be forgotten")
 // FINMA Circular 2023/XX — 10-year retention period for financial records

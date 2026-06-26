@@ -1,9 +1,9 @@
-# avaSysAIByNik CRM - Ergänzende Architekturdokumentation v1.1
+# avaai CRM - Ergänzende Architekturdokumentation v1.1
 
 **Version:** 1.1  
 **Datum:** 2026-06-09  
 **Status:** Zur finalen Freigabe  
-**Klassifizierung:** Vertraulich - avaSysAIByNik Intern
+**Klassifizierung:** Vertraulich - avaai Intern
 
 ---
 
@@ -1309,7 +1309,7 @@ REFRESH MATERIALIZED VIEW mv_bag_praemien_aggregated;
 
 | Dokument | Pfad | Status |
 |---|---|---|
-| **1. ERD** | `docs/ERD_avaSysAIByNik_CRM.pdf` | ✅ Bereit |
+| **1. ERD** | `docs/ERD_avaai_CRM.pdf` | ✅ Bereit |
 | **2. SQL-Schema** | `docs/SUPABASE_SCHEMA.sql` | ✅ Bereit |
 | **3. API-Dokumentation** | `docs/API_DOKUMENTATION.md` | ✅ Bereit |
 | **4. Importablauf** | `docs/BAG_IMPORT_WORKFLOW.md` | ✅ Bereit |
@@ -1321,9 +1321,9 @@ Alle Dokumente sind im `docs/` Ordner verfügbar:
 
 ```
 docs/
-├── avaSysAIByNik_ARCHITECTURE_v1.md (Hauptdokument)
-├── avaSysAIByNik_ARCHITECTURE_v1.1.md (Diese Ergänzung)
-├── ERD_avaSysAIByNik_CRM.pdf
+├── avaai_ARCHITECTURE_v1.md (Hauptdokument)
+├── avaai_ARCHITECTURE_v1.1.md (Diese Ergänzung)
+├── ERD_avaai_CRM.pdf
 ├── SUPABASE_SCHEMA.sql
 ├── API_DOKUMENTATION.md
 ├── BAG_IMPORT_WORKFLOW.md

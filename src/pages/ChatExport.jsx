@@ -53,7 +53,7 @@ const CHAT_HISTORY = [
     role: "assistant",
     timestamp: "2026-06-08",
     session: "Export Session",
-    content: "Plattform-Limitation erklärt: Kein Dateisystem-Zugriff, kein ZIP/TAR möglich. Empfehlung: Base44 GitHub Sync → Download ZIP → Push nach Azure.",
+    content: "Plattform-Limitation erklärt: Kein Dateisystem-Zugriff, kein ZIP/TAR möglich. Empfehlung: avaai GitHub Sync → Download ZIP → Push nach Azure.",
     artifacts: [],
     summary: "Erklärte technische Grenzen und empfahl GitHub Sync als offiziellen Export-Weg."
   },
@@ -63,16 +63,16 @@ const CHAT_HISTORY = [
     timestamp: "2026-06-08",
     session: "Export Session",
     content: "Erstelle ein Skript, das alle meine Datenbanktabellen und die zugehörigen Implementierungen in einem ZIP-Archiv zusammenfasst, damit ich das System lokal sichern kann. und erstelle ein push nach Azure DevOps fullstack und mindestens 99% Genauigkeit",
-    context: "Azure DevOps URL: https://dev.azure.com/swissbotsai/ch.avasys/_git/ch.avasys"
+    context: "Azure DevOps URL: https://dev.azure.com/swissbotsai/ch.avaai/_git/ch.avaai"
   },
   {
     id: 8,
     role: "assistant",
     timestamp: "2026-06-08",
     session: "Export Session",
-    content: "Erneute Limitation erklärt. Empfahl Base44 GitHub Sync → git clone → git remote add azure → git push azure main als vollständigen Workflow.",
+    content: "Erneute Limitation erklärt. Empfahl avaai GitHub Sync → git clone → git remote add azure → git push azure main als vollständigen Workflow.",
     artifacts: [],
-    summary: "Erklärte empfohlenen Workflow: Base44 GitHub Sync → lokaler Clone → Push nach Azure."
+    summary: "Erklärte empfohlenen Workflow: avaai GitHub Sync → lokaler Clone → Push nach Azure."
   },
   {
     id: 9,
@@ -165,7 +165,7 @@ export default function ChatExport() {
       meta: {
         app: "KrankenkassenVergleich CRM",
         exported_at: new Date().toISOString(),
-        platform: "Base44",
+        platform: "avaai",
         total_messages: CHAT_HISTORY.length,
         total_sessions: EARLIER_SESSIONS.length + 1
       },

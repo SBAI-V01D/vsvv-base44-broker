@@ -1,9 +1,9 @@
-# avaSysAIByNik CRM - Technische Architekturdokumentation
+# avaai CRM - Technische Architekturdokumentation
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
 **Status:** Zur Freigabe vorgelegt  
-**Klassifizierung:** Vertraulich - avaSysAIByNik Intern
+**Klassifizierung:** Vertraulich - avaai Intern
 
 ---
 
@@ -27,11 +27,11 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        avaSysAIByNik CRM System                          │
+│                        avaai CRM System                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐   │
-│  │   Base44     │────▶│   Supabase   │────▶│   Externe    │   │
+│  │   avaai     │────▶│   Supabase   │────▶│   Externe    │   │
 │  │   Frontend   │     │  Datenbank   │     │   Dienste    │   │
 │  │              │     │              │     │              │   │
 │  │ - UI/UX      │     │ - PostgreSQL │     │ - BAG API    │   │
@@ -48,7 +48,7 @@
 
 | Prinzip | Umsetzung |
 |---|---|
-| **Separation of Concerns** | Base44 = UI/Logic, Supabase = Data |
+| **Separation of Concerns** | avaai = UI/Logic, Supabase = Data |
 | **Data Sovereignty** | Alle Daten in der Schweiz (Supabase EU/CH) |
 | **Zero Trust** | RLS-Policies auf jeder Tabelle |
 | **Audit-First** | Jede Änderung wird geloggt |
@@ -59,9 +59,9 @@
 ```
 User (Browser)
     ↓
-Base44 Frontend (React)
+avaai Frontend (React)
     ↓
-Base44 Backend Functions (Deno)
+avaai Backend Functions (Deno)
     ↓
 Supabase Connector (OAuth)
     ↓
@@ -651,18 +651,18 @@ CREATE POLICY "admin_override_vertraege" ON vertraege
 
 ## 4. API-Endpunkte & Backend Functions
 
-### 4.1 Base44 Backend Functions
+### 4.1 avaai Backend Functions
 
 #### **Function 1: importBAGDatenToSupabase**
 
 ```javascript
 // functions/importBAGDatenToSupabase.js
-import { createClientFromRequest } from 'npm:@avasys/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@avaai/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const avasys = createClientFromRequest(req);
-    const user = await avasys.auth.me();
+    const avaai = createClientFromRequest(req);
+    const user = await avaai.auth.me();
     
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
@@ -676,7 +676,7 @@ Deno.serve(async (req) => {
     }
 
     // Supabase Connection via Connector
-    const supabase = await avasys.asServiceRole.connectors.getConnection('supabase');
+    const supabase = await avaai.asServiceRole.connectors.getConnection('supabase');
     const serviceKey = supabase.connectionConfig.service_role_key;
     const projectUrl = supabase.connectionConfig.project_url;
 
@@ -729,7 +729,7 @@ Deno.serve(async (req) => {
     }
 
     // Import-Log schreiben
-    await avasys.entities.ImportLog.create({
+    await avaai.entities.ImportLog.create({
       import_typ: 'bag_praemien',
       datei_name: `BAG_${jahr}.xlsx`,
       anzahl_gesamt: records.length,
@@ -792,12 +792,12 @@ Deno.serve(async (req) => {
 
 ```javascript
 // functions/queryBAGPraemien.js
-import { createClientFromRequest } from 'npm:@avasys/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@avaai/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const avasys = createClientFromRequest(req);
-    const user = await avasys.auth.me();
+    const avaai = createClientFromRequest(req);
+    const user = await avaai.auth.me();
     
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -818,7 +818,7 @@ Deno.serve(async (req) => {
     }
 
     // Supabase Connection
-    const supabase = await avasys.asServiceRole.connectors.getConnection('supabase');
+    const supabase = await avaai.asServiceRole.connectors.getConnection('supabase');
     const serviceKey = supabase.connectionConfig.service_role_key;
     const projectUrl = supabase.connectionConfig.project_url;
 
@@ -911,12 +911,12 @@ Deno.serve(async (req) => {
 
 ```javascript
 // functions/validateBAGImport.js
-import { createClientFromRequest } from 'npm:@avasys/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@avaai/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const avasys = createClientFromRequest(req);
-    const user = await avasys.auth.me();
+    const avaai = createClientFromRequest(req);
+    const user = await avaai.auth.me();
     
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
@@ -925,7 +925,7 @@ Deno.serve(async (req) => {
     const { import_id } = await req.json();
 
     // Supabase Connection
-    const supabase = await avasys.asServiceRole.connectors.getConnection('supabase');
+    const supabase = await avaai.asServiceRole.connectors.getConnection('supabase');
     const serviceKey = supabase.connectionConfig.service_role_key;
     const projectUrl = supabase.connectionConfig.project_url;
 
@@ -989,19 +989,19 @@ Deno.serve(async (req) => {
 
 ```javascript
 // functions/getBAGStatistik.js
-import { createClientFromRequest } from 'npm:@avasys/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@avaai/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const avasys = createClientFromRequest(req);
-    const user = await avasys.auth.me();
+    const avaai = createClientFromRequest(req);
+    const user = await avaai.auth.me();
     
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Supabase Connection
-    const supabase = await avasys.asServiceRole.connectors.getConnection('supabase');
+    const supabase = await avaai.asServiceRole.connectors.getConnection('supabase');
     const serviceKey = supabase.connectionConfig.service_role_key;
     const projectUrl = supabase.connectionConfig.project_url;
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { useNavigate, Outlet } from 'react-router-dom'
 import PortalLayout from '@/components/portal/PortalLayout'
 

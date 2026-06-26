@@ -7,7 +7,7 @@
  */
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Search, FileText, AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
 import ConfidenceBadge from '@/components/dossier/ConfidenceBadge';
 
@@ -42,7 +42,7 @@ export default function DossierList({ onOpen, onNew }) {
 
   const { data: dossiers = [], isLoading } = useQuery({
     queryKey: ['advisory_dossiers'],
-    queryFn: () => avasys.entities.AdvisoryDossier.list('-updated_date', 100),
+    queryFn: () => avaai.entities.AdvisoryDossier.list('-updated_date', 100),
   });
 
   const filtered = useMemo(() => {

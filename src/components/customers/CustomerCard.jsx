@@ -4,7 +4,7 @@
  */
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { format, addDays } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, Edit, Trash2, Phone, Mail, FileText, TrendingUp, Zap, CheckSquare, Loader2, Smartphone, ShieldCheck, ShieldAlert, ShieldOff, Clock } from 'lucide-react';
@@ -53,7 +53,7 @@ export default function CustomerCard({
   const healthScore = calculateHealthScore(customer, customerContracts, customerTasks, customerDocs)
 
   const followUpMutation = useMutation({
-    mutationFn: () => avasys.entities.Task.create({
+    mutationFn: () => avaai.entities.Task.create({
       title: `Follow-up: ${customer.first_name || ''} ${customer.last_name || ''}`.trim(),
       customer_id: customer.id,
       customer_name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim(),

@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,7 @@ export default function TabSystemExcellence() {
 
   const runReportMutation = useMutation({
     mutationFn: async () => {
-      const res = await avasys.functions.invoke('systemExcellenceReport', {});
+      const res = await avaai.functions.invoke('systemExcellenceReport', {});
       return res.data;
     },
     onSuccess: (data) => {

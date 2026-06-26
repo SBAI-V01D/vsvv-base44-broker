@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { Star, Trash2, Edit3, Check, X } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { fmtCHF, sortByPraemie, scoreClass, SCORE_COLORS } from '@/lib/dossierCalc';
 
 const SECTION_LABELS = {
@@ -44,7 +44,7 @@ function EntryCard({ entry, lowestPraemie, onDelete, onUpdate, dossierId }) {
   const qc = useQueryClient();
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avasys.entities.ComparisonEntry.update(id, data),
+    mutationFn: ({ id, data }) => avaai.entities.ComparisonEntry.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dossier_comparison', dossierId] });
       setEditing(false);
@@ -255,7 +255,7 @@ export default function ComparisonSideBySide({ entries, dossierId }) {
   const qc = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avasys.entities.ComparisonEntry.delete(id),
+    mutationFn: (id) => avaai.entities.ComparisonEntry.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dossier_comparison', dossierId] }),
   });
 

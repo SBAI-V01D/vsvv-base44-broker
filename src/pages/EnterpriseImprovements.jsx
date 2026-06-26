@@ -11,7 +11,7 @@
 
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,14 +58,14 @@ export default function EnterpriseImprovements() {
   const { data: improvements = [], refetch } = useQuery({
     queryKey: ['enterprise_improvements'],
     queryFn: async () => {
-      return await avasys.entities.EnterpriseImprovement.list('-proposed_at', 50);
+      return await avaai.entities.EnterpriseImprovement.list('-proposed_at', 50);
     },
   });
 
   // Generate Improvements Mutation
   const generateMutation = useMutation({
     mutationFn: async (auditResult) => {
-      const res = await avasys.functions.invoke('generateEnterpriseImprovements', {
+      const res = await avaai.functions.invoke('generateEnterpriseImprovements', {
         audit_result: auditResult,
       });
       return res.data;
@@ -78,8 +78,8 @@ export default function EnterpriseImprovements() {
   // Approve Mutation
   const approveMutation = useMutation({
     mutationFn: async (improvementId) => {
-      const user = await avasys.auth.me();
-      return await avasys.entities.EnterpriseImprovement.update(improvementId, {
+      const user = await avaai.auth.me();
+      return await avaai.entities.EnterpriseImprovement.update(improvementId, {
         status: 'approved',
         approved_by: user.full_name || user.email,
         approved_at: new Date().toISOString(),
@@ -93,7 +93,7 @@ export default function EnterpriseImprovements() {
   // Reject Mutation
   const rejectMutation = useMutation({
     mutationFn: async ({ improvementId, reason }) => {
-      return await avasys.entities.EnterpriseImprovement.update(improvementId, {
+      return await avaai.entities.EnterpriseImprovement.update(improvementId, {
         status: 'rejected',
         rejection_reason: reason,
       });
@@ -108,7 +108,7 @@ export default function EnterpriseImprovements() {
   // Mark as Implemented Mutation
   const implementMutation = useMutation({
     mutationFn: async (improvementId) => {
-      return await avasys.entities.EnterpriseImprovement.update(improvementId, {
+      return await avaai.entities.EnterpriseImprovement.update(improvementId, {
         status: 'implemented',
         implemented_at: new Date().toISOString(),
       });
@@ -121,8 +121,8 @@ export default function EnterpriseImprovements() {
   // Verify Impact Mutation
   const verifyMutation = useMutation({
     mutationFn: async ({ improvementId, actualImpact }) => {
-      const user = await avasys.auth.me();
-      return await avasys.entities.EnterpriseImprovement.update(improvementId, {
+      const user = await avaai.auth.me();
+      return await avaai.entities.EnterpriseImprovement.update(improvementId, {
         status: 'verified',
         verified_at: new Date().toISOString(),
         actual_impact: actualImpact,

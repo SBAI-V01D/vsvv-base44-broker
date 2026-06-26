@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -34,23 +34,23 @@ export default function MutationRequestsPanel() {
 
   const { data: mutations = [] } = useQuery({
     queryKey: ['mutation-requests'],
-    queryFn: () => avasys.entities.MutationRequest.filter({ status: 'pending' }, '-created_date'),
+    queryFn: () => avaai.entities.MutationRequest.filter({ status: 'pending' }, '-created_date'),
   })
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avasys.entities.Customer.list(),
+    queryFn: () => avaai.entities.Customer.list(),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avasys.entities.Contract.list(),
+    queryFn: () => avaai.entities.Contract.list(),
   })
 
   const rejectMutation = useMutation({
     mutationFn: async (mutationId) => {
-      const user = await avasys.auth.me()
-      return avasys.entities.MutationRequest.update(mutationId, {
+      const user = await avaai.auth.me()
+      return avaai.entities.MutationRequest.update(mutationId, {
         status: 'rejected',
         reviewed_by: user.email,
         reviewed_at: new Date().toISOString(),
@@ -89,13 +89,13 @@ export default function MutationRequestsPanel() {
   const handleApprove = async () => {
     if (!selectedRequest || !form) return
     setSaving(true)
-    const user = await avasys.auth.me()
+    const user = await avaai.auth.me()
 
     // Archive old policy
-    await avasys.entities.Contract.update(selectedRequest.policy_id, { status: 'pending_change' })
+    await avaai.entities.Contract.update(selectedRequest.policy_id, { status: 'pending_change' })
 
     // Create new version with updated data
-    await avasys.entities.Contract.create({
+    await avaai.entities.Contract.create({
       ...(selectedContract || {}),
       id: undefined,
       created_date: undefined,
@@ -119,7 +119,7 @@ export default function MutationRequestsPanel() {
     })
 
     // Update mutation request
-    await avasys.entities.MutationRequest.update(selectedRequest.id, {
+    await avaai.entities.MutationRequest.update(selectedRequest.id, {
       status: 'approved',
       reviewed_by: user.email,
       reviewed_at: new Date().toISOString(),

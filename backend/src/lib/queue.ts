@@ -1,5 +1,5 @@
 // ============================================================================
-// avaSysAIByNik Backend — BullMQ Queue Configuration
+// avaai Backend — BullMQ Queue Configuration
 //
 // Provides a centralized queue factory for async job processing.
 // Supported queues:
@@ -43,10 +43,10 @@ function getConnection(): IORedis {
 // ---------------------------------------------------------------------------
 
 export enum QueueName {
-  EMAIL = 'avasys:email',
-  DOCUMENT = 'avasys:document',
-  AUDIT = 'avasys:audit',
-  CLEANUP = 'avasys:cleanup',
+  EMAIL = 'avaai:email',
+  DOCUMENT = 'avaai:document',
+  AUDIT = 'avaai:audit',
+  CLEANUP = 'avaai:cleanup',
 }
 
 // ---------------------------------------------------------------------------

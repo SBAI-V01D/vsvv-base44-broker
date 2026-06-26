@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { ALLE_STATUS } from './VerkaufschanceStatusBadge'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Search, User, Mail, Phone, Building2, FileText } from 'lucide-react'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 
@@ -52,7 +52,7 @@ export default function VerkaufschanceForm({ verkaufschance, customer, onSave, o
       const searchFromLead = async () => {
         setIsSearching(true)
         try {
-          const customers = await avasys.entities.Customer.list()
+          const customers = await avaai.entities.Customer.list()
           const emailMatch = customers.find(c => c.email === lead.email)
           const phoneMatch = customers.find(c => c.phone === lead.phone || c.mobile === lead.phone)
           const nameMatch = customers.find(c => 
@@ -79,9 +79,9 @@ export default function VerkaufschanceForm({ verkaufschance, customer, onSave, o
       const loadFromContract = async () => {
         setIsSearching(true)
         try {
-          const contract = await avasys.entities.Contract.get(linkedContractId)
+          const contract = await avaai.entities.Contract.get(linkedContractId)
           if (contract && customerIdFromUrl) {
-            const customer = await avasys.entities.Customer.get(customerIdFromUrl)
+            const customer = await avaai.entities.Customer.get(customerIdFromUrl)
             if (customer) {
               setSelectedCustomer(customer)
               setSelectedContract(contract)
@@ -110,7 +110,7 @@ export default function VerkaufschanceForm({ verkaufschance, customer, onSave, o
     const debounce = setTimeout(async () => {
       setIsContractSearching(true)
       try {
-        const contracts = await avasys.entities.Contract.filter({ customer_id: selectedCustomer.id })
+        const contracts = await avaai.entities.Contract.filter({ customer_id: selectedCustomer.id })
         const activeContracts = contracts.filter(c => c.status === 'active')
         setContractResults(activeContracts.slice(0, 10))
       } catch (e) {
@@ -130,7 +130,7 @@ export default function VerkaufschanceForm({ verkaufschance, customer, onSave, o
     const debounce = setTimeout(async () => {
       setIsSearching(true)
       try {
-        const customers = await avasys.entities.Customer.list()
+        const customers = await avaai.entities.Customer.list()
         const q = searchQuery.toLowerCase()
         const results = customers.filter(c => 
           !c.is_family_member &&

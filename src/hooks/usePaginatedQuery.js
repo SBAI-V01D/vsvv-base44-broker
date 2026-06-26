@@ -6,7 +6,7 @@
  *
  * Usage:
  *   const { data, page, totalPages, nextPage, prevPage, isLoading } =
- *     usePaginatedQuery('audit_logs', () => avasys.entities.AuditLog, {
+ *     usePaginatedQuery('audit_logs', () => avaai.entities.AuditLog, {
  *       filter: { level: 'error' },
  *       sort: '-timestamp',
  *       pageSize: 50,
@@ -14,7 +14,7 @@
  */
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 
 export function usePaginatedQuery(queryKey, entityName, {
   filter = {},
@@ -27,7 +27,7 @@ export function usePaginatedQuery(queryKey, entityName, {
   const { data = [], isLoading, isFetching } = useQuery({
     queryKey: [queryKey, page, filter, sort, pageSize],
     queryFn: () => {
-      const entity = avasys.entities[entityName];
+      const entity = avaai.entities[entityName];
       if (!entity) return [];
       const hasFilter = Object.keys(filter).length > 0;
       if (hasFilter) {

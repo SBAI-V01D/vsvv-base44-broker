@@ -5,7 +5,7 @@
  */
 import { useState, useMemo, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import {
   AlertTriangle, XCircle, Info, Shield, CheckCircle2,
   Wrench, Eye, Filter, Loader2, ChevronDown, ChevronUp,
@@ -228,7 +228,7 @@ function AutoFixSection({ incident, onAutoFixed }) {
     setState('running');
     setErrorMsg('');
     try {
-      const res = await avasys.functions.invoke(action.fn, {
+      const res = await avaai.functions.invoke(action.fn, {
         entity_id: incident.entity_id,
         entity_type: incident.entity_type,
         incident_id: incident.id,
@@ -298,7 +298,7 @@ function AiFixProposalSection({ incident, onUpdateStatus, updating }) {
   async function requestProposal() {
     setState('loading');
     try {
-      const res = await avasys.functions.invoke('aiIncidentResolver', { incident_id: incident.id });
+      const res = await avaai.functions.invoke('aiIncidentResolver', { incident_id: incident.id });
       setProposal(res.data.proposal);
       setState('done');
     } catch (e) {
@@ -723,7 +723,7 @@ export default function TabIncidents() {
 
   const { data: allIncidents = [] } = useQuery({
     queryKey: ['ecc_incidents'],
-    queryFn: () => avasys.entities.EnterpriseIncident.list('-detected_at', 200),
+    queryFn: () => avaai.entities.EnterpriseIncident.list('-detected_at', 200),
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -732,10 +732,10 @@ export default function TabIncidents() {
   const { data: incidents = [], isLoading } = useQuery({
     queryKey: ['enterprise_incidents', filter],
     queryFn: () => {
-      if (filter === 'open')      return avasys.entities.EnterpriseIncident.filter({ status: 'open' }, '-detected_at', 100);
-      if (filter === 'in_review') return avasys.entities.EnterpriseIncident.filter({ status: 'in_review' }, '-detected_at', 100);
-      if (filter === 'resolved')  return avasys.entities.EnterpriseIncident.filter({ status: 'resolved' }, '-resolved_at', 50);
-      return avasys.entities.EnterpriseIncident.list('-detected_at', 200);
+      if (filter === 'open')      return avaai.entities.EnterpriseIncident.filter({ status: 'open' }, '-detected_at', 100);
+      if (filter === 'in_review') return avaai.entities.EnterpriseIncident.filter({ status: 'in_review' }, '-detected_at', 100);
+      if (filter === 'resolved')  return avaai.entities.EnterpriseIncident.filter({ status: 'resolved' }, '-resolved_at', 50);
+      return avaai.entities.EnterpriseIncident.list('-detected_at', 200);
     },
     staleTime: 30_000,
     gcTime: 5 * 60 * 1000,
@@ -745,7 +745,7 @@ export default function TabIncidents() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, status, notes }) => {
-      const me = await avasys.auth.me();
+      const me = await avaai.auth.me();
       const isResolved = ['resolved', 'accepted_risk', 'auto_fixed', 'rejected', 'closed'].includes(status);
       const existing = incidents.find(i => i.id === id);
       const auditEntry = {
@@ -757,7 +757,7 @@ export default function TabIncidents() {
         new_status: status,
         comment: notes || '',
       };
-      return avasys.entities.EnterpriseIncident.update(id, {
+      return avaai.entities.EnterpriseIncident.update(id, {
         status,
         resolution_notes: notes || undefined,
         resolved_at: isResolved ? new Date().toISOString() : undefined,

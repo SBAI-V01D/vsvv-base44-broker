@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { User, Mail, Phone, Building2, Globe, UserCheck, FileText, Tag, Calendar, Upload, X, Paperclip, TrendingUp } from 'lucide-react'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import LeadAiDocumentAnalysis from './LeadAiDocumentAnalysis'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -112,7 +112,7 @@ export default function LeadForm({ open, onClose, onSubmit, lead, advisors = [],
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
-    const { file_url } = await avasys.integrations.Core.UploadFile({ file })
+    const { file_url } = await avaai.integrations.Core.UploadFile({ file })
     const newDoc = {
       name: file.name,
       url: file_url,
@@ -424,7 +424,7 @@ export default function LeadForm({ open, onClose, onSubmit, lead, advisors = [],
                   setConverting(true)
                   setConvertError(null)
                   try {
-                    const response = await avasys.functions.invoke('convertLeadToCustomer', { lead_id: lead.id })
+                    const response = await avaai.functions.invoke('convertLeadToCustomer', { lead_id: lead.id })
                     if (response.data?.success) {
                       await Promise.all([
                         queryClient.invalidateQueries({ queryKey: ['leads'] }),

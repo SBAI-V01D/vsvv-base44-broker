@@ -16,7 +16,7 @@
 
 **Verwendung:**
 ```javascript
-await avasys.functions.invoke('auditLogWrite', {
+await avaai.functions.invoke('auditLogWrite', {
   entity_type: 'Contract',
   entity_id: contractId,
   action: 'create',

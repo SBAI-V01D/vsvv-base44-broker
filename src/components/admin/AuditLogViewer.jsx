@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
@@ -24,7 +24,7 @@ export default function AuditLogViewer() {
     queryKey: ['auditLogs'],
     queryFn: async () => {
       try {
-        return await avasys.entities.AuditLog.list('-changed_at', 500);
+        return await avaai.entities.AuditLog.list('-changed_at', 500);
       } catch {
         return [];
       }

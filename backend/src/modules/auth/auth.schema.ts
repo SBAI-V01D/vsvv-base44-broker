@@ -1,5 +1,5 @@
 // ============================================================================
-// avaSysAIByNik Backend — Auth Validation Schemas (Zod)
+// avaai Backend — Auth Validation Schemas (Zod)
 // All request bodies for the auth module are validated here.
 // ============================================================================
 

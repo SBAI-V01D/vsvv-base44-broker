@@ -288,7 +288,7 @@ Das Audit-System muss beantworten können:
   // 10. METADATA (Zusätzliche Informationen)
   // ─────────────────────────────────────────────────────
   
-  "user_email": "p.adam@avasys.ch",
+  "user_email": "p.adam@avaai.ch",
   // Nur wenn user-getriggert (trigger_type="user")
   
   "automation_id": "6a08c41b6fa1329f03a4bc04",
@@ -610,7 +610,7 @@ open → in_progress → completed
 ```javascript
 {
   "actor_type": "user" | "automation" | "scheduler" | "system" | "migration" | "api",
-  "actor_id": "p.adam@avasys.ch" | "onApplicationUpdate" | "6a01c612300a5ddad0b6e46e",
+  "actor_id": "p.adam@avaai.ch" | "onApplicationUpdate" | "6a01c612300a5ddad0b6e46e",
   "actor_name": "Peter Adam" | "Application Update Automation" | "Daily Expiry Check"
 }
 ```
@@ -767,11 +767,11 @@ function generateCorrelationId(processType, entityId) {
 ---
 
 ### 3. Storage & Querying ✅ BEANTWORTET
-**Entscheidung:** AuditLog Entity (Base44) für Start
+**Entscheidung:** AuditLog Entity (avaai) für Start
 
 **Begründung:**
 - Einfach, schnell, transparent
-- Base44-Features (Filter, Sort, Query) nutzbar
+- avaai-Features (Filter, Sort, Query) nutzbar
 - Bei >100k Events/Monat: externer Service evaluieren
 
 ---

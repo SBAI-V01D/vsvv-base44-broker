@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +30,7 @@ export default function AiInsightsPanel({ customerId }) {
     setLoading(true)
     setError(null)
     try {
-      const res = await avasys.functions.invoke('aiCustomerInsights', { customer_id: customerId })
+      const res = await avaai.functions.invoke('aiCustomerInsights', { customer_id: customerId })
       setInsights(res.data.insights)
       setContext(res.data.context)
     } catch (e) {

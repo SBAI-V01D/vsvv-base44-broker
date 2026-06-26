@@ -289,7 +289,7 @@ Opportunity v2.0 {
 // PATTERN: Konsistent in allen Entity-Operations
 
 // 1. READ: Nur eigene Daten/Team-Daten
-const userVisibleCustomers = await avasys.asServiceRole.entities.Customer.filter({
+const userVisibleCustomers = await avaai.asServiceRole.entities.Customer.filter({
   $or: [
     { primary_advisor_id: user.id },
     { assigned_advisors: { $contains: user.id } }
@@ -453,7 +453,7 @@ Problem:
 - Alle Backend-Funktionen müssen RLS validieren
   (sind sie es? – Audit notwendig)
 - API-Ratenlimitierung?
-- SQL Injection Protection? (Base44 SDK sollte schützen, aber überprüfen)
+- SQL Injection Protection? (avaai SDK sollte schützen, aber überprüfen)
 - CORS-Config?
 - API Key Leakage? (env vars geheim?)
 

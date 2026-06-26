@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,16 +18,16 @@ export default function UserManagementTab() {
 
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
-    queryFn: () => avasys.entities.User.list(),
+    queryFn: () => avaai.entities.User.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avasys.entities.Advisor.list(),
+    queryFn: () => avaai.entities.Advisor.list(),
   })
 
   const updateUserMutation = useMutation({
-    mutationFn: (data) => avasys.auth.updateMe(data),
+    mutationFn: (data) => avaai.auth.updateMe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       setShowDialog(false)

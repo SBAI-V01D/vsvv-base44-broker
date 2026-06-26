@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
-// avaSysAIByNik Backend — Environment Variable Validation
+// avaai Backend — Environment Variable Validation
 // All env vars are parsed and validated at import time via Zod.
 // Access the validated `env` singleton throughout the app.
 // ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ const envSchema = z.object({
     .transform((v) => v === 'true' || v === '1'),
   MINIO_ACCESS_KEY: z.string().optional(),
   MINIO_SECRET_KEY: z.string().optional(),
-  MINIO_BUCKET: z.string().default('avasys-documents'),
+  MINIO_BUCKET: z.string().default('avaai-documents'),
 
   // ----- SMTP / Email -----
   SMTP_HOST: z.string().default('localhost'),
@@ -74,11 +74,11 @@ const envSchema = z.object({
     .pipe(z.number().positive().max(65535)),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  SMTP_FROM: z.string().email().default('noreply@avasys.ch'),
+  SMTP_FROM: z.string().email().default('noreply@avaai.ch'),
 
   // ----- CORS -----
   // SECURITY: In production, ALWAYS set CORS_ORIGIN to the explicit
-  // frontend domain (e.g. 'https://app.avasys.ch'). Wildcard '*' allows
+  // frontend domain (e.g. 'https://app.avaai.ch'). Wildcard '*' allows
   // any website to make cross-origin API calls.
   CORS_ORIGIN: z.string().default('http://localhost:3004'),
 });

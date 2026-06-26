@@ -4,7 +4,7 @@
  */
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { cn } from '@/lib/utils'
 import { CheckCircle2, Circle, Plus, Clock, ArrowUpCircle, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,7 @@ export default function ContractTasksPanel({ contract, tasks = [], onNavigateCus
   )
 
   const createMutation = useMutation({
-    mutationFn: (data) => avasys.entities.Task.create(data),
+    mutationFn: (data) => avaai.entities.Task.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       setShowForm(false)
@@ -39,7 +39,7 @@ export default function ContractTasksPanel({ contract, tasks = [], onNavigateCus
   })
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }) => avasys.entities.Task.update(id, { status }),
+    mutationFn: ({ id, status }) => avaai.entities.Task.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
   })
 

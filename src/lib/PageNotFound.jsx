@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { useQuery } from '@tanstack/react-query';
 
 
@@ -11,7 +11,7 @@ export default function PageNotFound({}) {
         queryKey: ['user'],
         queryFn: async () => {
             try {
-                const user = await avasys.auth.me();
+                const user = await avaai.auth.me();
                 return { user, isAuthenticated: true };
             } catch (error) {
                 return { user: null, isAuthenticated: false };

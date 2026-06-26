@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -95,7 +95,7 @@ export default function CompanyForm({ customer, onSave, onCancel, saving }) {
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avasys.entities.Advisor.filter({ status: 'active' }),
+    queryFn: () => avaai.entities.Advisor.filter({ status: 'active' }),
   })
 
   const filteredAdvisors = advisors.filter(a => {

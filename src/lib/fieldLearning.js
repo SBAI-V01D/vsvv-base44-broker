@@ -3,7 +3,7 @@
  * so future extractions can benefit from known mappings.
  */
 
-const STORAGE_KEY = 'avasys_field_corrections'
+const STORAGE_KEY = 'avaai_field_corrections'
 
 function getCorrections() {
   try {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,16 +19,16 @@ export default function CustomerAssignmentsTab() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avasys.entities.Customer.list(),
+    queryFn: () => avaai.entities.Customer.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avasys.entities.Advisor.list(),
+    queryFn: () => avaai.entities.Advisor.list(),
   })
 
   const updateCustomerMutation = useMutation({
-    mutationFn: ({ customerId, data }) => avasys.entities.Customer.update(customerId, data),
+    mutationFn: ({ customerId, data }) => avaai.entities.Customer.update(customerId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       setShowDialog(false)

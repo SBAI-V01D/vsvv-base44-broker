@@ -1,7 +1,7 @@
 /**
  * ENTERPRISE RBAC FOUNDATION
  * Role-Based Access Control — UI Layer
- * Backend enforcement is handled via Base44 entity permissions.
+ * Backend enforcement is handled via avaai entity permissions.
  * This module drives UI visibility, navigation filtering, and feature gating.
  */
 
@@ -59,13 +59,13 @@ export const PERMISSIONS = {
 }
 
 /**
- * Resolve effective role from Base44 user object.
- * Base44 uses `role` field ('admin' | 'user').
+ * Resolve effective role from avaai user object.
+ * avaai uses `role` field ('admin' | 'user').
  * We extend it by checking if user has a custom role property.
  */
 export function resolveRole(user) {
   if (!user) return ROLES.BROKER
-  // Base44 admin → maps to ADMIN
+  // avaai admin → maps to ADMIN
   if (user.role === 'admin') return ROLES.ADMIN
   // Custom role stored on user entity
   if (user.broker_role) return user.broker_role

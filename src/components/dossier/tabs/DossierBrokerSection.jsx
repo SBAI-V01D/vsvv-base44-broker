@@ -9,7 +9,7 @@
  */
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Building2, User, Edit3, Check, X, Download, BadgeCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -47,7 +47,7 @@ export default function DossierBrokerSection({ dossier }) {
   // 1. Kunde laden → liefert advisor_id + organization_id als Fallback
   const { data: customer } = useQuery({
     queryKey: ['broker_section_customer', dossier?.customer_id],
-    queryFn: () => avasys.entities.Customer.filter({ id: dossier.customer_id }).then(r => r[0]),
+    queryFn: () => avaai.entities.Customer.filter({ id: dossier.customer_id }).then(r => r[0]),
     enabled: !!dossier?.customer_id,
   });
 
@@ -57,17 +57,17 @@ export default function DossierBrokerSection({ dossier }) {
   // 2. Live-Daten immer laden (für Anzeige + Auto-Befüllung)
   const { data: liveOrg } = useQuery({
     queryKey: ['broker_section_org', orgId],
-    queryFn: () => avasys.entities.Organization.filter({ id: orgId }).then(r => r[0]),
+    queryFn: () => avaai.entities.Organization.filter({ id: orgId }).then(r => r[0]),
     enabled: !!orgId,
   });
   const { data: liveAdv } = useQuery({
     queryKey: ['broker_section_adv', advisorId],
-    queryFn: () => avasys.entities.Advisor.filter({ id: advisorId }).then(r => r[0]),
+    queryFn: () => avaai.entities.Advisor.filter({ id: advisorId }).then(r => r[0]),
     enabled: !!advisorId,
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data) => avasys.entities.AdvisoryDossier.update(dossier.id, data),
+    mutationFn: (data) => avaai.entities.AdvisoryDossier.update(dossier.id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['advisory_dossier'] });
       qc.invalidateQueries({ queryKey: ['dossier_detail'] });

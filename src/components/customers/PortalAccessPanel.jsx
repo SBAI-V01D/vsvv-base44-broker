@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,7 +18,7 @@ export default function PortalAccessPanel({ customer, onUpdate }) {
   const handleTogglePortal = async (enabled) => {
     if (!customer?.id) return
     setPortalEnabled(enabled)
-    await avasys.entities.Customer.update(customer.id, {
+    await avaai.entities.Customer.update(customer.id, {
       portal_access_enabled: enabled,
     })
     onUpdate?.()
@@ -31,7 +31,7 @@ export default function PortalAccessPanel({ customer, onUpdate }) {
     }
     setLoading(true)
     try {
-      await avasys.functions.invoke('managePortalPassword', {
+      await avaai.functions.invoke('managePortalPassword', {
         action: 'set_password',
         customer_id: customer.id,
         password,
@@ -53,7 +53,7 @@ export default function PortalAccessPanel({ customer, onUpdate }) {
     }
     setLoading(true)
     try {
-      await avasys.functions.invoke('managePortalPassword', {
+      await avaai.functions.invoke('managePortalPassword', {
         action: 'reset_password',
         customer_id: customer.id,
         password,

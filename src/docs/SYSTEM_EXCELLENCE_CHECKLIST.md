@@ -149,7 +149,7 @@ Dokument hochgeladen
 // React Query Optimization
 useQuery({
   queryKey: ['customers'],
-  queryFn: () => avasys.entities.Customer.list(),
+  queryFn: () => avaai.entities.Customer.list(),
   staleTime: 5 * 60 * 1000, // 5 Minuten
   refetchOnWindowFocus: false,
   retry: false,

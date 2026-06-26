@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import AiFindingCard from '@/components/ai/AiFindingCard';
 import {
   Eye, RefreshCw, Filter, Zap, TrendingUp,
@@ -48,7 +48,7 @@ export default function TabAiExplainability() {
 
   const { data: findings = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['ai_findings'],
-    queryFn: () => avasys.entities.AiFinding.list('-created_date', 100),
+    queryFn: () => avaai.entities.AiFinding.list('-created_date', 100),
     staleTime: 3 * 60 * 1000,
   });
 
@@ -62,7 +62,7 @@ export default function TabAiExplainability() {
     : 0;
 
   async function handleStatusChange(findingId, newStatus) {
-    await avasys.entities.AiFinding.update(findingId, { status: newStatus });
+    await avaai.entities.AiFinding.update(findingId, { status: newStatus });
     qc.invalidateQueries({ queryKey: ['ai_findings'] });
   }
 

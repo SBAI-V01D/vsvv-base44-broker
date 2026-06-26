@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,7 +16,7 @@ export default function PortalActivationPanel({ customer }) {
   const activateMutation = useMutation({
     mutationFn: async () => {
       // Aktiviere Portal + setze Initialpasswort + Mandat
-      await avasys.entities.Customer.update(customer.id, {
+      await avaai.entities.Customer.update(customer.id, {
         portal_enabled: true,
         portal_password_hash: initialPassword,
         portal_must_change_password: true,
@@ -33,7 +33,7 @@ export default function PortalActivationPanel({ customer }) {
 
   const deactivateMutation = useMutation({
     mutationFn: async () => {
-      await avasys.entities.Customer.update(customer.id, {
+      await avaai.entities.Customer.update(customer.id, {
         portal_enabled: false,
       })
     },

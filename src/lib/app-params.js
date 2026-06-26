@@ -10,7 +10,7 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 	if (isNode) {
 		return defaultValue;
 	}
-	const storageKey = `avasys_${toSnakeCase(paramName)}`;
+	const storageKey = `avaai_${toSnakeCase(paramName)}`;
 	const urlParams = new URLSearchParams(window.location.search);
 	const searchParam = urlParams.get(paramName);
 	if (removeFromUrl) {
@@ -36,7 +36,7 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 
 const getAppParams = () => {
 	if (getAppParamValue("clear_access_token") === 'true') {
-		storage.removeItem('avasys_access_token');
+		storage.removeItem('avaai_access_token');
 		storage.removeItem('token');
 	}
 	return {

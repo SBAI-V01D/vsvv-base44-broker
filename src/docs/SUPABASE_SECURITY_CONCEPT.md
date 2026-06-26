@@ -1,4 +1,4 @@
-# avaSysAIByNik CRM - Supabase Sicherheitskonzept & Konfiguration
+# avaai CRM - Supabase Sicherheitskonzept & Konfiguration
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -10,14 +10,14 @@
 
 ### 1.1 Projekt-Setup
 
-**Entscheidung:** Neues, dediziertes Supabase-Projekt für avaSysAIByNik CRM
+**Entscheidung:** Neues, dediziertes Supabase-Projekt für avaai CRM
 
 **Projekt-Details:**
 
 | Eigenschaft | Wert | Begründung |
 |---|---|---|
-| **Projekt-Name** | `avasys-crm-production` | Eindeutige Identifikation |
-| **Organisation** | `avasys-schweiz` | Organisatorische Trennung |
+| **Projekt-Name** | `avaai-crm-production` | Eindeutige Identifikation |
+| **Organisation** | `avaai-schweiz` | Organisatorische Trennung |
 | **Region** | `eu-central-1` (Frankfurt) | ✅ DSG-konform (Schweizer Nähe) |
 | **Plan** | **Pro** ($25/Monat) | Für Production-Features |
 | **Database Version** | PostgreSQL 15 | Latest LTS |
@@ -44,8 +44,8 @@
 ```
 1. Login unter https://supabase.com
 2. "New Project" klicken
-3. Organisation wählen: "avasys-schweiz"
-4. Projekt-Name: "avasys-crm-production"
+3. Organisation wählen: "avaai-schweiz"
+4. Projekt-Name: "avaai-crm-production"
 5. Database Password: [Sicheres Passwort generieren]
 6. Region: "Europe Central (Frankfurt)"
 7. Pricing Plan: "Pro" ($25/Monat)
@@ -69,12 +69,12 @@ Project Settings → API
 
 ### 2.1 Secret-Speicherung
 
-**Speicherort:** Base44 Dashboard → Settings → Secrets
+**Speicherort:** avaai Dashboard → Settings → Secrets
 
-**Base44 Secrets:**
+**avaai Secrets:**
 
 ```
-Base44 Dashboard → Settings → Secrets
+avaai Dashboard → Settings → Secrets
 ├─ SUPABASE_URL
 ├─ SUPABASE_ANON_KEY
 └─ SUPABASE_SERVICE_ROLE_KEY
@@ -101,7 +101,7 @@ Name: SUPABASE_URL
 Wert: https://xxxxx.supabase.co
 Sichtbarkeit: Public (in Frontend verwendbar)
 Verwendung: Base URL für alle API-Calls
-Beispiel: https://avasyscrmproduction.supabase.co
+Beispiel: https://avaaicrmproduction.supabase.co
 ```
 
 **Verwendung im Code:**
@@ -169,7 +169,7 @@ Einschränkung: Ausschliesslich server-side
 
 ```
 ✅ DO: In Backend-Functions verwenden
-✅ DO: In Base44 Secrets speichern
+✅ DO: In avaai Secrets speichern
 ✅ DO: Nur für Admin-Operationen nutzen
 ✅ DO: RLS explizit deaktivieren wenn nötig
 
@@ -206,7 +206,7 @@ Einschränkung: Ausschliesslich server-side
 **Zugriffsschutz:**
 
 ```
-Base44 Dashboard → Settings → Secrets
+avaai Dashboard → Settings → Secrets
 ├─ Nur Admin-Rolle kann Secrets sehen/bearbeiten
 ├─ Secrets sind verschlüsselt gespeichert
 ├─ Kein Secret-Export möglich
@@ -280,7 +280,7 @@ USING (
 | **UPDATE** | Wer darf ändern? | Owner oder Admin |
 | **DELETE** | Wer darf löschen? | Nur Admins |
 
-**RLS-Implementierung für avaSysAIByNik CRM:**
+**RLS-Implementierung für avaai CRM:**
 
 ```sql
 -- 1. Kunden-Tabelle
@@ -320,13 +320,13 @@ USING (user_role() = 'admin');
 
 ```javascript
 // ✅ KORREKT: Backend-Function (functions/importBAGDatenToSupabase.js)
-import { createClientFromRequest } from 'npm:@avasys/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@avaai/sdk@0.8.31';
 
 Deno.serve(async (req) => {
-  const avasys = createClientFromRequest(req);
+  const avaai = createClientFromRequest(req);
   
   // 1. User authentifizieren
-  const user = await avasys.auth.me();
+  const user = await avaai.auth.me();
   if (!user || user.role !== 'admin') {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -400,7 +400,7 @@ echo $SUPABASE_SERVICE_ROLE_KEY
 | **Entwickler** | ❌ Kein Dashboard-Zugriff | - |
 | **Endnutzer** | ❌ Kein Dashboard-Zugriff | - |
 
-**Base44 Dashboard:**
+**avaai Dashboard:**
 
 | Person | Zugriff | Rolle |
 |---|---|---|
@@ -427,10 +427,10 @@ echo $SUPABASE_SERVICE_ROLE_KEY
 ```javascript
 // Standard-Template für alle Backend-Functions
 Deno.serve(async (req) => {
-  const avasys = createClientFromRequest(req);
+  const avaai = createClientFromRequest(req);
   
   // 1. Authentifizierung prüfen
-  const user = await avasys.auth.me();
+  const user = await avaai.auth.me();
   if (!user) {
     return Response.json(
       { error: 'Authentication required' }, 
@@ -563,15 +563,15 @@ const alerts = [
    Supabase Dashboard → Settings → API
    → "Regenerate Keys" bestätigen
    
-2. Neue Keys in Base44 Secrets aktualisieren
+2. Neue Keys in avaai Secrets aktualisieren
    ───────────────────────────────────────
-   Base44 Dashboard → Settings → Secrets
+   avaai Dashboard → Settings → Secrets
    → SUPABASE_ANON_KEY updaten
    → SUPABASE_SERVICE_ROLE_KEY updaten
    
 3. Backend-Functions neu deployen
    ─────────────────────────────
-   Base44 Dashboard → Code → Functions
+   avaai Dashboard → Code → Functions
    → Alle Functions neu deployen (lädt neue Secrets)
    
 4. Testen
@@ -604,11 +604,11 @@ Stufe 1: Service Role Key kompromittiert (0-15 Minuten)
 1. Service Role Key sofort rotieren
    Supabase Dashboard → Regenerate Service Role Key
 
-2. Neue Keys in Base44 Secrets aktualisieren
-   Base44 Dashboard → Settings → Secrets
+2. Neue Keys in avaai Secrets aktualisieren
+   avaai Dashboard → Settings → Secrets
 
 3. Alle Backend-Functions neu deployen
-   Base44 Dashboard → Code → Functions → Redeploy
+   avaai Dashboard → Code → Functions → Redeploy
 
 4. Audit-Logs prüfen
    Wer hat Key verwendet? Wann? Welche Operationen?
@@ -622,7 +622,7 @@ Stufe 2: Anon Key kompromittiert (0-30 Minuten)
    Supabase Dashboard → Regenerate Anon Key
 
 2. Frontend neu deployen (lädt neuen Key)
-   Base44 Dashboard → Deploy → Redeploy
+   avaai Dashboard → Deploy → Redeploy
 
 3. RLS-Policies prüfen
    Wurden Daten unrechtmässig gelesen?
@@ -679,14 +679,14 @@ Stufe 3: Database Password kompromittiert (0-60 Minuten)
 
 ### 9.1 Supabase-Projekt
 
-✅ **Neues Projekt:** `avasys-crm-production`  
+✅ **Neues Projekt:** `avaai-crm-production`  
 ✅ **Region:** `eu-central-1` (Frankfurt, Deutschland)  
 ✅ **Plan:** Pro ($25/Monat)  
 ✅ **DSG-konform:** ✅ Ja (EU-Region)
 
 ### 9.2 Secrets
 
-✅ **Speicherort:** Base44 Dashboard → Settings → Secrets  
+✅ **Speicherort:** avaai Dashboard → Settings → Secrets  
 ✅ **Verschlüsselung:** AES-256  
 ✅ **Zugriff:** Nur Admin-Rolle (Peter Adam)  
 ✅ **Rotation:** 12 Monate oder bei Incident
@@ -713,7 +713,7 @@ Stufe 3: Database Password kompromittiert (0-60 Minuten)
 
 1. ⏳ Supabase-Projekt erstellen (Frankfurt)
 2. ⏳ Projekt-URL und Keys notieren
-3. ⏳ Secrets in Base44 Dashboard eintragen
+3. ⏳ Secrets in avaai Dashboard eintragen
 4. ⏳ SQL-Schema implementieren
 5. ⏳ RLS-Policies aktivieren
 6. ⏳ Test-Import durchführen
@@ -731,7 +731,7 @@ Stufe 3: Database Password kompromittiert (0-60 Minuten)
 
 **Vor der Erstellung:**
 
-- [ ] Organisation `avasys-schweiz` existiert
+- [ ] Organisation `avaai-schweiz` existiert
 - [ ] Admin-Account (Peter Adam) hat Zugriff
 - [ ] Payment-Methinterlegt (für Pro-Plan)
 - [ ] Region `eu-central-1` ausgewählt
@@ -744,7 +744,7 @@ Stufe 3: Database Password kompromittiert (0-60 Minuten)
 - [ ] Database Password gesichert
 - [ ] 2FA für Admin-Account aktiviert
 
-**In Base44 eintragen:**
+**In avaai eintragen:**
 
 - [ ] SUPABASE_URL in Secrets
 - [ ] SUPABASE_ANON_KEY in Secrets

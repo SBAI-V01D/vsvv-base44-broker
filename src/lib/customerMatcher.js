@@ -62,9 +62,9 @@ export function matchCustomers(extractedDataOrCustomers, customersOrSearchTerm) 
   return { candidates: scored, topScore };
 }
 
-export async function findOrCreateCustomer(extractedData, organizationId, avasys) {
-  if (!avasys || !extractedData) {
-    throw new Error('Missing avasys SDK or extracted data');
+export async function findOrCreateCustomer(extractedData, organizationId, avaai) {
+  if (!avaai || !extractedData) {
+    throw new Error('Missing avaai SDK or extracted data');
   }
 
   // Import detection functions
@@ -110,11 +110,11 @@ export async function findOrCreateCustomer(extractedData, organizationId, avasys
   // Try to find existing customer
   for (const criteria of searchCriteria) {
     try {
-      const existing = await avasys.entities.Customer.filter(criteria, '-created_date', 1);
+      const existing = await avaai.entities.Customer.filter(criteria, '-created_date', 1);
       if (existing && existing.length > 0) {
         console.log(`[CUSTOMER_MATCHER] Found existing customer by ${Object.keys(criteria)[0]}`);
         // Enrich existing customer with missing data
-        await enrichCustomer(existing[0].id, extractedData, customerType, avasys);
+        await enrichCustomer(existing[0].id, extractedData, customerType, avaai);
         return existing[0];
       }
     } catch (e) {
@@ -127,7 +127,7 @@ export async function findOrCreateCustomer(extractedData, organizationId, avasys
   const newCustomerData = await buildCustomerData(extractedData, customerType, organizationId);
   
   try {
-    const created = await avasys.entities.Customer.create(newCustomerData);
+    const created = await avaai.entities.Customer.create(newCustomerData);
     console.log(`[CUSTOMER_MATCHER] Created customer ${created.id}`);
     return created;
   } catch (e) {
@@ -136,7 +136,7 @@ export async function findOrCreateCustomer(extractedData, organizationId, avasys
   }
 }
 
-export async function enrichCustomer(customerId, extractedData, customerType, avasys) {
+export async function enrichCustomer(customerId, extractedData, customerType, avaai) {
   const { extractCommonData, parsePrivateCustomerData, parseCompanyData } = 
     await import('./customerTypeDetection.js');
 
@@ -144,7 +144,7 @@ export async function enrichCustomer(customerId, extractedData, customerType, av
   // Fetch current customer data to avoid overwriting existing values
   let existingCustomer = {};
   try {
-    const results = await avasys.entities.Customer.filter({ id: customerId }, '-created_date', 1);
+    const results = await avaai.entities.Customer.filter({ id: customerId }, '-created_date', 1);
     existingCustomer = results[0] || {};
   } catch { /* non-fatal */ }
 
@@ -177,7 +177,7 @@ export async function enrichCustomer(customerId, extractedData, customerType, av
 
   if (Object.keys(updateData).length > 0) {
     try {
-      await avasys.entities.Customer.update(customerId, updateData);
+      await avaai.entities.Customer.update(customerId, updateData);
       console.log(`[CUSTOMER_MATCHER] Enriched customer ${customerId}`);
     } catch (e) {
       console.warn(`[CUSTOMER_MATCHER] Enrichment failed: ${e.message}`);

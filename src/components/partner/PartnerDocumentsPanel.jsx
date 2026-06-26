@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -45,11 +45,11 @@ const UploadDialog = ({ partnerId, partnerName, onClose, onSuccess }) => {
 
     try {
       setUploading(true)
-      const { file_url } = await avasys.integrations.Core.UploadFile({ file })
+      const { file_url } = await avaai.integrations.Core.UploadFile({ file })
       
-      const currentUser = await avasys.auth.me()
+      const currentUser = await avaai.auth.me()
       
-      await avasys.entities.PartnerDocument.create({
+      await avaai.entities.PartnerDocument.create({
         partner_id: partnerId,
         partner_name: partnerName,
         file_name: file.name,
@@ -61,7 +61,7 @@ const UploadDialog = ({ partnerId, partnerName, onClose, onSuccess }) => {
         uploaded_by_name: currentUser.full_name || currentUser.email
       })
 
-      await avasys.entities.PartnerActivity.create({
+      await avaai.entities.PartnerActivity.create({
         partner_id: partnerId,
         partner_name: partnerName,
         activity_type: 'document_uploaded',
@@ -137,7 +137,7 @@ export default function PartnerDocumentsPanel({ partnerId, partnerName }) {
     queryKey: ['partner-documents', partnerId],
     queryFn: async () => {
       try {
-        return await avasys.entities.PartnerDocument.filter({ partner_id: partnerId }, '-created_date', 1000)
+        return await avaai.entities.PartnerDocument.filter({ partner_id: partnerId }, '-created_date', 1000)
       } catch {
         return []
       }
@@ -148,10 +148,10 @@ export default function PartnerDocumentsPanel({ partnerId, partnerName }) {
   const deleteMutation = useMutation({
     mutationFn: async (docId) => {
       const doc = documents.find(d => d.id === docId)
-      await avasys.entities.PartnerDocument.delete(docId)
+      await avaai.entities.PartnerDocument.delete(docId)
       
-      const currentUser = await avasys.auth.me()
-      await avasys.entities.PartnerActivity.create({
+      const currentUser = await avaai.auth.me()
+      await avaai.entities.PartnerActivity.create({
         partner_id: partnerId,
         partner_name: partnerName,
         activity_type: 'document_deleted',

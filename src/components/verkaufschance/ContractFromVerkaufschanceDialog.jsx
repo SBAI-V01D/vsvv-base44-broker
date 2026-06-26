@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,7 +25,7 @@ export default function ContractFromVerkaufschanceDialog({
   const handleCreate = async () => {
     setLoading(true)
     // 1. Vertrag erstellen
-    const newContract = await avasys.entities.Contract.create({
+    const newContract = await avaai.entities.Contract.create({
       customer_id: customer.id,
       customer_name: `${customer.first_name} ${customer.last_name}`,
       primary_customer_id: customer.primary_customer_id || customer.id,
@@ -52,7 +52,7 @@ export default function ContractFromVerkaufschanceDialog({
     // 2. Provision erstellen (falls Jahresprämie vorhanden)
     const premiumYearly = parseFloat(form.premium_yearly) || 0
     if (premiumYearly > 0) {
-      await avasys.entities.CommissionEntry.create({
+      await avaai.entities.CommissionEntry.create({
         policy_id: newContract.id,
         policy_number: form.policy_number || '',
         advisor_id: customer.advisor_id || '',
@@ -71,7 +71,7 @@ export default function ContractFromVerkaufschanceDialog({
     }
 
     // 3. Verkaufschance auf "Gewonnen" setzen
-    await avasys.entities.Verkaufschance.update(verkaufschance.id, {
+    await avaai.entities.Verkaufschance.update(verkaufschance.id, {
       status: 'gewonnen',
       won_contract_id: newContract.id,
       selected_insurer: selectedGesellschaft.gesellschaft,

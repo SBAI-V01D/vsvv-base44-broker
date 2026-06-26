@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { usePortalCustomer } from '@/hooks/usePortalCustomer';
 import { MessageSquare, Shield, Inbox, Plus, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,25 +44,25 @@ export default function PortalMessages() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['portal-contracts', customerId],
-    queryFn: () => avasys.entities.Contract.filter({ customer_id: customerId }),
+    queryFn: () => avaai.entities.Contract.filter({ customer_id: customerId }),
     enabled: !!customerId,
   });
 
   const { data: interactions = [] } = useQuery({
     queryKey: ['customer-interactions', customerId],
-    queryFn: () => avasys.entities.Interaction.filter({ customer_id: customerId, is_customer_request: true }, '-created_date'),
+    queryFn: () => avaai.entities.Interaction.filter({ customer_id: customerId, is_customer_request: true }, '-created_date'),
     enabled: !!customerId,
   });
 
   const { data: allMessages = [] } = useQuery({
     queryKey: ['portal-messages', customerId],
-    queryFn: () => avasys.entities.Message.filter({ customer_id: customerId }),
+    queryFn: () => avaai.entities.Message.filter({ customer_id: customerId }),
     enabled: !!customerId,
     refetchInterval: 8000,
   });
 
   const sendMutation = useMutation({
-    mutationFn: (data) => avasys.entities.Message.create(data),
+    mutationFn: (data) => avaai.entities.Message.create(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['portal-messages', customerId] }),
   });
 

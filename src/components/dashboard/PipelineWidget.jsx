@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -17,7 +17,7 @@ const STAGES = [
 export default function PipelineWidget() {
   const { data: deals = [] } = useQuery({
     queryKey: ['deals'],
-    queryFn: () => avasys.entities.Deal.list(),
+    queryFn: () => avaai.entities.Deal.list(),
   });
 
   // Pipeline data by stage (exclude 'verloren')

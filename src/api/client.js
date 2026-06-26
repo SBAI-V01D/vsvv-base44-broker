@@ -1,14 +1,14 @@
 /**
- * avaSysAIByNik API Client — Drop-in replacement for @avasys/sdk
+ * avaai API Client — Drop-in replacement for @avaai/sdk
  *
- * Usage: import { avasys } from '@/api/avasysClient'
+ * Usage: import { avaai } from '@/api/avaaiClient'
  *
- * This module creates a `avasys`-compatible interface that talks to our
+ * This module creates a `avaai`-compatible interface that talks to our
  * self-hosted Fastify backend.
  *
  * ALL existing frontend code continues to work without changes.
  *
- * Supported calling patterns (matching @avasys/sdk exactly):
+ * Supported calling patterns (matching @avaai/sdk exactly):
  *   list()                    → GET /api/{entities}
  *   list(sort, pageSize)      → GET /api/{entities}?sortBy=...&limit=...
  *   list(sort, pageSize, offset) → GET /api/{entities}?sortBy=...&limit=...&page=...
@@ -21,17 +21,17 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 // ─── Token Management ───────────────────────────────────────────────────────
 
-let accessToken = localStorage.getItem('avasys_access_token') || null
-let refreshToken = localStorage.getItem('avasys_refresh_token') || null
+let accessToken = localStorage.getItem('avaai_access_token') || null
+let refreshToken = localStorage.getItem('avaai_refresh_token') || null
 let refreshPromise = null
 
 export function setTokens(access, refresh) {
   accessToken = access
   refreshToken = refresh
-  if (access) localStorage.setItem('avasys_access_token', access)
-  else localStorage.removeItem('avasys_access_token')
-  if (refresh) localStorage.setItem('avasys_refresh_token', refresh)
-  else localStorage.removeItem('avasys_refresh_token')
+  if (access) localStorage.setItem('avaai_access_token', access)
+  else localStorage.removeItem('avaai_access_token')
+  if (refresh) localStorage.setItem('avaai_refresh_token', refresh)
+  else localStorage.removeItem('avaai_refresh_token')
 }
 
 export function clearTokens() {
@@ -144,7 +144,7 @@ async function request(method, path, options = {}) {
 
 // ─── Service-Role Proxy ─────────────────────────────────────────────────────
 // Bypasses RLS for admin use. Mirrors the entity proxy but adds a service-role header.
-// Used via avasys.asServiceRole.entities.X.list() in hooks like useAccessControl.js
+// Used via avaai.asServiceRole.entities.X.list() in hooks like useAccessControl.js
 
 function createServiceRoleEntityProxy() {
   return new Proxy({}, {
@@ -257,7 +257,7 @@ function createEntityProxy() {
 
       const entityMethods = {
         /**
-         * list() — supports MULTIPLE calling patterns matching @avasys/sdk:
+         * list() — supports MULTIPLE calling patterns matching @avaai/sdk:
          *
          *   list()                                    → all records, default sort
          *   list(sort, pageSize)                      → e.g. list('-created_date', 500)
@@ -495,7 +495,7 @@ const integrations = {
     },
 
     /**
-     * SendEmail — matches avasys.integrations.Core.SendEmail({ to, subject, body })
+     * SendEmail — matches avaai.integrations.Core.SendEmail({ to, subject, body })
      * Used in src/lib/notifications.js
      */
     SendEmail: async ({ to, subject, body, ...rest }) => {
@@ -509,11 +509,11 @@ const integrations = {
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 /**
- * The main avaSysAIByNik API client export.
+ * The main avaai API client export.
  *
- * Usage: import { avasys } from '@/api/avasysClient'
+ * Usage: import { avaai } from '@/api/avaaiClient'
  */
-export const avasys = {
+export const avaai = {
   entities: createEntityProxy(),
   asServiceRole: {
     entities: createServiceRoleEntityProxy(),
@@ -525,9 +525,9 @@ export const avasys = {
 
 // Listen for forced logout events (e.g., from token refresh failure)
 window.addEventListener('auth:logout', () => {
-  window.dispatchEvent(new CustomEvent('avasys:logout'))
+  window.dispatchEvent(new CustomEvent('avaai:logout'))
   // Redirect to login
   window.location.href = '/login'
 })
 
-export default avasys
+export default avaai

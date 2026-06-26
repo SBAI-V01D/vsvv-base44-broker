@@ -1,8 +1,8 @@
 // ============================================================================
-// avaSysAIByNik Backend — Functions Invoke Routes
+// avaai Backend — Functions Invoke Routes
 //
 // Provides a generic function invocation endpoint that maps function names
-// to backend service operations. Replaces Base44's `base44.functions.invoke()`.
+// to backend service operations. Replaces avaai's `avaai.functions.invoke()`.
 //
 // POST /api/functions/:name — Invoke a named function with parameters
 // ============================================================================

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Search, User, Building2, X, FileText, ClipboardList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -15,21 +15,21 @@ export default function GlobalSearch({ collapsed, light = false }) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['sidebar_customers_slim'],
-    queryFn: () => avasys.entities.Customer.filter({ archived: false }, 'last_name', 2000),
+    queryFn: () => avaai.entities.Customer.filter({ archived: false }, 'last_name', 2000),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['sidebar_contracts_slim'],
-    queryFn: () => avasys.entities.Contract.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => avaai.entities.Contract.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
   const { data: applications = [] } = useQuery({
     queryKey: ['sidebar_applications_slim'],
-    queryFn: () => avasys.entities.Application.filter({ archived: false }, '-created_date', 300),
+    queryFn: () => avaai.entities.Application.filter({ archived: false }, '-created_date', 300),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });

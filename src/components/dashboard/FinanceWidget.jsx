@@ -1,6 +1,6 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, DollarSign, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -9,12 +9,12 @@ export default function FinanceWidget() {
   const navigate = useNavigate()
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissions'],
-    queryFn: () => avasys.entities.CommissionEntry.list(null, 1000),
+    queryFn: () => avaai.entities.CommissionEntry.list(null, 1000),
   })
 
   const { data: accountingEntries = [] } = useQuery({
     queryKey: ['accounting_entries'],
-    queryFn: () => avasys.entities.AccountingEntry.list(null, 1000),
+    queryFn: () => avaai.entities.AccountingEntry.list(null, 1000),
   })
 
   // ─── KPIs ───

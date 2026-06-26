@@ -1,5 +1,5 @@
 // ============================================================================
-// avaSysAIByNik Backend — Multi-Tenant Isolation Middleware
+// avaai Backend — Multi-Tenant Isolation Middleware
 // Ensures every request has an orgId context and injects it into the request.
 // Must run AFTER requireAuth so that request.user is available.
 // ============================================================================

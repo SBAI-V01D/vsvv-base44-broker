@@ -1,11 +1,11 @@
 import { QueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 
 // ── Silent error logger — schreibt kritische Query-Fehler in SystemLog ──
 async function logQueryError(error, query) {
   try {
     const key = Array.isArray(query?.queryKey) ? query.queryKey.join('/') : String(query?.queryKey ?? 'unknown');
-    await avasys.entities.SystemLog.create({
+    await avaai.entities.SystemLog.create({
       level: 'error',
       source: 'query_client',
       message: `Query-Fehler: ${error?.message ?? 'Unbekannter Fehler'}`,
@@ -54,7 +54,7 @@ queryClientInstance.getQueryCache().subscribe((event) => {
 
 function setupGlobalSubscriptions() {
   // Contract: Invalidiert alle contract-bezogenen Queries sofort
-  avasys.entities.Contract.subscribe((event) => {
+  avaai.entities.Contract.subscribe((event) => {
     queryClientInstance.invalidateQueries({ queryKey: ['contracts'] });
     if (event.data?.customer_id) {
       queryClientInstance.invalidateQueries({ queryKey: ['contracts', event.data.customer_id] });
@@ -68,7 +68,7 @@ function setupGlobalSubscriptions() {
   });
 
   // Application: Invalidiert alle application-bezogenen Queries sofort
-  avasys.entities.Application.subscribe((event) => {
+  avaai.entities.Application.subscribe((event) => {
     queryClientInstance.invalidateQueries({ queryKey: ['applications'] });
     if (event.data?.customer_id) {
       queryClientInstance.invalidateQueries({ queryKey: ['applications', event.data.customer_id] });
@@ -76,7 +76,7 @@ function setupGlobalSubscriptions() {
   });
 
   // Document: Invalidiert alle document-bezogenen Queries sofort
-  avasys.entities.Document.subscribe((event) => {
+  avaai.entities.Document.subscribe((event) => {
     queryClientInstance.invalidateQueries({ queryKey: ['documents'] });
     if (event.data?.customer_id) {
       queryClientInstance.invalidateQueries({ queryKey: ['documents', event.data.customer_id] });
@@ -84,7 +84,7 @@ function setupGlobalSubscriptions() {
   });
 
   // Task: Invalidiert alle task-bezogenen Queries sofort
-  avasys.entities.Task.subscribe((event) => {
+  avaai.entities.Task.subscribe((event) => {
     queryClientInstance.invalidateQueries({ queryKey: ['tasks'] });
     if (event.data?.customer_id) {
       queryClientInstance.invalidateQueries({ queryKey: ['tasks', event.data.customer_id] });
@@ -92,7 +92,7 @@ function setupGlobalSubscriptions() {
   });
 
   // Customer: Invalidiert Kundendaten sofort
-  avasys.entities.Customer.subscribe((event) => {
+  avaai.entities.Customer.subscribe((event) => {
     queryClientInstance.invalidateQueries({ queryKey: ['customers'] });
     if (event.data?.id) {
       queryClientInstance.invalidateQueries({ queryKey: ['customer', event.data.id] });

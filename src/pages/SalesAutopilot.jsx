@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,18 +14,18 @@ export default function SalesAutopilot() {
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads'],
-    queryFn: () => avasys.entities.Lead.list(),
+    queryFn: () => avaai.entities.Lead.list(),
   })
 
   const updateLeadMutation = useMutation({
-    mutationFn: ({ id, data }) => avasys.entities.Lead.update(id, data),
+    mutationFn: ({ id, data }) => avaai.entities.Lead.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] })
     },
   })
 
   const runAutopilotMutation = useMutation({
-    mutationFn: (action) => avasys.functions.invoke(`autopilot${action}`, {}),
+    mutationFn: (action) => avaai.functions.invoke(`autopilot${action}`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] })
     },

@@ -7,7 +7,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 
 const CentralAnalysisContext = createContext(null);
 
@@ -21,7 +21,7 @@ export function CentralAnalysisProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await avasys.functions.invoke('centralAnalysisEngine', {});
+      const res = await avaai.functions.invoke('centralAnalysisEngine', {});
       setAnalysisData(res.data);
       setLastRun(new Date());
       return res.data;

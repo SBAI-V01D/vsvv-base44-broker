@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts'
 import { TrendingUp, Calendar } from 'lucide-react'
@@ -9,7 +9,7 @@ import { formatCHF } from '@/lib/commissionEngine'
 export default function ForecastWidget() {
   const { data: entries = [] } = useQuery({
     queryKey: ['commissionEntries-forecast'],
-    queryFn: () => avasys.entities.CommissionEntry.list('-entry_date', 2000),
+    queryFn: () => avaai.entities.CommissionEntry.list('-entry_date', 2000),
   })
 
   const forecastData = useMemo(() => {

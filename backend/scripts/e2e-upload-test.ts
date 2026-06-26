@@ -1,5 +1,5 @@
 /**
- * avaSysAIByNik — E2E Upload Test (ohne Server/DB)
+ * avaai — E2E Upload Test (ohne Server/DB)
  * Testet de kompletti Upload-Pipeline bis zum S3.
  */
 

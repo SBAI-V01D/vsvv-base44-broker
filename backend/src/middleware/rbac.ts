@@ -1,5 +1,5 @@
 // ============================================================================
-// avaSysAIByNik Backend — Role-Based Access Control Middleware
+// avaai Backend — Role-Based Access Control Middleware
 // Mirrors the 7-role system defined in src/lib/rbac.js (frontend).
 // Backend enforcement via requireRole preHandler factory.
 // ============================================================================

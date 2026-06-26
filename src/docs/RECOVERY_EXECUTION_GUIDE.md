@@ -20,7 +20,7 @@ Oder manuelle Ausführung:
 ## SCHRITT 1: SCAN RELATIONS (bereits erledigt?)
 
 ```javascript
-const report = await avasys.functions.invoke(
+const report = await avaai.functions.invoke(
   'reconstructCustomersFromRelations', 
   {}
 );
@@ -35,7 +35,7 @@ console.log(report.data.summary);
 ## SCHRITT 2: REKONSTRUIERE KUNDEN (bereits erledigt?)
 
 ```javascript
-const result = await avasys.functions.invoke(
+const result = await avaai.functions.invoke(
   'reconstructAndRestoreCustomers',
   { reconstruction_report: report.data }
 );
@@ -47,7 +47,7 @@ console.log(`✓ ${result.data.summary.successfully_created} customers restored`
 ## SCHRITT 3: DIAGNOSE VISIBILITY (JETZT HIER)
 
 ```javascript
-const diagnosis = await avasys.functions.invoke(
+const diagnosis = await avaai.functions.invoke(
   'diagnoseCustomerVisibility',
   {}
 );
@@ -64,7 +64,7 @@ console.log(diagnosis.data.summary);
 ```javascript
 const invisibleCustomers = diagnosis.data.visibility_issues.potentially_hidden_details;
 
-const fix = await avasys.functions.invoke(
+const fix = await avaai.functions.invoke(
   'forceCustomerVisibility',
   { target_customers: invisibleCustomers }
 );
@@ -76,7 +76,7 @@ console.log(`✓ ${fix.data.summary.successfully_updated} customers fixed`);
 ## SCHRITT 5: VERIFIZIERE INTEGRITÄT
 
 ```javascript
-const validation = await avasys.functions.invoke(
+const validation = await avaai.functions.invoke(
   'validateSystemIntegrity',
   {}
 );
@@ -92,7 +92,7 @@ console.log(validation.data.integrity_check);
 
 ```javascript
 // 1. Check ob Kunden überhaupt existieren
-const customers = await avasys.entities.Customer.list('-created_date', 50);
+const customers = await avaai.entities.Customer.list('-created_date', 50);
 console.log(`Database: ${customers.length} customers`);
 
 // 2. Check reconstructed pattern
@@ -172,7 +172,7 @@ queryClient.invalidateQueries({ queryKey: ['customers'] });
 
 ## ROLLBACK-PLAN (falls alles schiefgeht)
 
-Kontaktieren Sie Base44 Support:
-- support@avasys.com
+Kontaktieren Sie avaai Support:
+- support@avaai.com
 - "Database restore to pre-import state required"
 - Backup-Timestamp: vor 2026-05-07 20:00 UTC

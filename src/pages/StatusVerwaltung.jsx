@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Plus, Edit, Trash2, GripVertical } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,21 +59,21 @@ export default function StatusVerwaltung() {
 
   const { data: statusDefs = [] } = useQuery({
     queryKey: ['statusDefinitions'],
-    queryFn: () => avasys.entities.StatusDefinition.list('sort_order'),
+    queryFn: () => avaai.entities.StatusDefinition.list('sort_order'),
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => avasys.entities.StatusDefinition.create(data),
+    mutationFn: (data) => avaai.entities.StatusDefinition.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['statusDefinitions'] }); setShowForm(false) },
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avasys.entities.StatusDefinition.update(id, data),
+    mutationFn: ({ id, data }) => avaai.entities.StatusDefinition.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['statusDefinitions'] }); setShowForm(false) },
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avasys.entities.StatusDefinition.delete(id),
+    mutationFn: (id) => avaai.entities.StatusDefinition.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['statusDefinitions'] }),
   })
 

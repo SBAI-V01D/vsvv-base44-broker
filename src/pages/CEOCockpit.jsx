@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
@@ -14,37 +14,37 @@ export default function CEOCockpit() {
   // ─── Data Fetching ───
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avasys.entities.Customer.list(),
+    queryFn: () => avaai.entities.Customer.list(),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avasys.entities.Contract.list(),
+    queryFn: () => avaai.entities.Contract.list(),
   })
 
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissions'],
-    queryFn: () => avasys.entities.CommissionEntry.list('-created_date', 500),
+    queryFn: () => avaai.entities.CommissionEntry.list('-created_date', 500),
   })
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => avasys.entities.Document.list('-created_date', 500),
+    queryFn: () => avaai.entities.Document.list('-created_date', 500),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avasys.entities.Advisor.list(),
+    queryFn: () => avaai.entities.Advisor.list(),
   })
 
   const { data: orgs = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => avasys.entities.Organization.list(),
+    queryFn: () => avaai.entities.Organization.list(),
   })
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads'],
-    queryFn: () => avasys.entities.Lead.list(),
+    queryFn: () => avaai.entities.Lead.list(),
   })
 
   // ─── Filtering ───

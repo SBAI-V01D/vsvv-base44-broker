@@ -9,7 +9,7 @@ import {
   Megaphone, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { useAuth } from '@/lib/AuthContext';
 import { resolveRole, ROLE_LABELS } from '@/lib/rbac';
 import GlobalSearch from './GlobalSearch';
@@ -39,11 +39,11 @@ function useSidebarBadges() {
     const load = async () => {
       try {
         const [tasks, contracts, docs, leads, verkaufschancen] = await Promise.all([
-          avasys.entities.Task.list(),
-          avasys.entities.Contract.list(),
-          avasys.entities.Document.list(),
-          avasys.entities.Lead.list(),
-          avasys.entities.Verkaufschance.list(),
+          avaai.entities.Task.list(),
+          avaai.entities.Contract.list(),
+          avaai.entities.Document.list(),
+          avaai.entities.Lead.list(),
+          avaai.entities.Verkaufschance.list(),
         ]);
         const today = new Date();
         const openTasks = tasks.filter(t => t.status === 'open' || t.status === 'in_progress');
@@ -342,7 +342,7 @@ export default function Sidebar({ onNavigate }) {
         style={{ borderTop: `1px solid ${T.border}` }}
       >
         <button
-          onClick={() => avasys.auth.logout()}
+          onClick={() => avaai.auth.logout()}
           title="Abmelden"
           className={cn(
             'flex items-center gap-2 rounded-xl text-[12px] font-medium transition-all duration-200',

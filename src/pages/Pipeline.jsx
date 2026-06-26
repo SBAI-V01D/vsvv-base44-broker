@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, TrendingUp, DollarSign, Target, CheckCircle2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -27,21 +27,21 @@ export default function Pipeline() {
 
   const { data: deals = [] } = useQuery({
     queryKey: ['deals'],
-    queryFn: () => avasys.entities.Deal.list('-created_date'),
+    queryFn: () => avaai.entities.Deal.list('-created_date'),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => avasys.entities.Deal.create(data),
+    mutationFn: (data) => avaai.entities.Deal.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['deals'] }); setShowForm(false); },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avasys.entities.Deal.update(id, data),
+    mutationFn: ({ id, data }) => avaai.entities.Deal.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['deals'] }); setEditingDeal(null); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avasys.entities.Deal.delete(id),
+    mutationFn: (id) => avaai.entities.Deal.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deals'] }),
   });
 

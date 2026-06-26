@@ -8,7 +8,7 @@
 set -e  # Exit on error
 
 PROJECT_NAME="kkv-crm"
-AZURE_REMOTE="https://swissbotsai:TOKEN@dev.azure.com/swissbotsai/ch.avasys/_git/ch.avasys"
+AZURE_REMOTE="https://swissbotsai:TOKEN@dev.azure.com/swissbotsai/ch.avaai/_git/ch.avaai"
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
@@ -119,16 +119,16 @@ VITE
 echo "✅ Vite configured"
 echo ""
 
-# ── 5. Base44 SDK Client ─────────────────────────────────────────────────────
-echo "▶ Creating Base44 SDK client..."
-cat > src/api/avasysClient.js << 'SDK'
-import { createClient } from '@avasys/sdk';
+# ── 5. avaai SDK Client ─────────────────────────────────────────────────────
+echo "▶ Creating avaai SDK client..."
+cat > src/api/avaaiClient.js << 'SDK'
+import { createClient } from '@avaai/sdk';
 
-export const avasys = createClient({
+export const avaai = createClient({
   appId: process.env.VITE_BASE44_APP_ID || 'YOUR_APP_ID_HERE',
 });
 
-export default avasys;
+export default avaai;
 SDK
 echo "✅ SDK client created"
 echo ""
@@ -391,7 +391,7 @@ echo ""
 # ── 11. .env Template ─────────────────────────────────────────────────────────
 echo "▶ Creating .env template..."
 cat > .env.example << 'ENV'
-# Base44 App Configuration
+# avaai App Configuration
 VITE_BASE44_APP_ID=your_app_id_here
 
 # Optional: Override API endpoint
@@ -399,7 +399,7 @@ VITE_BASE44_APP_ID=your_app_id_here
 ENV
 
 cp .env.example .env
-echo "✅ .env template created (fill in your Base44 App ID)"
+echo "✅ .env template created (fill in your avaai App ID)"
 echo ""
 
 # ── 12. .gitignore ────────────────────────────────────────────────────────────
@@ -429,7 +429,7 @@ git commit -m "feat: initial KKV CRM project setup
 - Vite + React 18 scaffold
 - All npm dependencies installed
 - Tailwind CSS with design tokens (Premium Light Blue Enterprise)
-- Base44 SDK client configured
+- avaai SDK client configured
 - 7 core entity schemas (Customer, Contract, Application, Task, Document, BAGPraemienDaten, Organization)
 - App.jsx router shell
 - Design system (index.css variables)
@@ -471,11 +471,11 @@ echo "║  🌐 URL:     http://localhost:5173                       ║"
 echo "║                                                          ║"
 echo "║  📋 Next steps:                                          ║"
 echo "║  1. Fill in .env (VITE_BASE44_APP_ID)                   ║"
-echo "║  2. Copy source files from Base44 GitHub Sync           ║"
+echo "║  2. Copy source files from avaai GitHub Sync           ║"
 echo "║  3. See docs/REBUILD_COMPLETE.md for all routes         ║"
 echo "║  4. See docs/DATABASE_EXPORT.json for all 29 entities   ║"
 echo "║                                                          ║"
 echo "║  🔗 Azure:                                               ║"
-echo "║  https://dev.azure.com/swissbotsai/ch.avasys/_git/ch.avasys ║"
+echo "║  https://dev.azure.com/swissbotsai/ch.avaai/_git/ch.avaai ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""

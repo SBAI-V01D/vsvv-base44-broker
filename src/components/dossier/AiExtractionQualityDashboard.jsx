@@ -16,7 +16,7 @@
  */
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { BarChart2, TrendingUp, AlertTriangle, CheckCircle, FileText, RefreshCw } from 'lucide-react';
 
 // ── Hilfsfunktionen ───────────────────────────────────────────────────────────
@@ -48,7 +48,7 @@ function MiniBar({ value, max, colorClass }) {
 export default function AiExtractionQualityDashboard() {
   const { data: logs = [], isLoading, refetch } = useQuery({
     queryKey: ['ai_quality_logs'],
-    queryFn: () => avasys.entities.SystemLog.filter(
+    queryFn: () => avaai.entities.SystemLog.filter(
       { source: 'ki_extraktion_korrektur' },
       '-created_date',
       200

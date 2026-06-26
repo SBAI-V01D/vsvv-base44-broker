@@ -1,4 +1,4 @@
-# avaSysAIByNik CRM - Phase 1 Testdurchführungs-Protokoll
+# avaai CRM - Phase 1 Testdurchführungs-Protokoll
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -15,7 +15,7 @@
 ```
 URL: https://supabase.com/dashboard
 → New Project
-→ Name: "avasys-crm-production"
+→ Name: "avaai-crm-production"
 → Region: "Europe Central (Frankfurt)"
 → Plan: "Pro" ($25/Monat)
 → Warten bis Projekt bereit (~5 Min.)
@@ -30,9 +30,9 @@ Supabase Dashboard → SQL Editor
 → Erfolgsmeldung prüfen
 ```
 
-**3. Secrets in Base44 eintragen:**
+**3. Secrets in avaai eintragen:**
 ```
-Base44 Dashboard → Settings → Secrets
+avaai Dashboard → Settings → Secrets
 
 SUPABASE_URL: https://[PROJECT_REF].supabase.co
 SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -294,7 +294,7 @@ ORDER BY praemie_erwachsene ASC;
 ### Test-Setup
 
 **Umgebung:**
-- Supabase Projekt: avasys-crm-production
+- Supabase Projekt: avaai-crm-production
 - Region: eu-central-1
 - Datenbestand: 217'472 BAG-Datensätze
 
@@ -389,9 +389,9 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 ### Test-Setup
 
 **Benutzer:**
-- Admin: admin@avasys.ch (Rolle: admin)
-- Advisor A: advisor_a@avasys.ch (Rolle: broker)
-- Advisor B: advisor_b@avasys.ch (Rolle: broker)
+- Admin: admin@avaai.ch (Rolle: admin)
+- Advisor A: advisor_a@avaai.ch (Rolle: broker)
+- Advisor B: advisor_b@avaai.ch (Rolle: broker)
 
 ### Durchführung
 

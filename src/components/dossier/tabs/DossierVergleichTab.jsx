@@ -7,7 +7,7 @@
  */
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Shield, Plus, ChevronDown, ChevronUp, Star, Sparkles, Edit3 } from 'lucide-react';
 import DossierEinsparungPanel from '@/components/dossier/DossierEinsparungPanel';
 import ComparisonSideBySide from '@/components/dossier/ComparisonSideBySide';
@@ -110,7 +110,7 @@ function AddEntryForm({ dossierId, personName, section, onSuccess, onCancel, pre
   const qc = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data) => avasys.entities.ComparisonEntry.create(data),
+    mutationFn: (data) => avaai.entities.ComparisonEntry.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dossier_comparison', dossierId] });
       onSuccess();
@@ -249,25 +249,25 @@ export default function DossierVergleichTab({ dossier, pendingImportContract, on
 
   const { data: mainCustomer } = useQuery({
     queryKey: ['dossier_customer_ro', customerId],
-    queryFn: () => avasys.entities.Customer.filter({ id: customerId }).then(r => r[0]),
+    queryFn: () => avaai.entities.Customer.filter({ id: customerId }).then(r => r[0]),
     enabled: !!customerId,
   });
 
   const { data: familyMembers = [] } = useQuery({
     queryKey: ['dossier_family_ro', customerId],
-    queryFn: () => avasys.entities.Customer.filter({ primary_customer_id: customerId }),
+    queryFn: () => avaai.entities.Customer.filter({ primary_customer_id: customerId }),
     enabled: !!customerId,
   });
 
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ['dossier_comparison', dossierId],
-    queryFn: () => avasys.entities.ComparisonEntry.filter({ dossier_id: dossierId }),
+    queryFn: () => avaai.entities.ComparisonEntry.filter({ dossier_id: dossierId }),
     enabled: !!dossierId,
   });
 
   const { data: verkaufschance } = useQuery({
     queryKey: ['dossier_vs_ro', dossier?.linked_verkaufschance_id],
-    queryFn: () => avasys.entities.Verkaufschance.filter({ id: dossier.linked_verkaufschance_id }).then(r => r[0]),
+    queryFn: () => avaai.entities.Verkaufschance.filter({ id: dossier.linked_verkaufschance_id }).then(r => r[0]),
     enabled: !!dossier?.linked_verkaufschance_id,
   });
 
@@ -280,7 +280,7 @@ export default function DossierVergleichTab({ dossier, pendingImportContract, on
 
   // Dossier-Titel Mutation
   const titleMutation = useMutation({
-    mutationFn: (title) => avasys.entities.AdvisoryDossier.update(dossierId, { title }),
+    mutationFn: (title) => avaai.entities.AdvisoryDossier.update(dossierId, { title }),
     onSuccess: () => {
       setIsEditingTitle(false);
     },

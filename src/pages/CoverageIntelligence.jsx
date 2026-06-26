@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,9 +31,9 @@ export default function CoverageIntelligence() {
   const [search, setSearch] = useState('')
   const [filterGap, setFilterGap] = useState('all') // all | critical | upsell | complete
 
-  const { data: customers = [] } = useQuery({ queryKey: ['customers'], queryFn: () => avasys.entities.Customer.list() })
-  const { data: contracts = [] } = useQuery({ queryKey: ['contracts'], queryFn: () => avasys.entities.Contract.list() })
-  const { data: leads = [] }     = useQuery({ queryKey: ['leads'],     queryFn: () => avasys.entities.Lead.list() })
+  const { data: customers = [] } = useQuery({ queryKey: ['customers'], queryFn: () => avaai.entities.Customer.list() })
+  const { data: contracts = [] } = useQuery({ queryKey: ['contracts'], queryFn: () => avaai.entities.Contract.list() })
+  const { data: leads = [] }     = useQuery({ queryKey: ['leads'],     queryFn: () => avaai.entities.Lead.list() })
 
   const lifecycleMap = useMemo(() => buildLifecycleMap(customers, contracts, leads), [customers, contracts, leads])
 

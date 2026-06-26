@@ -1,4 +1,4 @@
-# avaSysAIByNik Premium Broker
+# avaai Premium Broker
 
 Versicherungs-Vergleichsplattform mit Multi-Tenant-Architektur, DSGVO/FINMA-Compliance und skalierbarem Dokumenten-Management auf Exoscale SOS.
 
@@ -41,7 +41,7 @@ npm run dev
 | `S3_BUCKET` | S3 Bucket Name | — |
 | `S3_ACCESS_KEY_ID` | Exoscale API Key | — |
 | `S3_SECRET_ACCESS_KEY` | Exoscale Secret | — |
-| `CORS_ORIGIN` | Erlaubte Frontend-Domain (Prod: `https://app.avasys.ch`) | `http://localhost:3004` |
+| `CORS_ORIGIN` | Erlaubte Frontend-Domain (Prod: `https://app.avaai.ch`) | `http://localhost:3004` |
 | `JWT_SECRET` | JWT Signing Secret | — |
 | `DATABASE_URL` | PostgreSQL Connection String | — |
 
@@ -66,4 +66,4 @@ npm run dev
 
 ## Lizenz
 
-Proprietär — avaSysAIByNik AG
+Proprietär — avaai AG

@@ -2,7 +2,7 @@ import type { FastifyCorsOptions } from '@fastify/cors';
 import { env } from './env.js';
 
 // ---------------------------------------------------------------------------
-// avaSysAIByNik Backend — CORS Configuration
+// avaai Backend — CORS Configuration
 // ---------------------------------------------------------------------------
 
 /** Exposed by @fastify/cors types */
@@ -12,7 +12,7 @@ type OriginFunction = (origin: string | undefined, cb: OriginCallback) => void;
 /**
  * Parsed CORS origins from env: comma-separated list
  * Dev default: http://localhost:3004
- * Production: https://app.avasys.ch (via CORS_ORIGIN in Production-Umgebung)
+ * Production: https://app.avaai.ch (via CORS_ORIGIN in Production-Umgebung)
  */
 function parseOrigins(raw: string): string[] {
   return raw

@@ -33,10 +33,10 @@ cd kkv-crm && npm run dev
 ## Nach dem Setup
 
 ### Source Code hinzufügen
-Da Base44 ~300 Dateien hat, empfehlen wir:
+Da avaai ~300 Dateien hat, empfehlen wir:
 
 ```
-Base44 Dashboard → Settings → GitHub Sync
+avaai Dashboard → Settings → GitHub Sync
 → GitHub Repo verbinden
 → git clone https://github.com/dein/repo
 → cp -r repo/src/* kkv-crm/src/
@@ -56,7 +56,7 @@ Falls der Push fehlschlägt:
 ```
 kkv-crm/
 ├── src/
-│   ├── api/avasysClient.js      ← Base44 SDK
+│   ├── api/avaaiClient.js      ← avaai SDK
 │   ├── App.jsx                  ← Router (40+ Routes)
 │   ├── main.jsx                 ← Entry Point
 │   ├── index.css                ← Design Tokens
@@ -83,7 +83,7 @@ kkv-crm/
 VITE_BASE44_APP_ID=deine_app_id_hier
 ```
 
-Die App ID findest du in: Base44 Dashboard → Settings → App ID
+Die App ID findest du in: avaai Dashboard → Settings → App ID
 
 ## Dependencies Übersicht
 
@@ -96,7 +96,7 @@ Die App ID findest du in: Base44 Dashboard → Settings → App ID
 | Charts | Recharts |
 | Data | xlsx, date-fns, lodash, moment |
 | PDF | jsPDF |
-| AI/ML | Base44 SDK (InvokeLLM integriert) |
+| AI/ML | avaai SDK (InvokeLLM integriert) |
 | Animation | Framer Motion |
 | Maps | React Leaflet |
 | DnD | @hello-pangea/dnd |

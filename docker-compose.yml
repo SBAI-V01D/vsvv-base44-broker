@@ -1,31 +1,31 @@
-name: avasys
+name: avaai
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: avasys-postgres
+    container_name: avaai-postgres
     restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: avasys
-      POSTGRES_USER: avasys
+      POSTGRES_DB: avaai
+      POSTGRES_USER: avaai
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password is required. Set DB_PASSWORD in .env}
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U avasys"]
+      test: ["CMD-SHELL", "pg_isready -U avaai"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - avasys-network
+      - avaai-network
 
   # Redis is OPTIONAL — only needed for queues/sessions.
   # Uncomment if Redis is available on this host.
   # redis:
   #   image: redis:7-alpine
-  #   container_name: avasys-redis
+  #   container_name: avaai-redis
   #   restart: unless-stopped
   #   ports:
   #     - "6379:6379"
@@ -35,11 +35,11 @@ services:
   #     timeout: 5s
   #     retries: 5
   #   networks:
-  #     - avasys-network
+  #     - avaai-network
 
   minio:
     image: minio/minio:latest
-    container_name: avasys-minio
+    container_name: avaai-minio
     restart: unless-stopped
     volumes:
       - miniodata:/data
@@ -56,23 +56,23 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - avasys-network
+      - avaai-network
 
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: avasys-mailhog
+    container_name: avaai-mailhog
     restart: unless-stopped
     ports:
       - "1025:1025"  # SMTP
       - "8025:8025"  # Web UI
     networks:
-      - avasys-network
+      - avaai-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: avasys-backend
+    container_name: avaai-backend
     restart: unless-stopped
     depends_on:
       postgres:
@@ -85,7 +85,7 @@ services:
       NODE_ENV: development
       PORT: 3003
       HOST: 0.0.0.0
-      DATABASE_URL: postgresql://avasys:${DB_PASSWORD:?}@postgres:5432/avasys
+      DATABASE_URL: postgresql://avaai:${DB_PASSWORD:?}@postgres:5432/avaai
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:?JWT secret is required. Generate with: openssl rand -hex 64}
       JWT_ACCESS_EXPIRY: 15m
@@ -95,23 +95,23 @@ services:
       MINIO_USE_SSL: "false"
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
-      MINIO_BUCKET: avasys-documents
+      MINIO_BUCKET: avaai-documents
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
-      SMTP_FROM: noreply@avasys.ch
+      SMTP_FROM: noreply@avaai.ch
       # SECURITY: In production, set this to the explicit frontend URL
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3004}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:
       - ./backend/src:/app/src
     networks:
-      - avasys-network
+      - avaai-network
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: avasys-frontend
+    container_name: avaai-frontend
     restart: unless-stopped
     depends_on:
       - backend
@@ -120,7 +120,7 @@ services:
     environment:
       VITE_API_URL: /api
     networks:
-      - avasys-network
+      - avaai-network
 
 volumes:
   pgdata:
@@ -131,5 +131,5 @@ volumes:
     driver: local
 
 networks:
-  avasys-network:
+  avaai-network:
     driver: bridge

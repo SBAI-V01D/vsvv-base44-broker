@@ -93,7 +93,7 @@ Benutzerfreundliche Filterkomponente mit:
 ### 1. **Serverseitige Filterung**
 ```javascript
 // Queries verwenden bereits Filterung
-const entries = avasys.entities.CommissionEntry.list(...)
+const entries = avaai.entities.CommissionEntry.list(...)
 // Client-seitige Zusatzfilterung nach Zeitraum
 ```
 

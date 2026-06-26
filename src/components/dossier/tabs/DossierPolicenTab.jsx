@@ -6,7 +6,7 @@
  */
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Shield, FileText, AlertCircle, ChevronDown, ChevronUp, ArrowRight, Filter } from 'lucide-react';
 
 // ── Dossier-Typ → relevante insurance_types ──────────────────────────────────
@@ -159,13 +159,13 @@ export default function DossierPolicenTab({ dossier, onImportContract }) {
 
   const { data: familyMembers = [] } = useQuery({
     queryKey: ['dossier_family_ro', customerId],
-    queryFn: () => avasys.entities.Customer.filter({ primary_customer_id: customerId }),
+    queryFn: () => avaai.entities.Customer.filter({ primary_customer_id: customerId }),
     enabled: !!customerId,
   });
 
   const { data: mainCustomer } = useQuery({
     queryKey: ['dossier_customer_ro', customerId],
-    queryFn: () => avasys.entities.Customer.filter({ id: customerId }).then(r => r[0]),
+    queryFn: () => avaai.entities.Customer.filter({ id: customerId }).then(r => r[0]),
     enabled: !!customerId,
   });
 
@@ -178,7 +178,7 @@ export default function DossierPolicenTab({ dossier, onImportContract }) {
     queryKey: ['dossier_contracts_ro', allCustomerIds],
     queryFn: async () => {
       const results = await Promise.all(
-        allCustomerIds.map(id => avasys.entities.Contract.filter({ customer_id: id }))
+        allCustomerIds.map(id => avaai.entities.Contract.filter({ customer_id: id }))
       );
       return results.flat().filter(c => c.status !== 'archived');
     },

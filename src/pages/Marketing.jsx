@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import {
   Mail, Plus, Send, Clock, CheckCircle2, FileText, Trash2,
   Copy, BarChart2, Users, AlertCircle, ChevronRight, LayoutTemplate
@@ -41,40 +41,40 @@ export default function Marketing() {
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ['email-campaigns'],
-    queryFn: () => avasys.entities.EmailCampaign.list('-created_date'),
+    queryFn: () => avaai.entities.EmailCampaign.list('-created_date'),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avasys.entities.Customer.list(),
+    queryFn: () => avaai.entities.Customer.list(),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => avasys.entities.EmailCampaign.create(data),
+    mutationFn: (data) => avaai.entities.EmailCampaign.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['email-campaigns'] }); setShowForm(false); },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avasys.entities.EmailCampaign.update(id, data),
+    mutationFn: ({ id, data }) => avaai.entities.EmailCampaign.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['email-campaigns'] }); setEditCampaign(null); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avasys.entities.EmailCampaign.delete(id),
+    mutationFn: (id) => avaai.entities.EmailCampaign.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['email-campaigns'] }),
   });
 
   const handleSend = async (campaign) => {
     setSending(campaign.id);
     setSentResult(null);
-    const res = await avasys.functions.invoke('sendEmailCampaign', { campaign_id: campaign.id });
+    const res = await avaai.functions.invoke('sendEmailCampaign', { campaign_id: campaign.id });
     setSending(null);
     setSentResult({ id: campaign.id, ...res.data });
     queryClient.invalidateQueries({ queryKey: ['email-campaigns'] });
   };
 
   const handleSchedule = async (campaign) => {
-    await avasys.entities.EmailCampaign.update(campaign.id, { status: 'geplant' });
+    await avaai.entities.EmailCampaign.update(campaign.id, { status: 'geplant' });
     queryClient.invalidateQueries({ queryKey: ['email-campaigns'] });
   };
 

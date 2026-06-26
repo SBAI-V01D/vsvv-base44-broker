@@ -9,12 +9,12 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 
 export function useECCIncidents(options = {}) {
   return useQuery({
     queryKey: ['ecc_incidents'],
-    queryFn: () => avasys.entities.EnterpriseIncident.list('-detected_at', 200),
+    queryFn: () => avaai.entities.EnterpriseIncident.list('-detected_at', 200),
     staleTime: 2 * 60 * 1000,
     gcTime:    10 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -25,7 +25,7 @@ export function useECCIncidents(options = {}) {
 export function useECCCustomers(options = {}) {
   return useQuery({
     queryKey: ['ecc_customers'],
-    queryFn: () => avasys.entities.Customer.list('-created_date', 500),
+    queryFn: () => avaai.entities.Customer.list('-created_date', 500),
     staleTime: 15 * 60 * 1000,
     gcTime:    30 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -36,7 +36,7 @@ export function useECCCustomers(options = {}) {
 export function useECCContracts(options = {}) {
   return useQuery({
     queryKey: ['ecc_contracts'],
-    queryFn: () => avasys.entities.Contract.list('-created_date', 500),
+    queryFn: () => avaai.entities.Contract.list('-created_date', 500),
     staleTime: 15 * 60 * 1000,
     gcTime:    30 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -47,7 +47,7 @@ export function useECCContracts(options = {}) {
 export function useECCAuditLogs(options = {}) {
   return useQuery({
     queryKey: ['ecc_audit_logs'],
-    queryFn: () => avasys.entities.AuditLog.list('-timestamp', 200),
+    queryFn: () => avaai.entities.AuditLog.list('-timestamp', 200),
     staleTime: 5 * 60 * 1000,
     gcTime:    15 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -59,7 +59,7 @@ export function useECCGovernanceSnapshot(options = {}) {
   return useQuery({
     queryKey: ['ecc_governance_snapshot'],
     queryFn: async () => {
-      const snapshots = await avasys.entities.GovernanceScoreSnapshot.list('-computed_at', 1);
+      const snapshots = await avaai.entities.GovernanceScoreSnapshot.list('-computed_at', 1);
       return snapshots[0] || null;
     },
     staleTime: 15 * 60 * 1000,
@@ -72,7 +72,7 @@ export function useECCGovernanceSnapshot(options = {}) {
 export function useECCGovernanceHistory(options = {}) {
   return useQuery({
     queryKey: ['ecc_governance_history'],
-    queryFn: () => avasys.entities.GovernanceScoreSnapshot.list('-computed_at', 30),
+    queryFn: () => avaai.entities.GovernanceScoreSnapshot.list('-computed_at', 30),
     staleTime: 30 * 60 * 1000,
     gcTime:    60 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -83,7 +83,7 @@ export function useECCGovernanceHistory(options = {}) {
 export function useECCAiFindings(options = {}) {
   return useQuery({
     queryKey: ['ecc_ai_findings'],
-    queryFn: () => avasys.entities.AiFinding.list('-created_date', 100),
+    queryFn: () => avaai.entities.AiFinding.list('-created_date', 100),
     staleTime: 5 * 60 * 1000,
     gcTime:    15 * 60 * 1000,
     refetchOnWindowFocus: false,

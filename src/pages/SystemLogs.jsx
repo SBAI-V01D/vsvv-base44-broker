@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { useAuth } from '@/lib/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -71,23 +71,23 @@ export default function SystemLogs() {
 
   const { data: logs = [], isLoading, refetch } = useQuery({
     queryKey: ['systemLogs'],
-    queryFn: () => avasys.entities.SystemLog.list('-created_date', 200),
+    queryFn: () => avaai.entities.SystemLog.list('-created_date', 200),
   })
 
   const { data: queue = [] } = useQuery({
     queryKey: ['automationQueue'],
-    queryFn: () => avasys.entities.AutomationQueue.list('-created_date', 100),
+    queryFn: () => avaai.entities.AutomationQueue.list('-created_date', 100),
   })
 
   const resolveMutation = useMutation({
-    mutationFn: id => avasys.entities.SystemLog.update(id, { resolved: true }),
+    mutationFn: id => avaai.entities.SystemLog.update(id, { resolved: true }),
     onSuccess: () => qc.invalidateQueries(['systemLogs']),
   })
 
   const deleteResolvedMutation = useMutation({
     mutationFn: async () => {
       const resolved = logs.filter(l => l.resolved)
-      await Promise.all(resolved.map(l => avasys.entities.SystemLog.delete(l.id)))
+      await Promise.all(resolved.map(l => avaai.entities.SystemLog.delete(l.id)))
     },
     onSuccess: () => qc.invalidateQueries(['systemLogs']),
   })

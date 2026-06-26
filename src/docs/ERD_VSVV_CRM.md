@@ -1,4 +1,4 @@
-# avaSysAIByNik CRM - Entity Relationship Diagram (ERD)
+# avaai CRM - Entity Relationship Diagram (ERD)
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -8,7 +8,7 @@
 
 ## Übersicht
 
-Dieses ERD zeigt alle Tabellen des avaSysAIByNik CRM-Systems mit ihren Beziehungen.
+Dieses ERD zeigt alle Tabellen des avaai CRM-Systems mit ihren Beziehungen.
 
 ---
 

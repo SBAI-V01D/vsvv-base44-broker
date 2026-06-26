@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,18 +53,18 @@ export default function Documents() {
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => avasys.entities.Document.list('-created_date'),
+    queryFn: () => avaai.entities.Document.list('-created_date'),
   })
 
 
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avasys.entities.Document.update(id, data),
+    mutationFn: ({ id, data }) => avaai.entities.Document.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents'] }),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avasys.entities.Document.delete(id),
+    mutationFn: (id) => avaai.entities.Document.delete(id),
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['documents'], (old) =>
         old ? old.filter(doc => doc.id !== deletedId) : old
@@ -76,7 +76,7 @@ export default function Documents() {
     mutationFn: async () => {
       const toDelete = documents.filter(d => d.doc_type === 'unbekannt')
       for (const doc of toDelete) {
-        await avasys.entities.Document.delete(doc.id)
+        await avaai.entities.Document.delete(doc.id)
       }
       return toDelete.length
     },
@@ -95,7 +95,7 @@ export default function Documents() {
   }
 
   const handleRequeue = async (doc) => {
-    await avasys.entities.AutomationQueue.create({
+    await avaai.entities.AutomationQueue.create({
       job_type: 'ki_extraction',
       status: 'pending',
       related_document_id: doc.id,
@@ -110,14 +110,14 @@ export default function Documents() {
     setSmartAnalyzingId(doc.id)
     setSmartAnalyzing(true)
     try {
-      const res = await avasys.functions.invoke('smartDocumentAnalysis', {
+      const res = await avaai.functions.invoke('smartDocumentAnalysis', {
         file_url: doc.file_url,
         document_type: doc.category || doc.doc_type || 'police',
       })
       if (res.data?.success) {
         // KI hat doc_type erkannt → Dokument direkt aktualisieren
         if (res.data.detected_doc_type && res.data.detected_doc_type !== doc.doc_type) {
-          avasys.entities.Document.update(doc.id, {
+          avaai.entities.Document.update(doc.id, {
             doc_type: res.data.detected_doc_type,
             category: res.data.detected_category || doc.category,
             classification_status: 'klassifiziert',
@@ -150,7 +150,7 @@ export default function Documents() {
       ) : old
     )
     for (const doc of docsToFix) {
-      avasys.entities.Document.update(doc.id, { classification_status: 'klassifiziert' }).catch(() => {
+      avaai.entities.Document.update(doc.id, { classification_status: 'klassifiziert' }).catch(() => {
         queryClient.invalidateQueries({ queryKey: ['documents'] })
       })
     }

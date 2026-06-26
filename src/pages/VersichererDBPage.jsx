@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -110,7 +110,7 @@ export default function VersichererDBPage() {
   const [editing, setEditing] = useState(null);
 
   const load = async () => {
-    const data = await avasys.entities.VersichererDB.list('-created_date', 200);
+    const data = await avaai.entities.VersichererDB.list('-created_date', 200);
     setVersicherer(data);
     setLoading(false);
   };
@@ -118,8 +118,8 @@ export default function VersichererDBPage() {
   useEffect(() => { load(); }, []);
 
   const save = async (data) => {
-    if (editing?.id) await avasys.entities.VersichererDB.update(editing.id, data);
-    else await avasys.entities.VersichererDB.create(data);
+    if (editing?.id) await avaai.entities.VersichererDB.update(editing.id, data);
+    else await avaai.entities.VersichererDB.create(data);
     setShowForm(false);
     setEditing(null);
     load();

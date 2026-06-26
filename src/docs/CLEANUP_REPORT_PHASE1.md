@@ -14,7 +14,7 @@
 ### Guard 1: `no_existing_storno`
 ```javascript
 // Prüft ob bereits Storno existiert
-const existingStornos = await avasys.asServiceRole.entities.CommissionEntry.filter({
+const existingStornos = await avaai.asServiceRole.entities.CommissionEntry.filter({
   is_storno: true,
   storno_reference_id: provision.id,
   archived: false,
@@ -91,10 +91,10 @@ storno.storno_rueckforderungsbetrag = wasPaid ? provision.provision_payout_amoun
 ### Vorher (🔴 KRITISCH):
 ```javascript
 // Liest ALLE Contracts (2000+)
-const contracts = await avasys.asServiceRole.entities.Contract.list();
+const contracts = await avaai.asServiceRole.entities.Contract.list();
 
 // Liest ALLE Customers (2000+)
-const customers = await avasys.asServiceRole.entities.Customer.list();
+const customers = await avaai.asServiceRole.entities.Customer.list();
 
 // In-Memory Filter
 const customerIdsWithContract = new Set(contracts.map(c => c.customer_id));
@@ -107,11 +107,11 @@ const customerIdsWithContract = new Set(contracts.map(c => c.customer_id));
 const customerId = contract.customer_id;
 
 // Liest NUR diesen einen Customer
-const customer = await avasys.asServiceRole.entities.Customer.get(customerId);
+const customer = await avaai.asServiceRole.entities.Customer.get(customerId);
 
 // Update nur wenn nötig
 if (customer.status !== 'active') {
-  await avasys.asServiceRole.entities.Customer.update(customerId, { status: 'active' });
+  await avaai.asServiceRole.entities.Customer.update(customerId, { status: 'active' });
 }
 ```
 **Performance:** O(1) — konstant!

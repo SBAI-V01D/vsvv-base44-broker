@@ -1,5 +1,5 @@
 // ============================================================================
-// avaSysAIByNik Backend — File Upload Routes
+// avaai Backend — File Upload Routes
 //
 // POST   /api/upload/file      — Upload a single file
 // POST   /api/upload/files     — Upload multiple files

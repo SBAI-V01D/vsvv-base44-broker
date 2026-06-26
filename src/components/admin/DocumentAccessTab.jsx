@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -12,12 +12,12 @@ export default function DocumentAccessTab() {
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => avasys.entities.Document.list(),
+    queryFn: () => avaai.entities.Document.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avasys.entities.Advisor.list(),
+    queryFn: () => avaai.entities.Advisor.list(),
   })
 
   const accessLevelLabels = {

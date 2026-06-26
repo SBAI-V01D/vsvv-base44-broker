@@ -1,11 +1,11 @@
-# avaSysAIByNik CRM - Supabase Migrationsplan & Datenmodell
+# avaai CRM - Supabase Migrationsplan & Datenmodell
 
 ## Executive Summary
 
 **Ziel:** Migration des Krankenkassenvergleichs und Aufbau eines skalierbaren CRM-Systems auf Supabase.
 
 **Architektur:**
-- **Base44** = Frontend, UI, Business-Logic, Authentication
+- **avaai** = Frontend, UI, Business-Logic, Authentication
 - **Supabase** = Zentrale relationale Datenbank für alle CRM-Daten
 - **BAG-Daten** = 217'472 vollständige Datensätze ohne Verluste
 
@@ -19,12 +19,12 @@
 |---|---|---|---|
 | BAGDatenImport.jsx | Client-side Excel-Parsing | ✅ Perfekt | **Behalten** |
 | KrankenkassenVergleich.jsx | Business-Logic | ✅ Perfekt | **Behalten** |
-| BAGPraemienDaten Entity | Base44 Entity | ❌ Limitiert | **Durch Supabase ersetzen** |
+| BAGPraemienDaten Entity | avaai Entity | ❌ Limitiert | **Durch Supabase ersetzen** |
 | Vergleichslogik | Client-side Berechnung | ✅ Schnell | **Behalten** |
 
 ### 1.2 Aktuelle Probleme
 
-1. **Rate Limiting:** Base44 API limitiert bei 25-100 Records/Batch
+1. **Rate Limiting:** avaai API limitiert bei 25-100 Records/Batch
 2. **Performance:** 217'472 Records → ~8'700 API-Calls = Stunden
 3. **Datenverluste:** Unbekannte IDs, TAR-DIV, Altersklassen werden gefiltert
 4. **Skalierung:** Nicht für Zusatzversicherungen, Offerten, etc. erweiterbar
@@ -37,7 +37,7 @@
 
 ```sql
 -- ============================================================================
--- avaSysAIByNik CRM - Supabase Schema v1.0
+-- avaai CRM - Supabase Schema v1.0
 -- ============================================================================
 
 -- ============================================================================
@@ -426,7 +426,7 @@ CREATE INDEX idx_import_logs_datum ON import_logs(importiert_am);
 -- ALTER TABLE kunden ENABLE ROW LEVEL SECURITY;
 -- etc.
 
--- Beispiel-Policies (müssen an Base44 Auth angepasst werden):
+-- Beispiel-Policies (müssen an avaai Auth angepasst werden):
 -- CREATE POLICY "Organization isolation" ON kunden
 --   FOR ALL USING (organization_id = current_setting('app.current_organization_id')::uuid);
 
@@ -562,7 +562,7 @@ JOIN versicherer v ON bp.versicherer_id = v.id
 WHERE bp.aktiv = true
   AND bp.geschaeftsjahr = (SELECT MAX(geschaeftsjahr) FROM bag_praemien WHERE aktiv = true);
 
--- Grant access (muss an Base44 Auth angepasst werden)
+-- Grant access (muss an avaai Auth angepasst werden)
 -- GRANT SELECT ON v_aktuelle_bag_praemien TO authenticated;
 
 -- ============================================================================
@@ -580,7 +580,7 @@ WHERE bp.aktiv = true
 1.1 Supabase-Projekt erstellen/verbinden
 1.2 SQL-Schema ausführen (alle Tabellen + Indizes)
 1.3 RLS-Policies konfigurieren
-1.4 Base44 Supabase-Connector autorisieren
+1.4 avaai Supabase-Connector autorisieren
 ```
 
 ### **Phase 2: Daten-Import (Tag 2-3)**
@@ -600,7 +600,7 @@ WHERE bp.aktiv = true
 ### **Phase 3: Backend-Functions (Tag 4)**
 
 ```
-Neue Base44 Functions:
+Neue avaai Functions:
 - importBAGDatenToSupabase(payload: {records, jahr, user})
 - queryBAGPraemien(payload: {kanton, jahr, altersklasse, modell, franchise, unfall})
 - validateBAGImport(payload: {import_id})
@@ -626,7 +626,7 @@ Minimale Änderungen:
     - PDF-Export funktioniert ✓
     
 5.2 Rollback-Plan:
-    - Base44 Entity bleibt parallel erhalten
+    - avaai Entity bleibt parallel erhalten
     - Switch bei Problemen zurück auf Entity
 ```
 
@@ -669,7 +669,7 @@ async function importBAGDatenToSupabase({ records, jahr, user }) {
 ### **5.1 Query-Funktion (Haupt-Endpoint)**
 
 ```javascript
-// Base44 Function: queryBAGPraemien
+// avaai Function: queryBAGPraemien
 export async function queryBAGPraemien(payload) {
   const { kanton, jahr, altersklasse, modell, franchise, unfall } = payload;
   
@@ -768,10 +768,10 @@ CREATE TABLE abrechnungen (
 ✓ Supabase Project URL: https://xxxxx.supabase.co
 ✓ Supabase Anon Key: eyJhbGc... (public, für Client)
 ✓ Supabase Service Role Key: eyJhbGc... (secret, für Backend-Functions)
-  → Wird als Secret in Base44 gespeichert
+  → Wird als Secret in avaai gespeichert
 ```
 
-### **7.2 Base44 Supabase-Connector**
+### **7.2 avaai Supabase-Connector**
 
 ```
 Connector muss autorisiert werden mit:
@@ -779,7 +779,7 @@ Connector muss autorisiert werden mit:
 - Scopes: Projects:Read, Database:Read, Secrets:Read
 ```
 
-### **7.3 Secrets in Base44**
+### **7.3 Secrets in avaai**
 
 ```
 SUPABASE_URL = https://xxxxx.supabase.co
@@ -852,7 +852,7 @@ CREATE POLICY "Advisor-Access" ON vertraege
 
 ### **Vorteile der Supabase-Migration**
 
-| Aspekt | Vorher (Base44 Entity) | Nachher (Supabase) |
+| Aspekt | Vorher (avaai Entity) | Nachher (Supabase) |
 |---|---|---|
 | **Records** | Limitiert (Rate-Limit) | Unlimited (217k+ kein Problem) |
 | **Import-Zeit** | Stunden | <10 Minuten |

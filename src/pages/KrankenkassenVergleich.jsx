@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,7 +97,7 @@ export default function KrankenkassenVergleich() {
     setSelectedResult(null);
     try {
       const yob = new Date(formData.geburtsdatum).getFullYear();
-      const response = await avasys.functions.invoke('queryBAGLive', {
+      const response = await avaai.functions.invoke('queryBAGLive', {
         plz: formData.plz,
         yob,
         deductible: Number(formData.aktuelle_franchise),
@@ -228,9 +228,9 @@ export default function KrankenkassenVergleich() {
     if (!selectedResult || isSaving) return;
     setIsSaving(true);
     try {
-      const user = await avasys.auth.me();
+      const user = await avaai.auth.me();
       const organizationId = selectedCustomer?.organization_id || user?.organization_id || user?.data?.organization_id || 'default';
-      await avasys.entities.VergleichsAnalyse.create({
+      await avaai.entities.VergleichsAnalyse.create({
         customer_id: selectedCustomer?.id,
         customer_name: `${formData.vorname} ${formData.nachname}`.trim() || selectedCustomer?.first_name,
         advisor_id: user.id,
@@ -296,7 +296,7 @@ export default function KrankenkassenVergleich() {
     setIsSavingDoc(true);
     setDocSaved(false);
     try {
-      const user = await avasys.auth.me();
+      const user = await avaai.auth.me();
       const htmlContent = `
         <html><head><title>KK-Vergleich</title>
         <style>body{margin:20px;font-family:Arial,sans-serif;font-size:12px;} @media print{body{-webkit-print-color-adjust:exact;}}</style>
@@ -305,10 +305,10 @@ export default function KrankenkassenVergleich() {
       const blob = new Blob([htmlContent], { type: 'text/html' });
       const file = new File([blob], `KK-Vergleich_${formData.nachname || selectedCustomer.last_name}_${new Date().toISOString().split('T')[0]}.html`, { type: 'text/html' });
 
-      const { file_url } = await avasys.integrations.Core.UploadFile({ file });
+      const { file_url } = await avaai.integrations.Core.UploadFile({ file });
 
       const docName = `KK-Vergleich ${formData.vorname || selectedCustomer.first_name} ${formData.nachname || selectedCustomer.last_name} · ${new Date().toLocaleDateString('de-CH')}`;
-      await avasys.entities.Document.create({
+      await avaai.entities.Document.create({
         customer_id: selectedCustomer.id,
         customer_name: `${selectedCustomer.first_name} ${selectedCustomer.last_name}`,
         name: docName,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,7 @@ export default function Ausschreibungen() {
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const load = async () => {
-    const data = await avasys.entities.Ausschreibung.list('-created_date', 200);
+    const data = await avaai.entities.Ausschreibung.list('-created_date', 200);
     setAusschreibungen(data);
     setLoading(false);
   };
@@ -52,24 +52,24 @@ export default function Ausschreibungen() {
 
   const deleteAusschreibung = async () => {
     if (!confirmDelete) return;
-    await avasys.entities.Ausschreibung.delete(confirmDelete.id);
+    await avaai.entities.Ausschreibung.delete(confirmDelete.id);
     setConfirmDelete(null);
     load();
   };
 
   const createAusschreibung = async (data) => {
-    const user = await avasys.auth.me();
+    const user = await avaai.auth.me();
     let organization_id = data.organization_id;
     if (!organization_id && data.customer_id) {
-      const customer = await avasys.entities.Customer.get(data.customer_id).catch(() => null);
+      const customer = await avaai.entities.Customer.get(data.customer_id).catch(() => null);
       organization_id = customer?.organization_id;
     }
     if (!organization_id) {
       // Fallback: erste Organisation laden
-      const orgs = await avasys.entities.Organization.list(null, 1);
+      const orgs = await avaai.entities.Organization.list(null, 1);
       organization_id = orgs?.[0]?.id;
     }
-    await avasys.entities.Ausschreibung.create({ ...data, broker_name: user?.full_name, broker_id: user?.id, organization_id });
+    await avaai.entities.Ausschreibung.create({ ...data, broker_name: user?.full_name, broker_id: user?.id, organization_id });
     setShowForm(false);
     load();
   };

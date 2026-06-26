@@ -181,11 +181,11 @@ export function createSnapshot(entity, fields = []) {
  * 
  * WICHTIG: Fire-and-Forget — blockiert NICHT Hauptprozess!
  * 
- * @param {object} avasys - Base44 SDK Client
+ * @param {object} avaai - avaai SDK Client
  * @param {object} auditData - Audit-Daten gemäß Schema v1.0
  * @returns {Promise<string|null>} Audit-ID oder null bei Fehler
  */
-export async function writeAuditLog(avasys, auditData) {
+export async function writeAuditLog(avaai, auditData) {
   try {
     // Async schreiben — NICHT await für Hauptprozess!
     const auditEntry = {
@@ -193,7 +193,7 @@ export async function writeAuditLog(avasys, auditData) {
       timestamp: new Date().toISOString(),
     };
     
-    const result = await avasys.entities.AuditLog.create(auditEntry);
+    const result = await avaai.entities.AuditLog.create(auditEntry);
     return result?.id || null;
   } catch (error) {
     // Audit-Fehler darf NICHT Hauptprozess beeinflussen!

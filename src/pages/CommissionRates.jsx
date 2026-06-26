@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,11 +23,11 @@ export default function CommissionRates() {
 
   const { data: rates = [], isLoading } = useQuery({
     queryKey: ['commissionRates'],
-    queryFn: () => avasys.entities.CommissionRate.list(),
+    queryFn: () => avaai.entities.CommissionRate.list(),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => avasys.entities.CommissionRate.create(data),
+    mutationFn: (data) => avaai.entities.CommissionRate.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commissionRates'] });
       setForm({ provider: '', insurance_type: '', commission_percentage: '', notes: '' });
@@ -36,7 +36,7 @@ export default function CommissionRates() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avasys.entities.CommissionRate.update(id, data),
+    mutationFn: ({ id, data }) => avaai.entities.CommissionRate.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commissionRates'] });
       setEditingRate(null);
@@ -46,7 +46,7 @@ export default function CommissionRates() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avasys.entities.CommissionRate.delete(id),
+    mutationFn: (id) => avaai.entities.CommissionRate.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['commissionRates'] }),
   });
 

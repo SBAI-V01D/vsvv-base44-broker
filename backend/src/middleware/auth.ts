@@ -1,5 +1,5 @@
 // ============================================================================
-// avaSysAIByNik Backend — JWT Authentication Middleware
+// avaai Backend — JWT Authentication Middleware
 // Provides requireAuth preHandler and extractUser helper.
 // Public routes are whitelisted to bypass authentication.
 // ============================================================================

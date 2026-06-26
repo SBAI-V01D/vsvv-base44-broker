@@ -1,4 +1,4 @@
-# avaSysAIByNik CRM - Backup & Rollback Konzept
+# avaai CRM - Backup & Rollback Konzept
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -8,7 +8,7 @@
 
 ## Übersicht
 
-Dieses Dokument beschreibt die Backup- und Rollback-Strategie für die avaSysAIByNik CRM-Migration zu Supabase.
+Dieses Dokument beschreibt die Backup- und Rollback-Strategie für die avaai CRM-Migration zu Supabase.
 
 ---
 
@@ -50,11 +50,11 @@ pg_dump -h db.xxx.supabase.co -U postgres \
   --data-only --file=data_backup.sql
 ```
 
-**Base44 Entity-Backup:**
+**avaai Entity-Backup:**
 
 ```javascript
 // Function: createFullBackup
-const backup = await avasys.functions.invoke('createFullBackup', {
+const backup = await avaai.functions.invoke('createFullBackup', {
   entities: ['BAGPraemienDaten', 'Kunde', 'Vertrag'],
   format: 'json',
   storage: 'supabase' // oder 's3', 'local'
@@ -84,8 +84,8 @@ Tier 1: Supabase Storage (Primary)
 ├─ Region: EU (Frankfurt)
 └─ Retention: 30 Tage
 
-Tier 2: Base44 File Storage (Secondary)
-├─ Location: Base44 Cloud
+Tier 2: avaai File Storage (Secondary)
+├─ Location: avaai Cloud
 └─ Retention: 90 Tage
 
 Tier 3: Externer S3-Bucket (Tertiary, optional)
@@ -121,7 +121,7 @@ WHERE import_version_id = 'import-version-uuid';
 -- 3. Fehlerjournal aktualisieren
 UPDATE bag_import_errors
 SET manuell_korrigiert = true,
-    manuell_korrigiert_von = 'admin@avasys.ch',
+    manuell_korrigiert_von = 'admin@avaai.ch',
     manuell_korrigiert_am = NOW()
 WHERE import_version_id = 'import-version-uuid';
 
@@ -136,7 +136,7 @@ VALUES (
     'timestamp', NOW(),
     'previous_status', 'completed'
   ),
-  'admin@avasys.ch'
+  'admin@avaai.ch'
 );
 
 -- 5. Bestätigung
@@ -176,11 +176,11 @@ Stufe 2: Full Backup Restore (falls PITR nicht möglich)
 3. "Restore Backup" ausführen
 4. Wartezeit: 15-60 Minuten (abhängig von Datenmenge)
 
-Stufe 3: Base44 Entity-Fallback (falls Supabase komplett ausfällt)
+Stufe 3: avaai Entity-Fallback (falls Supabase komplett ausfällt)
 ──────────────────────────────────────────────────────────────────
-1. Base44 Entities bleiben parallel aktiv (Woche 1-2)
+1. avaai Entities bleiben parallel aktiv (Woche 1-2)
 2. Feature-Flag umschalten auf Entity-Mode
-3. User arbeiten weiter mit Base44 Entities
+3. User arbeiten weiter mit avaai Entities
 4. Supabase-Problem beheben
 5. Erneuter Migrationsversuch
 ```
@@ -214,7 +214,7 @@ GROUP BY entity_type;
 SELECT k.id, k.email, k.updated_at
 FROM kunden k
 WHERE k.updated_at > NOW() - INTERVAL '1 hour'
-  AND k.updated_by = 'problematic-user@avasys.ch';
+  AND k.updated_by = 'problematic-user@avaai.ch';
 
 -- 3. Backup-Stand finden
 SELECT 
@@ -255,7 +255,7 @@ VALUES (
     'affected_records', 15,
     'restore_source', 'backup_kunden_20260609.csv'
   ),
-  'admin@avasys.ch'
+  'admin@avaai.ch'
 );
 ```
 
@@ -279,7 +279,7 @@ Phase 1: Sofort-Massnahmen (0-15 Minuten)
 1. Feature-Flag auf "Entity-Mode" umschalten
 2. User-Communication versenden ("Wartungsmodus")
 3. Supabase-Connector deaktivieren
-4. Base44 Entities aktivieren (Fallback)
+4. avaai Entities aktivieren (Fallback)
 
 Phase 2: Datenwiederherstellung (15-60 Minuten)
 ───────────────────────────────────────────────
@@ -308,7 +308,7 @@ Phase 4: Go/No-Go Entscheidung (120+ Minuten)
 2. Root-Cause-Analyse
 3. Entscheidung:
    - ✅ Retry mit Fixes (nächster Versuch in 1 Woche)
-   - ❌ Migration auf Eis legen (Base44 Entities bleiben)
+   - ❌ Migration auf Eis legen (avaai Entities bleiben)
 
 4. Communication an alle User
 ```
@@ -326,7 +326,7 @@ Phase 4: Go/No-Go Entscheidung (120+ Minuten)
 | **Import-Fehler (BAG)** | 5 Min. | 0 (kein Datenverlust) |
 | **DB-Problem (Supabase)** | 15 Min. | 1 Stunde (PITR) |
 | **Datenkorruption (CRM)** | 60 Min. | 1 Stunde (Backup) |
-| **Komplette Migration** | 4 Stunden | 0 (Base44 Fallback) |
+| **Komplette Migration** | 4 Stunden | 0 (avaai Fallback) |
 
 **Definitionen:**
 - **RTO (Recovery Time Objective):** Maximale akzeptable Downtime
@@ -448,16 +448,16 @@ const checkDailyBackup = async () => {
 
 ```
 Critical Alerts:
-├─ Email: admin@avasys.ch
+├─ Email: admin@avaai.ch
 ├─ SMS: +41 79 XXX XX XX
-└─ Slack: #avasys-alerts
+└─ Slack: #avaai-alerts
 
 Warning Alerts:
-├─ Email: admin@avasys.ch
-└─ Slack: #avasys-alerts
+├─ Email: admin@avaai.ch
+└─ Slack: #avaai-alerts
 
 Info Alerts:
-└─ Slack: #avasys-monitoring
+└─ Slack: #avaai-monitoring
 ```
 
 ---
@@ -556,7 +556,7 @@ docs/backups/
 - [ ] Pre-Import-Validation verschärfen
 - [ ] Alert bei Prämie < 0
 
-**Report erstellt von:** admin@avasys.ch
+**Report erstellt von:** admin@avaai.ch
 **Datum:** 2026-06-09
 ```
 
@@ -596,15 +596,15 @@ docs/backups/
 ### Backup-Strategie
 
 ✅ **Supabase Native Backups:** Daily (02:00 UTC), PITR (7 Tage)
-✅ **Base44 Entity-Backups:** Wöchentlich (Fallback)
-✅ **Multi-Tier Storage:** Supabase → Base44 → Extern (optional)
+✅ **avaai Entity-Backups:** Wöchentlich (Fallback)
+✅ **Multi-Tier Storage:** Supabase → avaai → Extern (optional)
 
 ### Rollback-Szenarien
 
 ✅ **Import-Fehler:** 5 Minuten (nur BAG-Daten)
 ✅ **DB-Problem:** 15-60 Minuten (PITR oder Full Restore)
 ✅ **Datenkorruption:** 60-120 Minuten (Backup-Restore)
-✅ **Komplette Migration:** 2-4 Stunden (Base44 Fallback)
+✅ **Komplette Migration:** 2-4 Stunden (avaai Fallback)
 
 ### Recovery Objectives
 

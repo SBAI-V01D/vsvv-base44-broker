@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { avasys, setTokens, getAccessToken, clearTokens } from '@/api/avasysClient';
+import { avaai, setTokens, getAccessToken, clearTokens } from '@/api/avaaiClient';
 
 const AuthContext = createContext();
 
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = async () => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await avasys.auth.me();
+      const currentUser = await avaai.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -90,14 +90,14 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
 
     if (shouldRedirect) {
-      avasys.auth.logout('/login');
+      avaai.auth.logout('/login');
     } else {
-      avasys.auth.logout();
+      avaai.auth.logout();
     }
   };
 
   const navigateToLogin = () => {
-    avasys.auth.redirectToLogin('/login');
+    avaai.auth.redirectToLogin('/login');
   };
 
   return (

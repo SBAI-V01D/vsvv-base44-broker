@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 import { AlertTriangle, Calendar, TrendingUp, Activity, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,19 +31,19 @@ function formatCurrency(amount) {
 export default function RenewalRadar() {
   const { data: contracts = [] } = useQuery({
     queryKey: ['renewal_contracts'],
-    queryFn: () => avasys.entities.Contract.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => avaai.entities.Contract.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['renewal_customers'],
-    queryFn: () => avasys.entities.Customer.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => avaai.entities.Customer.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['renewal_opportunities'],
-    queryFn: () => avasys.entities.Verkaufschance.filter({}),
+    queryFn: () => avaai.entities.Verkaufschance.filter({}),
     staleTime: 5 * 60 * 1000,
   });
 

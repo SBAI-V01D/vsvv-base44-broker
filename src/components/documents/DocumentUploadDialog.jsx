@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,13 +32,13 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avasys.entities.Customer.list(),
+    queryFn: () => avaai.entities.Customer.list(),
     enabled: open,
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avasys.entities.Contract.list(null, 1000),
+    queryFn: () => avaai.entities.Contract.list(null, 1000),
     enabled: open,
   })
 
@@ -137,14 +137,14 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
     try {
       // Step 1: Upload file
       setUploadProgress(30)
-      const { file_url } = await avasys.integrations.Core.UploadFile({ file })
+      const { file_url } = await avaai.integrations.Core.UploadFile({ file })
       setUploadProgress(60)
 
       if (uploadMode === 'antrag') {
         // Schnell-Klassifizierung per Dateiname: wenn "police" im Namen → als anlage/contract vormerken
         const lowerName = (form.name || '').toLowerCase()
         const looksLikePolice = lowerName.includes('police') || lowerName.includes('vertrag') || lowerName.includes('polic')
-        const doc = await avasys.entities.Document.create({
+        const doc = await avaai.entities.Document.create({
           name: form.name,
           file_url,
           category: looksLikePolice ? 'contract' : 'application',
@@ -154,7 +154,7 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
           uploaded_by: 'broker',
         })
         setUploadProgress(85)
-        avasys.entities.AutomationQueue.create({
+        avaai.entities.AutomationQueue.create({
           job_type: 'ki_extraction',
           status: 'pending',
           related_document_id: doc.id,
@@ -171,7 +171,7 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
           uploadMode === 'antrag_dok'? 'application' :
           form.category || 'other'
         const docType = 'anlage'
-        await avasys.entities.Document.create({
+        await avaai.entities.Document.create({
           name: form.name,
           file_url,
           category: docCategory,
@@ -200,7 +200,7 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
             if (form.statsNote) updates.renewal_statistics_note = form.statsNote
           }
           if (Object.keys(updates).length > 0) {
-            avasys.entities.Contract.update(form.contract_id, updates).catch(() => {})
+            avaai.entities.Contract.update(form.contract_id, updates).catch(() => {})
           }
         }
       }

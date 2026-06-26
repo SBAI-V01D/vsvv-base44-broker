@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 import VerkaufschanceStatusBadge from '@/components/verkaufschance/VerkaufschanceStatusBadge'
@@ -41,7 +41,7 @@ export default function VerkaufschancenWidget() {
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['verkaufschancen'],
-    queryFn: () => avasys.entities.Verkaufschance.list('-created_date'),
+    queryFn: () => avaai.entities.Verkaufschance.list('-created_date'),
   })
 
   const metrics = useMemo(() => {

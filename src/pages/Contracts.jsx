@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Plus, Edit, Trash2, FileText, Calendar, Building2, Tag, Download, Upload, User, AlertTriangle, XCircle, Zap, ExternalLink } from 'lucide-react'
 import DateQualityBadge from '@/components/contracts/DateQualityBadge'
 
@@ -35,7 +35,7 @@ export default function Contracts() {
 
   const { data: statusDefs = [] } = useQuery({
     queryKey: ['statusDefinitions'],
-    queryFn: () => avasys.entities.StatusDefinition.filter({ type: 'contract' }),
+    queryFn: () => avaai.entities.StatusDefinition.filter({ type: 'contract' }),
     staleTime: 10 * 60 * 1000,
   })
 
@@ -44,7 +44,7 @@ export default function Contracts() {
     // ⚠️ Nie { archived: false } als API-Filter — null/undefined-Felder werden ausgeschlossen.
     // Client-seitig filtern mit !c.archived
     queryFn: async () => {
-      const all = await avasys.entities.Contract.list('-created_date', 500)
+      const all = await avaai.entities.Contract.list('-created_date', 500)
       return all.filter(c => !c.archived)
     },
     staleTime: 2 * 60 * 1000,
@@ -53,7 +53,7 @@ export default function Contracts() {
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
-      const all = await avasys.entities.Customer.list('-created_date', 500)
+      const all = await avaai.entities.Customer.list('-created_date', 500)
       return all.filter(c => !c.archived)
     },
     staleTime: 5 * 60 * 1000,
@@ -61,18 +61,18 @@ export default function Contracts() {
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => avasys.entities.Document.list('-created_date', 200),
+    queryFn: () => avaai.entities.Document.list('-created_date', 200),
     staleTime: 5 * 60 * 1000,
   })
 
   const { data: organizations = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => avasys.entities.Organization.list('-created_date', 50),
+    queryFn: () => avaai.entities.Organization.list('-created_date', 50),
     staleTime: 10 * 60 * 1000,
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => avasys.entities.Contract.create(data),
+    mutationFn: (data) => avaai.entities.Contract.create(data),
     onSuccess: (newContract) => {
       // Sofort lokal cachen + globale Invalidierung via Subscription
       queryClient.setQueryData(['contracts'], (old = []) => [newContract, ...old]);
@@ -85,7 +85,7 @@ export default function Contracts() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avasys.entities.Contract.update(id, data),
+    mutationFn: ({ id, data }) => avaai.entities.Contract.update(id, data),
     onSuccess: (updated) => {
       queryClient.setQueryData(['contracts'], (old = []) =>
         old.map(c => c.id === updated.id ? updated : c)
@@ -99,7 +99,7 @@ export default function Contracts() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avasys.entities.Contract.delete(id),
+    mutationFn: (id) => avaai.entities.Contract.delete(id),
     onSuccess: (_, id) => {
       queryClient.setQueryData(['contracts'], (old = []) => old.filter(c => c.id !== id));
     },
@@ -137,7 +137,7 @@ export default function Contracts() {
   const handleStatusChange = async ({ status, statusDef, note, metadata }) => {
     if (!statusChanging) return
     const contract = statusChanging
-    await avasys.entities.StatusHistory.create({
+    await avaai.entities.StatusHistory.create({
       entity_type: 'contract',
       entity_id: contract.id,
       customer_id: contract.customer_id,
@@ -147,7 +147,7 @@ export default function Contracts() {
       note,
       metadata: JSON.stringify(metadata),
     })
-    const updated = await avasys.entities.Contract.update(contract.id, { custom_status: status })
+    const updated = await avaai.entities.Contract.update(contract.id, { custom_status: status })
     queryClient.setQueryData(['contracts'], (old = []) =>
       old.map(c => c.id === contract.id ? { ...c, custom_status: status } : c)
     )
@@ -171,9 +171,9 @@ export default function Contracts() {
     try {
       const formData = new FormData()
       formData.append('file', importFile)
-      const uploadRes = await fetch('https://api.avasys.com/upload', { method: 'POST', body: formData })
+      const uploadRes = await fetch('https://api.avaai.com/upload', { method: 'POST', body: formData })
       const { file_url } = await uploadRes.json()
-      const result = await avasys.functions.invoke('importEntityData', { entity_name: 'Contract', file_url })
+      const result = await avaai.functions.invoke('importEntityData', { entity_name: 'Contract', file_url })
       setImportProgress(`✓ ${result.data.successful} Verträge importiert`)
       if (result.data.failed > 0) setImportProgress(prev => `${prev} (${result.data.failed} Fehler)`)
       setTimeout(() => {

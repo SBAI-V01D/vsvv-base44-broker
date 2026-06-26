@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -76,7 +76,7 @@ export default function FastImportWizard({ open, onOpenChange, onSuccess }) {
       console.log(`🔍 Columns: first=${firstNameIdx}, last=${lastNameIdx}, email=${emailIdx}`)
 
       // Get default org
-      const orgs = await avasys.entities.Organization.list('', 1)
+      const orgs = await avaai.entities.Organization.list('', 1)
       const defaultOrgId = orgs?.[0]?.id
 
       // Parse records
@@ -133,7 +133,7 @@ export default function FastImportWizard({ open, onOpenChange, onSuccess }) {
 
       for (let i = 0; i < records.length; i++) {
         try {
-          await avasys.entities.Customer.create(records[i])
+          await avaai.entities.Customer.create(records[i])
           successful++
         } catch (e) {
           failed++

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avasys } from '@/api/avasysClient'
+import { avaai } from '@/api/avaaiClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,12 +14,12 @@ export default function Commissions() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avasys.entities.Contract.list(),
+    queryFn: () => avaai.entities.Contract.list(),
   })
 
   const { data: brokers = [] } = useQuery({
     queryKey: ['brokers'],
-    queryFn: () => avasys.entities.Broker.filter({ is_active: true }),
+    queryFn: () => avaai.entities.Broker.filter({ is_active: true }),
   })
 
   // Filter Verträge mit Provisionen

@@ -1,16 +1,16 @@
-import { avasys } from '@/api/avasysClient';
+import { avaai } from '@/api/avaaiClient';
 
 /**
  * Send an email notification and log it to the Notification entity.
  */
 export async function sendNotification({ type, recipientEmail, recipientName, subject, body, referenceId, referenceType, sentBy }) {
-  await avasys.integrations.Core.SendEmail({
+  await avaai.integrations.Core.SendEmail({
     to: recipientEmail,
     subject,
     body,
   });
 
-  await avasys.entities.Notification.create({
+  await avaai.entities.Notification.create({
     type,
     recipient_email: recipientEmail,
     recipient_name: recipientName || '',
