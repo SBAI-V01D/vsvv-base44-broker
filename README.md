@@ -1,39 +1,69 @@
-**Welcome to your Base44 project** 
+# VSVV Premium Broker
 
-**About**
+Versicherungs-Vergleichsplattform mit Multi-Tenant-Architektur, DSGVO/FINMA-Compliance und skalierbarem Dokumenten-Management auf Exoscale SOS.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+---
 
-This project contains everything you need to run your app locally.
+## Tech Stack
 
-**Edit the code in your local development environment**
+| Layer | Technologie |
+|---|---|
+| **Backend** | Fastify 5, TypeScript 5, Prisma 6, PostgreSQL 16 |
+| **Frontend** | React 18, Vite 6, Tailwind CSS |
+| **Auth** | JWT (Access + Refresh Token), bcrypt |
+| **Queue** | BullMQ (Redis) |
+| **Storage** | Exoscale SOS (S3-kompatibel) |
+| **Infra** | Docker Compose, Nginx |
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+## Quickstart
 
-**Prerequisites:** 
+```bash
+# 1. Dependencies installieren
+npm install
 
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+# 2. .env erstellen (siehe .env.example)
+cp backend/.env.example backend/.env
+
+# 3. DB starten + migrieren
+docker compose up -d postgres
+npx --prefix backend prisma migrate dev
+
+# 4. Development Server starten
+npm run dev
+```
+
+## Umgebungsvariablen
+
+| Variable | Beschreibung | Default |
+|---|---|---|
+| `S3_ENDPOINT` | Exoscale SOS Endpoint | — |
+| `S3_REGION` | S3 Region (z.B. `ch-dk-2`) | — |
+| `S3_BUCKET` | S3 Bucket Name | — |
+| `S3_ACCESS_KEY_ID` | Exoscale API Key | — |
+| `S3_SECRET_ACCESS_KEY` | Exoscale Secret | — |
+| `CORS_ORIGIN` | Erlaubte Frontend-Domain (Prod: `https://app.vsvv.ch`) | `http://localhost:3004` |
+| `JWT_SECRET` | JWT Signing Secret | — |
+| `DATABASE_URL` | PostgreSQL Connection String | — |
+
+## Projektstruktur
 
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+├── backend/           # Fastify API Server
+│   ├── prisma/        # Schema + Migrationen
+│   ├── src/
+│   │   ├── config/    # env, cors, etc.
+│   │   ├── lib/       # Shared Utilities
+│   │   ├── middleware/ # Auth, Audit, Service-Role, etc.
+│   │   ├── modules/   # Feature-Module (CRUD)
+│   │   └── services/  # Business Logic
+│   └── scripts/       # Dev/Test Scripts
+├── src/               # React Frontend
+│   ├── api/           # API Client (vsvvClient)
+│   ├── components/    # Shared Components
+│   └── pages/         # Route Pages
+└── docker-compose.yml # Postgres, Redis, etc.
 ```
 
-Run the app: `npm run dev`
+## Lizenz
 
-**Publish your changes**
-
-Open [Base44.com](http://Base44.com) and click on Publish.
-
-**Docs & Support**
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+Proprietär — VSVV AG

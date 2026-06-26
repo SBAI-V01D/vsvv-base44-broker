@@ -61,8 +61,8 @@ const envSchema = z.object({
     .string()
     .default('false')
     .transform((v) => v === 'true' || v === '1'),
-  MINIO_ACCESS_KEY: z.string().min(1, 'MINIO_ACCESS_KEY is required'),
-  MINIO_SECRET_KEY: z.string().min(1, 'MINIO_SECRET_KEY is required'),
+  MINIO_ACCESS_KEY: z.string().optional(),
+  MINIO_SECRET_KEY: z.string().optional(),
   MINIO_BUCKET: z.string().default('vsvv-documents'),
 
   // ----- SMTP / Email -----
@@ -129,25 +129,43 @@ export interface S3Config {
 function resolveS3Config(envData: Env): S3Config {
   // Exoscale-style config (S3_ENDPOINT = full URL like https://sos-ch-dk-2.exo.io)
   if (envData.S3_ENDPOINT) {
+    const accessKey = envData.S3_ACCESS_KEY_ID || envData.MINIO_ACCESS_KEY;
+    const secretKey = envData.S3_SECRET_ACCESS_KEY || envData.MINIO_SECRET_KEY;
+
+    if (!accessKey || !secretKey) {
+      throw new Error(
+        'S3_ENDPOINT gsetzt aber kei Credentials.\n' +
+        'Setz S3_ACCESS_KEY_ID + S3_SECRET_ACCESS_KEY oder MINIO_ACCESS_KEY + MINIO_SECRET_KEY.',
+      );
+    }
+
     const url = new URL(envData.S3_ENDPOINT);
     return {
       endpoint: url.hostname,
       port: parseInt(url.port, 10) || (url.protocol === 'https:' ? 443 : 80),
       useSSL: url.protocol === 'https:',
-      accessKey: envData.S3_ACCESS_KEY_ID || envData.MINIO_ACCESS_KEY,
-      secretKey: envData.S3_SECRET_ACCESS_KEY || envData.MINIO_SECRET_KEY,
+      accessKey,
+      secretKey,
       bucket: envData.S3_BUCKET || envData.MINIO_BUCKET,
       region: envData.S3_REGION || 'ch-dk-2',
     };
   }
 
   // Fallback to MinIO-style config
+  if (!envData.MINIO_ACCESS_KEY || !envData.MINIO_SECRET_KEY) {
+    throw new Error(
+      'S3 Storage: Kei S3_ENDPOINT und kei MINIO Credentials.\n' +
+      'Setz entweder Exoscale-Vars (S3_ENDPOINT, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY)\n' +
+      'oder MinIO-Vars (MINIO_ACCESS_KEY, MINIO_SECRET_KEY).',
+    );
+  }
+
   return {
     endpoint: envData.MINIO_ENDPOINT,
     port: envData.MINIO_PORT ?? 9000,
     useSSL: envData.MINIO_USE_SSL,
-    accessKey: envData.MINIO_ACCESS_KEY,
-    secretKey: envData.MINIO_SECRET_KEY,
+    accessKey: envData.MINIO_ACCESS_KEY!,
+    secretKey: envData.MINIO_SECRET_KEY!,
     bucket: envData.MINIO_BUCKET,
     region: envData.S3_REGION || 'eu-central-1',
   };
