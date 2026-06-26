@@ -25,7 +25,7 @@ for (const line of envFile.split('\n')) {
 
 const S3_ENDPOINT = env.S3_ENDPOINT || 'https://sos-ch-dk-2.exo.io';
 const S3_REGION = env.S3_REGION || 'ch-dk-2';
-const S3_BUCKET = env.S3_BUCKET || 'avasys-permium-broker-app-documentuploads';
+const S3_BUCKET = env.S3_BUCKET || 'vsvv-permium-broker-app-documentuploads';
 const S3_KEY = env.S3_ACCESS_KEY_ID;
 const S3_SECRET = env.S3_SECRET_ACCESS_KEY;
 

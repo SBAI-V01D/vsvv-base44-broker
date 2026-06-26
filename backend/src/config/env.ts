@@ -41,7 +41,7 @@ const envSchema = z.object({
   // Production-Konfiguration (Exoscale):
   //   S3_ENDPOINT=https://sos-ch-dk-2.exo.io
   //   S3_REGION=ch-dk-2
-  //   S3_BUCKET=avasys-premium-broker-app-documentuploads
+  //   S3_BUCKET=vsvv-premium-broker-app-documentuploads
   //   S3_ACCESS_KEY_ID=EXO...
   //   S3_SECRET_ACCESS_KEY=...
   //
