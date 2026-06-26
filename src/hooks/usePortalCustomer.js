@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { usePortalData, yearlyPremium as _yearlyPremium } from './usePortalData'
 
 // Legacy hook — now delegates to usePortalData for unified data loading
@@ -26,24 +26,24 @@ function mergeById(a, b) {
 
 export async function fetchPortalContracts(customerId) {
   const [d, p] = await Promise.all([
-    vsvv.entities.Contract.filter({ customer_id: customerId }),
-    vsvv.entities.Contract.filter({ primary_customer_id: customerId }),
+    avasys.entities.Contract.filter({ customer_id: customerId }),
+    avasys.entities.Contract.filter({ primary_customer_id: customerId }),
   ])
   return mergeById(d, p)
 }
 
 export async function fetchPortalApplications(customerId) {
   const [d, p] = await Promise.all([
-    vsvv.entities.Application.filter({ customer_id: customerId }),
-    vsvv.entities.Application.filter({ primary_customer_id: customerId }),
+    avasys.entities.Application.filter({ customer_id: customerId }),
+    avasys.entities.Application.filter({ primary_customer_id: customerId }),
   ])
   return mergeById(d, p)
 }
 
 export async function fetchPortalDocuments(customerId) {
   const [d, p] = await Promise.all([
-    vsvv.entities.Document.filter({ customer_id: customerId }),
-    vsvv.entities.Document.filter({ primary_customer_id: customerId }),
+    avasys.entities.Document.filter({ customer_id: customerId }),
+    avasys.entities.Document.filter({ primary_customer_id: customerId }),
   ])
   return mergeById(d, p).filter(doc => doc.visible_in_portal !== false)
 }

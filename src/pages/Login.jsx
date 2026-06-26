@@ -76,7 +76,7 @@ export default function Login() {
             <Shield className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            VSVV Premium Broker
+            avaSysAIByNik Premium Broker
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Bitte melden Sie sich an

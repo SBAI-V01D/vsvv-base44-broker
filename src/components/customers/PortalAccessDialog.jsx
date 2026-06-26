@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ export default function PortalAccessDialog({ open, onOpenChange, customer }) {
     setLoading(true);
     setError(null);
     try {
-      await vsvv.functions.invoke('inviteCustomerToPortal', {
+      await avasys.functions.invoke('inviteCustomerToPortal', {
         customer_email: customer.email,
         customer_name: `${customer.first_name} ${customer.last_name}`,
       });

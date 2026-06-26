@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -17,7 +17,7 @@ export default function BackupManager() {
     queryKey: ['backups'],
     queryFn: async () => {
       try {
-        return await vsvv.entities.BackupLog?.list('-timestamp', 100) || [];
+        return await avasys.entities.BackupLog?.list('-timestamp', 100) || [];
       } catch {
         return [];
       }
@@ -28,7 +28,7 @@ export default function BackupManager() {
   const handleManualBackup = async () => {
     setLoading(true);
     try {
-      const result = await vsvv.functions.invoke('createBackup', {});
+      const result = await avasys.functions.invoke('createBackup', {});
       setManualBackup(result);
     } catch (err) {
       alert('Backup failed: ' + err.message);

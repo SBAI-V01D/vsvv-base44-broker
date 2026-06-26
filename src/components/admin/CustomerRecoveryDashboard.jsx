@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -35,7 +35,7 @@ export default function CustomerRecoveryDashboard() {
         payload.target_customers = results.data.visibility_issues.potentially_hidden_details
       }
 
-      const response = await vsvv.functions.invoke(steps[stepIndex].fn, payload)
+      const response = await avasys.functions.invoke(steps[stepIndex].fn, payload)
       setResults(response.data)
       setStep(stepIndex + 1)
     } catch (err) {

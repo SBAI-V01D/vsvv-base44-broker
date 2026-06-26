@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
@@ -14,37 +14,37 @@ export default function CEOCockpit() {
   // ─── Data Fetching ───
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => vsvv.entities.Customer.list(),
+    queryFn: () => avasys.entities.Customer.list(),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => vsvv.entities.Contract.list(),
+    queryFn: () => avasys.entities.Contract.list(),
   })
 
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissions'],
-    queryFn: () => vsvv.entities.CommissionEntry.list('-created_date', 500),
+    queryFn: () => avasys.entities.CommissionEntry.list('-created_date', 500),
   })
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => vsvv.entities.Document.list('-created_date', 500),
+    queryFn: () => avasys.entities.Document.list('-created_date', 500),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => vsvv.entities.Advisor.list(),
+    queryFn: () => avasys.entities.Advisor.list(),
   })
 
   const { data: orgs = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => vsvv.entities.Organization.list(),
+    queryFn: () => avasys.entities.Organization.list(),
   })
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads'],
-    queryFn: () => vsvv.entities.Lead.list(),
+    queryFn: () => avasys.entities.Lead.list(),
   })
 
   // ─── Filtering ───

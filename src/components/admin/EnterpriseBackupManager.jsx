@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -16,7 +16,7 @@ export default function EnterpriseBackupManager() {
     queryKey: ['backupLogs'],
     queryFn: async () => {
       try {
-        return await vsvv.entities.BackupLog?.list('-timestamp', 500) || [];
+        return await avasys.entities.BackupLog?.list('-timestamp', 500) || [];
       } catch {
         return [];
       }
@@ -33,7 +33,7 @@ export default function EnterpriseBackupManager() {
         'archive': 'createLongTermBackup'
       }[type];
 
-      await vsvv.functions.invoke(funcName, {});
+      await avasys.functions.invoke(funcName, {});
       alert(`${type} backup erstellt`);
     } catch (err) {
       alert('Backup failed: ' + err.message);

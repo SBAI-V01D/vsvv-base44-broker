@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { vsvv, setTokens, getAccessToken, clearTokens } from '@/api/vsvvClient';
+import { avasys, setTokens, getAccessToken, clearTokens } from '@/api/avasysClient';
 
 const AuthContext = createContext();
 
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = async () => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await vsvv.auth.me();
+      const currentUser = await avasys.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -90,14 +90,14 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
 
     if (shouldRedirect) {
-      vsvv.auth.logout('/login');
+      avasys.auth.logout('/login');
     } else {
-      vsvv.auth.logout();
+      avasys.auth.logout();
     }
   };
 
   const navigateToLogin = () => {
-    vsvv.auth.redirectToLogin('/login');
+    avasys.auth.redirectToLogin('/login');
   };
 
   return (

@@ -288,7 +288,7 @@ Das Audit-System muss beantworten können:
   // 10. METADATA (Zusätzliche Informationen)
   // ─────────────────────────────────────────────────────
   
-  "user_email": "p.adam@vsvv.ch",
+  "user_email": "p.adam@avasys.ch",
   // Nur wenn user-getriggert (trigger_type="user")
   
   "automation_id": "6a08c41b6fa1329f03a4bc04",
@@ -610,7 +610,7 @@ open → in_progress → completed
 ```javascript
 {
   "actor_type": "user" | "automation" | "scheduler" | "system" | "migration" | "api",
-  "actor_id": "p.adam@vsvv.ch" | "onApplicationUpdate" | "6a01c612300a5ddad0b6e46e",
+  "actor_id": "p.adam@avasys.ch" | "onApplicationUpdate" | "6a01c612300a5ddad0b6e46e",
   "actor_name": "Peter Adam" | "Application Update Automation" | "Daily Expiry Check"
 }
 ```

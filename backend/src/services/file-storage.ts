@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — File Storage Service (S3 kompatibel — Exoscale / MinIO)
+// avaSysAIByNik Backend — File Storage Service (S3 kompatibel — Exoscale / MinIO)
 //
 // Provides file upload, download, and management via S3-compatible object storage.
 // Uses presigned URLs for secure direct access.

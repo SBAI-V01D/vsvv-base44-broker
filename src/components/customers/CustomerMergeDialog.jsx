@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
 } from '@/components/ui/dialog'
@@ -70,13 +70,13 @@ export default function CustomerMergeDialog({ open, onOpenChange, preselectedDup
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers-for-merge'],
-    queryFn: () => vsvv.entities.Customer.list('-created_date', 200),
+    queryFn: () => avasys.entities.Customer.list('-created_date', 200),
     enabled: open,
   })
 
   const mergeMutation = useMutation({
     mutationFn: async () => {
-      const res = await vsvv.functions.invoke('mergeCustomers', { masterId, duplicateId, reason })
+      const res = await avasys.functions.invoke('mergeCustomers', { masterId, duplicateId, reason })
       return res.data
     },
     onSuccess: (data) => {

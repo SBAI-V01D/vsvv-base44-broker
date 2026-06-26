@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 import { daysUntil, analyzeContract, isContractActionable } from '@/lib/contractRelevance'
 import { cn } from '@/lib/utils'
@@ -398,29 +398,29 @@ export default function Vertragsablaeufe() {
 
   const { data: contracts = [], isLoading } = useQuery({
     queryKey: ['contracts', 'ablaeufe'],
-    queryFn: () => vsvv.entities.Contract.filter({ archived: false }, '-updated_date', 1000),
+    queryFn: () => avasys.entities.Contract.filter({ archived: false }, '-updated_date', 1000),
     staleTime: 2 * 60 * 1000,
   })
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['verkaufschancen'],
-    queryFn: () => vsvv.entities.Verkaufschance.filter({ status: ['neu', 'in_ausschreibung', 'offerten_erhalten', 'beratung_erfolgt', 'kunde_entscheidet'] }, null, 200),
+    queryFn: () => avasys.entities.Verkaufschance.filter({ status: ['neu', 'in_ausschreibung', 'offerten_erhalten', 'beratung_erfolgt', 'kunde_entscheidet'] }, null, 200),
     staleTime: 2 * 60 * 1000,
   })
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks', 'open'],
-    queryFn: () => vsvv.entities.Task.filter({ status: ['open', 'in_progress'] }, null, 200),
+    queryFn: () => avasys.entities.Task.filter({ status: ['open', 'in_progress'] }, null, 200),
     staleTime: 2 * 60 * 1000,
   })
 
   const createVsMutation = useMutation({
-    mutationFn: (data) => vsvv.entities.Verkaufschance.create(data),
+    mutationFn: (data) => avasys.entities.Verkaufschance.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] }); navigate('/verkaufschancen') },
   })
   const [followupPendingId, setFollowupPendingId] = useState(null)
   const createFollowupMutation = useMutation({
-    mutationFn: (contract) => vsvv.entities.Task.create({
+    mutationFn: (contract) => avasys.entities.Task.create({
       title: `Follow-up Verlängerung: ${contract.customer_name} – ${contract.insurer}`,
       customer_id: contract.customer_id,
       customer_name: contract.customer_name,
@@ -437,7 +437,7 @@ export default function Vertragsablaeufe() {
     onError: () => setFollowupPendingId(null),
   })
   const updateContractMutation = useMutation({
-    mutationFn: ({ id, data }) => vsvv.entities.Contract.update(id, data),
+    mutationFn: ({ id, data }) => avasys.entities.Contract.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
   })
 

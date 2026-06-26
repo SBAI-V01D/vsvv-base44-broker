@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ export default function TestKrankenkassenVergleich() {
       const results = [];
 
       try {
-        const user = await vsvv.auth.me();
+        const user = await avasys.auth.me();
         results.push({ name: 'User Auth', status: 'ok', message: user?.email || 'Angemeldet' });
         const orgId = user?.data?.organization_id;
         results.push({ name: 'Organization', status: orgId ? 'ok' : 'warning', message: orgId || 'Keine Org gesetzt' });
@@ -24,7 +24,7 @@ export default function TestKrankenkassenVergleich() {
       }
 
       try {
-        const customers = await vsvv.entities.Customer.list(undefined, 1);
+        const customers = await avasys.entities.Customer.list(undefined, 1);
         results.push({ name: 'Customer Entity', status: 'ok', message: `${customers.length} Kunden` });
       } catch (e) {
         results.push({ name: 'Customer Entity', status: 'error', message: e.message });
@@ -33,7 +33,7 @@ export default function TestKrankenkassenVergleich() {
       // Prüfe ob queryBAGLive-Funktion existiert
       try {
         // Wir rufen sie mit absichtlich falschen Daten auf um den Fehlertyp zu sehen
-        const res = await vsvv.functions.invoke('queryBAGLive', {});
+        const res = await avasys.functions.invoke('queryBAGLive', {});
         results.push({
           name: 'queryBAGLive (Funktion erreichbar)',
           status: res?.data?.error?.includes('Pflicht') ? 'ok' : 'ok',
@@ -52,7 +52,7 @@ export default function TestKrankenkassenVergleich() {
     setLiveResult(null);
     try {
       const start = Date.now();
-      const res = await vsvv.functions.invoke('queryBAGLive', {
+      const res = await avasys.functions.invoke('queryBAGLive', {
         plz: '4304',
         yob: 1968,
         deductible: 300,

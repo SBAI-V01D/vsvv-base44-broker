@@ -1,4 +1,4 @@
-# VSVV CRM - Supabase Migrationsplan & Datenmodell
+# avaSysAIByNik CRM - Supabase Migrationsplan & Datenmodell
 
 ## Executive Summary
 
@@ -37,7 +37,7 @@
 
 ```sql
 -- ============================================================================
--- VSVV CRM - Supabase Schema v1.0
+-- avaSysAIByNik CRM - Supabase Schema v1.0
 -- ============================================================================
 
 -- ============================================================================

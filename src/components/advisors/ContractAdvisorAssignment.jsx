@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,12 +20,12 @@ export default function ContractAdvisorAssignment({ contractId, contractName }) 
 
   const { data: assignments = [] } = useQuery({
     queryKey: ['contractAdvisors', contractId],
-    queryFn: () => vsvv.entities.ContractAdvisor.filter({ contract_id: contractId }),
+    queryFn: () => avasys.entities.ContractAdvisor.filter({ contract_id: contractId }),
   });
 
   const { data: allAdvisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => vsvv.entities.Advisor.list(),
+    queryFn: () => avasys.entities.Advisor.list(),
   });
 
   const availableAdvisors = allAdvisors.filter(
@@ -38,7 +38,7 @@ export default function ContractAdvisorAssignment({ contractId, contractName }) 
 
   const addMutation = useMutation({
     mutationFn: (advisorId) =>
-      vsvv.entities.ContractAdvisor.create({
+      avasys.entities.ContractAdvisor.create({
         contract_id: contractId,
         contract_policy_number: contractName,
         advisor_id: advisorId,
@@ -55,7 +55,7 @@ export default function ContractAdvisorAssignment({ contractId, contractName }) 
   });
 
   const removeMutation = useMutation({
-    mutationFn: (id) => vsvv.entities.ContractAdvisor.delete(id),
+    mutationFn: (id) => avasys.entities.ContractAdvisor.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contractAdvisors', contractId] });
     },

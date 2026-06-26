@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { useMemo } from 'react'
 
 /**
@@ -11,42 +11,42 @@ export function useDashboardMetrics(filters = {}) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => vsvv.entities.Customer.list(),
+    queryFn: () => avasys.entities.Customer.list(),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => vsvv.entities.Contract.list(),
+    queryFn: () => avasys.entities.Contract.list(),
   })
 
   const { data: applications = [] } = useQuery({
     queryKey: ['applications'],
-    queryFn: () => vsvv.entities.Application.list(),
+    queryFn: () => avasys.entities.Application.list(),
   })
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => vsvv.entities.Task.list(),
+    queryFn: () => avasys.entities.Task.list(),
   })
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads'],
-    queryFn: () => vsvv.entities.Lead.list(),
+    queryFn: () => avasys.entities.Lead.list(),
   })
 
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissionEntries'],
-    queryFn: () => vsvv.entities.CommissionEntry.list(),
+    queryFn: () => avasys.entities.CommissionEntry.list(),
   })
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => vsvv.entities.Document.list(),
+    queryFn: () => avasys.entities.Document.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => vsvv.entities.Advisor.list(),
+    queryFn: () => avasys.entities.Advisor.list(),
   })
 
   // ─── AGGREGATION ───

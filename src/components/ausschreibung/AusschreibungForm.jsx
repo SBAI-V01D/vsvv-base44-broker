@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,7 +41,7 @@ export default function AusschreibungForm({ ausschreibung, onSave, onCancel }) {
   // Advisor des eingeloggten Users automatisch vorausfüllen
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors-all'],
-    queryFn: () => vsvv.entities.Advisor.list(),
+    queryFn: () => avasys.entities.Advisor.list(),
     staleTime: 60_000,
   });
   const defaultBrokerName = React.useMemo(() => {
@@ -60,7 +60,7 @@ export default function AusschreibungForm({ ausschreibung, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    vsvv.entities.Customer.list().then(setCustomers).catch(() => {});
+    avasys.entities.Customer.list().then(setCustomers).catch(() => {});
   }, []);
 
   // Standardberater setzen (nur für neue Ausschreibungen)

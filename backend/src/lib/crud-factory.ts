@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — Generic CRUD Route Factory
+// avaSysAIByNik Backend — Generic CRUD Route Factory
 //
 // Generates standard CRUD routes (list, get, create, update, soft-delete)
 // for any Prisma model. Enforces tenant isolation and RBAC on every route.

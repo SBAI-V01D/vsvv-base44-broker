@@ -1,4 +1,4 @@
-# VSVV CRM - Supabase Sicherheitskonzept & Konfiguration
+# avaSysAIByNik CRM - Supabase Sicherheitskonzept & Konfiguration
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -10,14 +10,14 @@
 
 ### 1.1 Projekt-Setup
 
-**Entscheidung:** Neues, dediziertes Supabase-Projekt für VSVV CRM
+**Entscheidung:** Neues, dediziertes Supabase-Projekt für avaSysAIByNik CRM
 
 **Projekt-Details:**
 
 | Eigenschaft | Wert | Begründung |
 |---|---|---|
-| **Projekt-Name** | `vsvv-crm-production` | Eindeutige Identifikation |
-| **Organisation** | `vsvv-schweiz` | Organisatorische Trennung |
+| **Projekt-Name** | `avasys-crm-production` | Eindeutige Identifikation |
+| **Organisation** | `avasys-schweiz` | Organisatorische Trennung |
 | **Region** | `eu-central-1` (Frankfurt) | ✅ DSG-konform (Schweizer Nähe) |
 | **Plan** | **Pro** ($25/Monat) | Für Production-Features |
 | **Database Version** | PostgreSQL 15 | Latest LTS |
@@ -44,8 +44,8 @@
 ```
 1. Login unter https://supabase.com
 2. "New Project" klicken
-3. Organisation wählen: "vsvv-schweiz"
-4. Projekt-Name: "vsvv-crm-production"
+3. Organisation wählen: "avasys-schweiz"
+4. Projekt-Name: "avasys-crm-production"
 5. Database Password: [Sicheres Passwort generieren]
 6. Region: "Europe Central (Frankfurt)"
 7. Pricing Plan: "Pro" ($25/Monat)
@@ -101,7 +101,7 @@ Name: SUPABASE_URL
 Wert: https://xxxxx.supabase.co
 Sichtbarkeit: Public (in Frontend verwendbar)
 Verwendung: Base URL für alle API-Calls
-Beispiel: https://vsvvcrmproduction.supabase.co
+Beispiel: https://avasyscrmproduction.supabase.co
 ```
 
 **Verwendung im Code:**
@@ -280,7 +280,7 @@ USING (
 | **UPDATE** | Wer darf ändern? | Owner oder Admin |
 | **DELETE** | Wer darf löschen? | Nur Admins |
 
-**RLS-Implementierung für VSVV CRM:**
+**RLS-Implementierung für avaSysAIByNik CRM:**
 
 ```sql
 -- 1. Kunden-Tabelle
@@ -320,13 +320,13 @@ USING (user_role() = 'admin');
 
 ```javascript
 // ✅ KORREKT: Backend-Function (functions/importBAGDatenToSupabase.js)
-import { createClientFromRequest } from 'npm:@vsvv/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@avasys/sdk@0.8.31';
 
 Deno.serve(async (req) => {
-  const vsvv = createClientFromRequest(req);
+  const avasys = createClientFromRequest(req);
   
   // 1. User authentifizieren
-  const user = await vsvv.auth.me();
+  const user = await avasys.auth.me();
   if (!user || user.role !== 'admin') {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -427,10 +427,10 @@ echo $SUPABASE_SERVICE_ROLE_KEY
 ```javascript
 // Standard-Template für alle Backend-Functions
 Deno.serve(async (req) => {
-  const vsvv = createClientFromRequest(req);
+  const avasys = createClientFromRequest(req);
   
   // 1. Authentifizierung prüfen
-  const user = await vsvv.auth.me();
+  const user = await avasys.auth.me();
   if (!user) {
     return Response.json(
       { error: 'Authentication required' }, 
@@ -679,7 +679,7 @@ Stufe 3: Database Password kompromittiert (0-60 Minuten)
 
 ### 9.1 Supabase-Projekt
 
-✅ **Neues Projekt:** `vsvv-crm-production`  
+✅ **Neues Projekt:** `avasys-crm-production`  
 ✅ **Region:** `eu-central-1` (Frankfurt, Deutschland)  
 ✅ **Plan:** Pro ($25/Monat)  
 ✅ **DSG-konform:** ✅ Ja (EU-Region)
@@ -731,7 +731,7 @@ Stufe 3: Database Password kompromittiert (0-60 Minuten)
 
 **Vor der Erstellung:**
 
-- [ ] Organisation `vsvv-schweiz` existiert
+- [ ] Organisation `avasys-schweiz` existiert
 - [ ] Admin-Account (Peter Adam) hat Zugriff
 - [ ] Payment-Methinterlegt (für Pro-Plan)
 - [ ] Region `eu-central-1` ausgewählt

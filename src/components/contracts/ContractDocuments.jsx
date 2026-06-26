@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Upload, FileText, Trash2, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,12 +11,12 @@ export default function ContractDocuments({ contractId, customerId, customerName
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents', 'contract', contractId],
-    queryFn: () => vsvv.entities.Document.filter({ customer_id: customerId, linked_contract_id: contractId }, '-created_date'),
+    queryFn: () => avasys.entities.Document.filter({ customer_id: customerId, linked_contract_id: contractId }, '-created_date'),
     enabled: !!contractId && !!customerId,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => vsvv.entities.Document.delete(id),
+    mutationFn: (id) => avasys.entities.Document.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents', 'contract', contractId] });
       queryClient.invalidateQueries({ queryKey: ['documents', customerId] });
@@ -27,8 +27,8 @@ export default function ContractDocuments({ contractId, customerId, customerName
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await vsvv.integrations.Core.UploadFile({ file });
-    await vsvv.entities.Document.create({
+    const { file_url } = await avasys.integrations.Core.UploadFile({ file });
+    await avasys.entities.Document.create({
       customer_id: customerId,
       customer_name: customerName,
       name: file.name.replace(/\.[^.]+$/, ''),

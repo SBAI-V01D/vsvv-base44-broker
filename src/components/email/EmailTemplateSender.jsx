@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -42,7 +42,7 @@ export default function EmailTemplateSender({ customerId, customer, contracts = 
 
   const { data: templates = [] } = useQuery({
     queryKey: ['emailTemplates'],
-    queryFn: () => vsvv.entities.EmailTemplate.list(),
+    queryFn: () => avasys.entities.EmailTemplate.list(),
   });
 
   const currentTemplate = useMemo(() => 
@@ -72,7 +72,7 @@ export default function EmailTemplateSender({ customerId, customer, contracts = 
 
     setSending(true);
     try {
-      await vsvv.integrations.Core.SendEmail({
+      await avasys.integrations.Core.SendEmail({
         to: recipientEmail,
         subject: subject.replace(/{{\s*\w+\s*}}/g, (match) => {
           const key = match.replace(/{{\s*|\s*}}/g, '');
@@ -110,7 +110,7 @@ export default function EmailTemplateSender({ customerId, customer, contracts = 
       });
 
       // Log notification
-      await vsvv.entities.Notification.create({
+      await avasys.entities.Notification.create({
         type: 'manual',
         recipient_email: recipientEmail,
         recipient_name: customer?.first_name || 'Kunde',

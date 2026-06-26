@@ -56,7 +56,7 @@ Falls der Push fehlschlägt:
 ```
 kkv-crm/
 ├── src/
-│   ├── api/vsvvClient.js      ← Base44 SDK
+│   ├── api/avasysClient.js      ← Base44 SDK
 │   ├── App.jsx                  ← Router (40+ Routes)
 │   ├── main.jsx                 ← Entry Point
 │   ├── index.css                ← Design Tokens

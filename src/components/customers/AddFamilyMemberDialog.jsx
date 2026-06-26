@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,7 +47,7 @@ export default function AddFamilyMemberDialog({ customer, open, onOpenChange }) 
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // Backend-Funktion aufrufen
-      const response = await vsvv.functions.invoke('createFamilyMember', {
+      const response = await avasys.functions.invoke('createFamilyMember', {
         primaryCustomerId: customer.id,
         primaryCustomerName: `${customer.first_name} ${customer.last_name}`,
         firstName: data.firstName,

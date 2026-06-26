@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Inbox, MapPin, FileText, CheckCircle2, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ function RequestRow({ request }) {
   const [expanded, setExpanded] = useState(false);
 
   const updateStatus = useMutation({
-    mutationFn: (newStatus) => vsvv.entities.Interaction.update(request.id, { request_status: newStatus }),
+    mutationFn: (newStatus) => avasys.entities.Interaction.update(request.id, { request_status: newStatus }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['customer-requests'] }),
   });
 
@@ -98,7 +98,7 @@ export default function CustomerRequestsWidget() {
 
   const { data: interactions = [], isLoading } = useQuery({
     queryKey: ['customer-requests'],
-    queryFn: () => vsvv.entities.Interaction.filter({ is_customer_request: true }, '-created_date', 50),
+    queryFn: () => avasys.entities.Interaction.filter({ is_customer_request: true }, '-created_date', 50),
   });
 
   const openRequests = interactions.filter(i => (i.request_status || 'offen') !== 'erledigt');

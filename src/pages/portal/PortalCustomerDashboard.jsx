@@ -3,7 +3,7 @@ import { usePortalData } from '@/hooks/usePortalData'
 import { usePortalCustomer } from '@/hooks/usePortalCustomer'
 import { Download, Upload } from 'lucide-react'
 
-const LOGO_URL = 'https://media.vsvv.com/images/public/69f07890d7d9106eb68a2c98/0cde67ef2_LogoVSVV2.png'
+const LOGO_URL = 'https://media.avasys.com/images/public/69f07890d7d9106eb68a2c98/0cde67ef2_LogoVSVV2.png'
 
 export default function PortalCustomerDashboard() {
   const { customer } = usePortalCustomer()
@@ -66,7 +66,7 @@ export default function PortalCustomerDashboard() {
         {/* 1. BEGRÜSSUNG */}
         <section style={{ marginBottom: 80 }}>
           <h1 style={{ fontSize: 36, fontWeight: 700, margin: '0 0 16px', lineHeight: 1.2, color: '#0f172a' }}>
-            Willkommen bei VSVV
+            Willkommen bei avaSysAIByNik
           </h1>
           <p style={{ fontSize: 16, color: '#4b5563', margin: '0 0 8px', lineHeight: 1.6 }}>
             Ihrem unabhängigen Partner für strukturierte und transparente Versicherungslösungen.
@@ -289,7 +289,7 @@ export default function PortalCustomerDashboard() {
 
       {/* FOOTER */}
       <footer style={{ padding: '40px', textAlign: 'center', fontSize: 12, color: '#9ca3af', borderTop: '1px solid #e5e7eb', marginTop: 80 }}>
-        © 2025 VSVV – Ihre Versicherungsplattform
+        © 2025 avaSysAIByNik – Ihre Versicherungsplattform
       </footer>
 
       {/* FLOATING WHATSAPP BUTTON */}

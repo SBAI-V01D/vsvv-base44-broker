@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Gift, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 
 
 
@@ -48,7 +48,7 @@ function getDaysUntilBirthday(birthdate, referenceDate = new Date()) {
 export default function BirthdaySection({ customers: customersProp }) {
   const { data: fetchedCustomers = [] } = useQuery({
     queryKey: ['birthday_customers'],
-    queryFn: () => vsvv.entities.Customer.filter({ archived: false }, 'birthdate', 200),
+    queryFn: () => avasys.entities.Customer.filter({ archived: false }, 'birthdate', 200),
     staleTime: 10 * 60 * 1000,
     enabled: !customersProp,
   });

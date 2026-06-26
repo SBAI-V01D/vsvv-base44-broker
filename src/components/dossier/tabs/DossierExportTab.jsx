@@ -12,7 +12,7 @@
  */
 import React, { useState, useMemo, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import {
   Printer, Eye, Save, Clock, FileText, ChevronDown, ChevronUp,
   Shield, AlertCircle, Loader2, RefreshCw, Download, CheckCircle2, Hash, ExternalLink,
@@ -192,14 +192,14 @@ export default function DossierExportTab({ dossier }) {
   // ── Data fetching (alle read-only) ──
   const { data: customer, isLoading: loadingCustomer } = useQuery({
     queryKey: ['dossier_customer_ro', customerId],
-    queryFn:  () => vsvv.entities.Customer.filter({ id: customerId }).then(r => r?.[0] ?? null),
+    queryFn:  () => avasys.entities.Customer.filter({ id: customerId }).then(r => r?.[0] ?? null),
     enabled:  !!customerId,
     staleTime: 60_000,
   });
 
   const { data: familyMembers = [] } = useQuery({
     queryKey: ['dossier_family_ro', customerId],
-    queryFn:  () => vsvv.entities.Customer.filter({ primary_customer_id: customerId }),
+    queryFn:  () => avasys.entities.Customer.filter({ primary_customer_id: customerId }),
     enabled:  !!customerId,
     staleTime: 60_000,
   });
@@ -214,7 +214,7 @@ export default function DossierExportTab({ dossier }) {
     queryFn:  async () => {
       if (allCustomerIds.length === 0) return [];
       const results = await Promise.all(
-        allCustomerIds.map(id => vsvv.entities.Contract.filter({ customer_id: id }))
+        allCustomerIds.map(id => avasys.entities.Contract.filter({ customer_id: id }))
       );
       return results.flat().filter(c => c.status !== 'archived');
     },
@@ -224,21 +224,21 @@ export default function DossierExportTab({ dossier }) {
 
   const { data: entries = [] } = useQuery({
     queryKey: ['dossier_comparison', dossierId],
-    queryFn:  () => vsvv.entities.ComparisonEntry.filter({ dossier_id: dossierId }),
+    queryFn:  () => avasys.entities.ComparisonEntry.filter({ dossier_id: dossierId }),
     enabled:  !!dossierId,
     staleTime: 30_000,
   });
 
   const { data: verkaufschance } = useQuery({
     queryKey: ['dossier_vs_ro', dossier?.linked_verkaufschance_id],
-    queryFn:  () => vsvv.entities.Verkaufschance.filter({ id: dossier.linked_verkaufschance_id }).then(r => r?.[0] ?? null),
+    queryFn:  () => avasys.entities.Verkaufschance.filter({ id: dossier.linked_verkaufschance_id }).then(r => r?.[0] ?? null),
     enabled:  !!dossier?.linked_verkaufschance_id,
     staleTime: 60_000,
   });
 
   const { data: snapshots = [], isLoading: snapsLoading } = useQuery({
     queryKey: ['dossier_snapshots', dossierId],
-    queryFn:  () => vsvv.entities.DossierSnapshot.filter({ dossier_id: dossierId }, '-created_date', 50),
+    queryFn:  () => avasys.entities.DossierSnapshot.filter({ dossier_id: dossierId }, '-created_date', 50),
     enabled:  !!dossierId,
   });
 
@@ -250,7 +250,7 @@ export default function DossierExportTab({ dossier }) {
       });
       const version  = nextSnapshotVersion(snapshots);
       const jsonBlob = serializeSnapshot(snap);
-      const created = await vsvv.entities.DossierSnapshot.create({
+      const created = await avasys.entities.DossierSnapshot.create({
         dossier_id:    dossierId,
         version,
         snapshot_data: jsonBlob,
@@ -258,7 +258,7 @@ export default function DossierExportTab({ dossier }) {
       });
       // Freigabe-Snapshot koppeln: wenn Dossier freigegeben, diesen Snapshot als approved_snapshot_id speichern
       if (dossier?.advisor_approved && created?.id && !dossier?.approved_snapshot_id) {
-        await vsvv.entities.AdvisoryDossier.update(dossierId, {
+        await avasys.entities.AdvisoryDossier.update(dossierId, {
           approved_snapshot_id: created.id,
         });
         qc.invalidateQueries({ queryKey: ['advisory_dossier'] });
@@ -289,7 +289,7 @@ export default function DossierExportTab({ dossier }) {
   // ── Sprint C: Server-PDF generieren (Hooks vor early return!) ──
   const [serverPdfResult, setServerPdfResult] = useState(null);
   const serverPdfMutation = useMutation({
-    mutationFn: () => vsvv.functions.invoke('generateDossierPdf', { dossierId }),
+    mutationFn: () => avasys.functions.invoke('generateDossierPdf', { dossierId }),
     onSuccess: (res) => {
       setServerPdfResult(res.data);
       qc.invalidateQueries({ queryKey: ['advisory_dossier', dossierId] });
@@ -301,7 +301,7 @@ export default function DossierExportTab({ dossier }) {
   const [signedUrlLoading, setSignedUrlLoading] = useState(false);
   const openPrivatePdf = async (fileUri) => {
     setSignedUrlLoading(true);
-    const res = await vsvv.integrations.Core.CreateFileSignedUrl({ file_uri: fileUri, expires_in: 300 });
+    const res = await avasys.integrations.Core.CreateFileSignedUrl({ file_uri: fileUri, expires_in: 300 });
     setSignedUrlLoading(false);
     if (res?.signed_url) window.open(res.signed_url, '_blank');
   };
@@ -309,7 +309,7 @@ export default function DossierExportTab({ dossier }) {
   // Export-Log laden
   const { data: exportLogs = [] } = useQuery({
     queryKey: ['pdf_export_logs', dossierId],
-    queryFn: () => vsvv.entities.PdfExportLog.filter({ dossier_id: dossierId }, '-exported_at', 20),
+    queryFn: () => avasys.entities.PdfExportLog.filter({ dossier_id: dossierId }, '-exported_at', 20),
     enabled: !!dossierId,
     staleTime: 30_000,
   });

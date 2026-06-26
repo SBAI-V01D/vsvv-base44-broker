@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,12 +14,12 @@ export default function Commissions() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => vsvv.entities.Contract.list(),
+    queryFn: () => avasys.entities.Contract.list(),
   })
 
   const { data: brokers = [] } = useQuery({
     queryKey: ['brokers'],
-    queryFn: () => vsvv.entities.Broker.filter({ is_active: true }),
+    queryFn: () => avasys.entities.Broker.filter({ is_active: true }),
   })
 
   // Filter Verträge mit Provisionen

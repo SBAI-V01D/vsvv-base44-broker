@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Bell, Send, Clock, FileText, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,17 +26,17 @@ export default function Notifications() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => vsvv.entities.Contract.list(),
+    queryFn: () => avasys.entities.Contract.list(),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => vsvv.entities.Customer.list(),
+    queryFn: () => avasys.entities.Customer.list(),
   });
 
   const { data: notifications = [], isLoading: notifLoading } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => vsvv.entities.Notification.list('-created_date', 50),
+    queryFn: () => avasys.entities.Notification.list('-created_date', 50),
   });
 
   // Contracts expiring within EXPIRY_DAYS

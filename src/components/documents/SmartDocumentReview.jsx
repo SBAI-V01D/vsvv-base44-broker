@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -122,7 +122,7 @@ export default function SmartDocumentReview({ document, documentType, analysisRe
 
   const createMutation = useMutation({
     mutationFn: async (payload) => {
-      const res = await vsvv.functions.invoke('createApplicationFromDocument', payload)
+      const res = await avasys.functions.invoke('createApplicationFromDocument', payload)
       return res.data
     },
     onSuccess: () => {

@@ -4,7 +4,7 @@
  */
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { CheckCircle2, XCircle, AlertTriangle, Loader2, PlayCircle, Shield, Award, ExternalLink } from 'lucide-react';
 
 const CATEGORY_LABELS = {
@@ -106,7 +106,7 @@ export default function TabValidation() {
     setLoading(true);
     setError(null);
     try {
-      const res = await vsvv.functions.invoke('runLiveSystemValidation', {});
+      const res = await avasys.functions.invoke('runLiveSystemValidation', {});
       qc.setQueryData(['validation_report'], res.data);
     } catch (e) {
       setError(e.message);

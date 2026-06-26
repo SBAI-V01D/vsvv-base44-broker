@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingDown, CheckCircle2, X, BarChart2, Loader2, Trash2, Pencil } from 'lucide-react';
 
@@ -25,7 +25,7 @@ export default function VergleichsAnalysenListe() {
 
   const { data: analysen = [], isLoading } = useQuery({
     queryKey: ['vergleichs-analysen'],
-    queryFn: () => vsvv.entities.VergleichsAnalyse.list('-created_date', 200),
+    queryFn: () => avasys.entities.VergleichsAnalyse.list('-created_date', 200),
     staleTime: 30 * 1000,
   });
 
@@ -35,7 +35,7 @@ export default function VergleichsAnalysenListe() {
     if (!window.confirm(`Offerte von ${analyse.persoenliche_daten?.nachname || analyse.customer_name || 'diesem Kunden'} wirklich löschen?`)) return;
     setDeletingId(analyse.id);
     try {
-      await vsvv.entities.VergleichsAnalyse.delete(analyse.id);
+      await avasys.entities.VergleichsAnalyse.delete(analyse.id);
       queryClient.invalidateQueries({ queryKey: ['vergleichs-analysen'] });
     } finally {
       setDeletingId(null);
@@ -43,7 +43,7 @@ export default function VergleichsAnalysenListe() {
   };
 
   const handleSaveWahl = async (analyse) => {
-    await vsvv.entities.VergleichsAnalyse.update(analyse.id, {
+    await avasys.entities.VergleichsAnalyse.update(analyse.id, {
       beratungsergebnis: { ...analyse.beratungsergebnis, abschluss_wahl: wahlDraft },
     });
     queryClient.invalidateQueries({ queryKey: ['vergleichs-analysen'] });
@@ -54,7 +54,7 @@ export default function VergleichsAnalysenListe() {
     const newStatus = analyse.status === 'umgesetzt' ? 'beratung_erfolgt' : 'umgesetzt';
     setTogglingId(analyse.id);
     try {
-      await vsvv.entities.VergleichsAnalyse.update(analyse.id, { status: newStatus });
+      await avasys.entities.VergleichsAnalyse.update(analyse.id, { status: newStatus });
       queryClient.invalidateQueries({ queryKey: ['vergleichs-analysen'] });
     } finally {
       setTogglingId(null);

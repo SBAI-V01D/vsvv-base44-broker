@@ -1,4 +1,4 @@
-# Admin Hub — Unified Administration Area for VSVV
+# Admin Hub — Unified Administration Area for avaSysAIByNik
 
 ## Ziel
 Einen zusammenhängenden, einheitlichen Administrationsbereich unter `/admin/*` schaffen — mit zentralem Hub, konsistentem Routing, Sidebar-Sichtbarkeit und Wiederverwendung aller existierenden Admin-Komponenten.
@@ -66,7 +66,7 @@ Zentrale Einstiegsseite mit:
 │ Letzte Audit-Events                    [Alle anzeigen →] │
 │ ┌──────────────────────────────────────────────────────┐ │
 │ │ ⚠ Critical · 12:34 · Guard Blocked — User#42        │ │
-│ │ ✅ Allowed · 12:30 · Data Export — admin@vsvv.ch    │ │
+│ │ ✅ Allowed · 12:30 · Data Export — admin@avasys.ch    │ │
 │ │ ❌ Blocked · 12:15 · Unauthorized Access — 87.34..  │ │
 │ └──────────────────────────────────────────────────────┘ │
 │ Offene KI-Verbesserungen: 5      → /admin/improvements   │

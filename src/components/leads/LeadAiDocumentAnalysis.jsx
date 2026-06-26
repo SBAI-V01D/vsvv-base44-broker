@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Upload, CheckCircle2, AlertCircle, Loader2, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -27,7 +27,7 @@ export default function LeadAiDocumentAnalysis({ onDataExtracted, className }) {
     setUploading(true)
 
     try {
-      const { file_url } = await vsvv.integrations.Core.UploadFile({ file })
+      const { file_url } = await avasys.integrations.Core.UploadFile({ file })
       setFileUrl(file_url)
       setFileName(file.name)
       setUploading(false)
@@ -46,7 +46,7 @@ export default function LeadAiDocumentAnalysis({ onDataExtracted, className }) {
     setError(null)
 
     try {
-      const extracted = await vsvv.integrations.Core.InvokeLLM({
+      const extracted = await avasys.integrations.Core.InvokeLLM({
         prompt: `Du bist ein Schweizer Versicherungsexperte. Analysiere dieses Versicherungsdokument (Police oder Kundeninformation) und extrahiere alle relevanten Daten.
 
 Gib die Daten als JSON zurück. Wenn ein Feld nicht im Dokument vorhanden ist, lasse es leer (null).

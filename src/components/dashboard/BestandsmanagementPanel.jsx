@@ -5,7 +5,7 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { cn } from '@/lib/utils'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 import {
@@ -193,11 +193,11 @@ export default function BestandsmanagementPanel({ contracts = [] }) {
   const [filterSeverity, setFilterSeverity] = useState('all')
 
   const createVsMutation = useMutation({
-    mutationFn: (data) => vsvv.entities.Verkaufschance.create(data),
+    mutationFn: (data) => avasys.entities.Verkaufschance.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] }); navigate('/verkaufschancen') },
   })
   const updateContractMutation = useMutation({
-    mutationFn: ({ id, data }) => vsvv.entities.Contract.update(id, data),
+    mutationFn: ({ id, data }) => avasys.entities.Contract.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
   })
 

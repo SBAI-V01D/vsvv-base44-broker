@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -110,7 +110,7 @@ export default function VersichererDBPage() {
   const [editing, setEditing] = useState(null);
 
   const load = async () => {
-    const data = await vsvv.entities.VersichererDB.list('-created_date', 200);
+    const data = await avasys.entities.VersichererDB.list('-created_date', 200);
     setVersicherer(data);
     setLoading(false);
   };
@@ -118,8 +118,8 @@ export default function VersichererDBPage() {
   useEffect(() => { load(); }, []);
 
   const save = async (data) => {
-    if (editing?.id) await vsvv.entities.VersichererDB.update(editing.id, data);
-    else await vsvv.entities.VersichererDB.create(data);
+    if (editing?.id) await avasys.entities.VersichererDB.update(editing.id, data);
+    else await avasys.entities.VersichererDB.create(data);
     setShowForm(false);
     setEditing(null);
     load();

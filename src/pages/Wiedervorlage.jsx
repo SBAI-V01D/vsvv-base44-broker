@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import {
   Clock, AlertTriangle, CalendarClock, Send, Loader2,
   CheckCircle, RefreshCw, Filter, ChevronDown, Mail, Shield
@@ -74,17 +74,17 @@ export default function Wiedervorlage() {
 
   const { data: contracts = [], isLoading } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => vsvv.entities.Contract.list(),
+    queryFn: () => avasys.entities.Contract.list(),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => vsvv.entities.Customer.list(),
+    queryFn: () => avasys.entities.Customer.list(),
   });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => vsvv.entities.Notification.list('-created_date', 200),
+    queryFn: () => avasys.entities.Notification.list('-created_date', 200),
   });
 
   const today = new Date();

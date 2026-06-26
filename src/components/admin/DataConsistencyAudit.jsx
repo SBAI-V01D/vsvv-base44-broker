@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, CheckCircle, AlertCircle, Loader } from 'lucide-react'
@@ -14,7 +14,7 @@ export default function DataConsistencyAudit() {
     setLoading(true)
     setError(null)
     try {
-      const result = await vsvv.functions.invoke('auditDataConsistency', {})
+      const result = await avasys.functions.invoke('auditDataConsistency', {})
       setAudit(result)
     } catch (err) {
       setError(err.message)

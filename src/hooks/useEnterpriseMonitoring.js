@@ -8,14 +8,14 @@
  *   - Logging via SystemLog (fire-and-forget)
  */
 import { useEffect, useRef, useCallback } from 'react';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 
 const RENDER_WARN_MS = 300;
 const QUERY_WARN_MS  = 1000;
 
 // Hilfsfunktion: loggt ohne await (fire & forget)
 function logWarning(message, details = {}) {
-  vsvv.entities.SystemLog.create({
+  avasys.entities.SystemLog.create({
     level:   'warn',
     source:  'enterprise_monitoring',
     message,
@@ -106,8 +106,8 @@ export function useDossierIntegrityCheck(dossier) {
 export function useAuditAction() {
   const logAction = useCallback(async (action, entityId, entityType, meta = {}) => {
     try {
-      const user = await vsvv.auth.me();
-      await vsvv.entities.SystemLog.create({
+      const user = await avasys.auth.me();
+      await avasys.entities.SystemLog.create({
         level:               'info',
         source:              'audit_action',
         message:             `${action}: ${entityType}/${entityId}`,

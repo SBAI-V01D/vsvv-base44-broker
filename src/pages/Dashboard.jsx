@@ -6,7 +6,7 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -85,7 +85,7 @@ export default function Dashboard() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['dashboard_tasks'],
-    queryFn: () => vsvv.entities.Task.filter({ status: ['open', 'in_progress'] }, '-due_date', 50),
+    queryFn: () => avasys.entities.Task.filter({ status: ['open', 'in_progress'] }, '-due_date', 50),
     staleTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
@@ -94,7 +94,7 @@ export default function Dashboard() {
     queryKey: ['dashboard_contracts'],
     queryFn: async () => {
       try {
-        const res = await vsvv.functions.invoke('getAllContractsForDashboard', {})
+        const res = await avasys.functions.invoke('getAllContractsForDashboard', {})
         const result = res.data?.data || res.data || []
         return Array.isArray(result) ? result : []
       } catch {
@@ -108,7 +108,7 @@ export default function Dashboard() {
   const { data: leads = [] } = useQuery({
     queryKey: ['dashboard_leads'],
     queryFn: async () => {
-      const all = await vsvv.entities.Lead.list('-lead_score', 50)
+      const all = await avasys.entities.Lead.list('-lead_score', 50)
       return all.filter(l => ['new', 'contacted', 'qualified'].includes(l.status))
     },
     staleTime: 5 * 60 * 1000,
@@ -117,7 +117,7 @@ export default function Dashboard() {
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['dashboard_verkaufschancen'],
-    queryFn: () => vsvv.entities.Verkaufschance.list('-created_date', 50),
+    queryFn: () => avasys.entities.Verkaufschance.list('-created_date', 50),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
@@ -125,7 +125,7 @@ export default function Dashboard() {
   const { data: newCustomers = [] } = useQuery({
     queryKey: ['dashboard_new_customers'],
     queryFn: async () => {
-      const all = await vsvv.entities.Customer.filter({ archived: false }, '-created_date', 20)
+      const all = await avasys.entities.Customer.filter({ archived: false }, '-created_date', 20)
       const cutoff = new Date('2026-05-22')
       return all.filter(c => {
         const created = c.created_date ? new Date(c.created_date) : null
@@ -139,7 +139,7 @@ export default function Dashboard() {
   const { data: criticalIncidents = [] } = useQuery({
     queryKey: ['dashboard_critical_incidents'],
     queryFn: async () => {
-      const all = await vsvv.entities.EnterpriseIncident.list('-detected_at', 50)
+      const all = await avasys.entities.EnterpriseIncident.list('-detected_at', 50)
       return all.filter(i =>
         ['open', 'investigating', 'in_progress'].includes(i.status) &&
         ['critical', 'blocking'].includes(i.severity)
@@ -194,7 +194,7 @@ export default function Dashboard() {
   }).length
 
   const createTaskMutation = useMutation({
-    mutationFn: (title) => vsvv.entities.Task.create({ title, task_type: 'general', priority: 'medium', status: 'open' }),
+    mutationFn: (title) => avasys.entities.Task.create({ title, task_type: 'general', priority: 'medium', status: 'open' }),
     onSuccess: (newTask) => {
       queryClient.setQueryData(['dashboard_tasks'], (old = []) => [newTask, ...old]);
       queryClient.setQueryData(['tasks'], (old = []) => old ? [newTask, ...old] : undefined);
@@ -203,7 +203,7 @@ export default function Dashboard() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: (data) => vsvv.entities.Task.update(selectedTask.id, {
+    mutationFn: (data) => avasys.entities.Task.update(selectedTask.id, {
       status: data.status ?? selectedTask.status,
       notes: data.notes ?? selectedTask.notes,
       due_date: data.due_date ?? selectedTask.due_date,
@@ -220,7 +220,7 @@ export default function Dashboard() {
     },
   })
   const deleteMutation = useMutation({
-    mutationFn: (id) => vsvv.entities.Task.delete(id),
+    mutationFn: (id) => avasys.entities.Task.delete(id),
     onSuccess: (_, id) => {
       queryClient.setQueryData(['dashboard_tasks'], (old = []) => old.filter(t => t.id !== id));
       queryClient.setQueryData(['tasks'], (old) => old ? old.filter(t => t.id !== id) : undefined);
@@ -233,7 +233,7 @@ export default function Dashboard() {
     setFormData({ title: task.title || '', status: task.status, notes: task.notes || '', due_date: task.due_date || '' })
   }
   const handleTaskComplete = async (taskId) => {
-    await vsvv.entities.Task.update(taskId, { status: 'completed', completion_date: new Date().toISOString().split('T')[0] })
+    await avasys.entities.Task.update(taskId, { status: 'completed', completion_date: new Date().toISOString().split('T')[0] })
     queryClient.setQueryData(['dashboard_tasks'], (old = []) => old.filter(t => t.id !== taskId));
     queryClient.setQueryData(['tasks'], (old) => old ? old.map(t => t.id === taskId ? { ...t, status: 'completed' } : t) : undefined);
   }

@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — Integration-Test Suite
+// avaSysAIByNik Backend — Integration-Test Suite
 // ============================================================================
 // Lauf mit: cd backend && npx tsx scripts/integration-test.ts
 //
@@ -62,12 +62,12 @@ async function main() {
   const realOrgId = '';
 
   const adminToken = jwt.sign(
-    { id: 'admin-test', email: 'admin@vsvv.ch', role: 'admin', organization_id: 'org-test' },
+    { id: 'admin-test', email: 'admin@avasys.ch', role: 'admin', organization_id: 'org-test' },
     JWT_SECRET,
     { expiresIn: '5m' },
   );
   const userToken = jwt.sign(
-    { id: 'user-test', email: 'user@vsvv.ch', role: 'user', organization_id: 'org-test' },
+    { id: 'user-test', email: 'user@avasys.ch', role: 'user', organization_id: 'org-test' },
     JWT_SECRET,
     { expiresIn: '5m' },
   );

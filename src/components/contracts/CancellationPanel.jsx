@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertTriangle, XCircle, CheckCircle2, Clock, Edit, FileText, ExternalLink, ArrowRightLeft, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { useQueryClient } from '@tanstack/react-query';
 
 const STATUS_CONFIG = {
@@ -100,7 +100,7 @@ export default function CancellationPanel({ contract, onUpdated }) {
     // Auto-set contract status to cancelled if completed
     if (form.cancellation_status === 'completed') payload.status = 'cancelled';
 
-    await vsvv.entities.Contract.update(contract.id, payload);
+    await avasys.entities.Contract.update(contract.id, payload);
     queryClient.invalidateQueries({ queryKey: ['contracts'] });
     setOpen(false);
     setSaving(false);

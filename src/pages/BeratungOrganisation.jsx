@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Plus, Edit, Trash2, Building2, Users, ChevronDown, ChevronRight, MoreHorizontal, UserX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -178,16 +178,16 @@ export default function BeratungOrganisation() {
   const [showAdvisorForm, setShowAdvisorForm] = useState(false)
   const qc = useQueryClient()
 
-  const { data: orgs = [] } = useQuery({ queryKey: ['organizations'], queryFn: () => vsvv.entities.Organization.list('-created_date') })
-  const { data: advisors = [] } = useQuery({ queryKey: ['advisors'], queryFn: () => vsvv.entities.Advisor.list('-created_date') })
+  const { data: orgs = [] } = useQuery({ queryKey: ['organizations'], queryFn: () => avasys.entities.Organization.list('-created_date') })
+  const { data: advisors = [] } = useQuery({ queryKey: ['advisors'], queryFn: () => avasys.entities.Advisor.list('-created_date') })
 
-  const createOrg = useMutation({ mutationFn: d => vsvv.entities.Organization.create(d), onSuccess: () => { qc.invalidateQueries(['organizations']); setShowOrgForm(false) } })
-  const updateOrg = useMutation({ mutationFn: ({ id, data }) => vsvv.entities.Organization.update(id, data), onSuccess: () => { qc.invalidateQueries(['organizations']); setShowOrgForm(false); setEditingOrg(null) } })
-  const deleteOrg = useMutation({ mutationFn: id => vsvv.entities.Organization.delete(id), onSuccess: () => qc.invalidateQueries(['organizations']) })
+  const createOrg = useMutation({ mutationFn: d => avasys.entities.Organization.create(d), onSuccess: () => { qc.invalidateQueries(['organizations']); setShowOrgForm(false) } })
+  const updateOrg = useMutation({ mutationFn: ({ id, data }) => avasys.entities.Organization.update(id, data), onSuccess: () => { qc.invalidateQueries(['organizations']); setShowOrgForm(false); setEditingOrg(null) } })
+  const deleteOrg = useMutation({ mutationFn: id => avasys.entities.Organization.delete(id), onSuccess: () => qc.invalidateQueries(['organizations']) })
 
-  const createAdvisor = useMutation({ mutationFn: d => vsvv.entities.Advisor.create(d), onSuccess: () => { qc.invalidateQueries(['advisors']); setShowAdvisorForm(false) } })
-  const updateAdvisor = useMutation({ mutationFn: ({ id, data }) => vsvv.entities.Advisor.update(id, data), onSuccess: () => { qc.invalidateQueries(['advisors']); setShowAdvisorForm(false); setEditingAdvisor(null) } })
-  const deleteAdvisor = useMutation({ mutationFn: id => vsvv.entities.Advisor.delete(id), onSuccess: () => qc.invalidateQueries(['advisors']) })
+  const createAdvisor = useMutation({ mutationFn: d => avasys.entities.Advisor.create(d), onSuccess: () => { qc.invalidateQueries(['advisors']); setShowAdvisorForm(false) } })
+  const updateAdvisor = useMutation({ mutationFn: ({ id, data }) => avasys.entities.Advisor.update(id, data), onSuccess: () => { qc.invalidateQueries(['advisors']); setShowAdvisorForm(false); setEditingAdvisor(null) } })
+  const deleteAdvisor = useMutation({ mutationFn: id => avasys.entities.Advisor.delete(id), onSuccess: () => qc.invalidateQueries(['advisors']) })
 
   const filteredAdvisors = advisors.filter(a => {
     if (filterOrg !== 'all' && a.organization_id !== filterOrg) return false

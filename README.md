@@ -1,4 +1,4 @@
-# VSVV Premium Broker
+# avaSysAIByNik Premium Broker
 
 Versicherungs-Vergleichsplattform mit Multi-Tenant-Architektur, DSGVO/FINMA-Compliance und skalierbarem Dokumenten-Management auf Exoscale SOS.
 
@@ -41,7 +41,7 @@ npm run dev
 | `S3_BUCKET` | S3 Bucket Name | — |
 | `S3_ACCESS_KEY_ID` | Exoscale API Key | — |
 | `S3_SECRET_ACCESS_KEY` | Exoscale Secret | — |
-| `CORS_ORIGIN` | Erlaubte Frontend-Domain (Prod: `https://app.vsvv.ch`) | `http://localhost:3004` |
+| `CORS_ORIGIN` | Erlaubte Frontend-Domain (Prod: `https://app.avasys.ch`) | `http://localhost:3004` |
 | `JWT_SECRET` | JWT Signing Secret | — |
 | `DATABASE_URL` | PostgreSQL Connection String | — |
 
@@ -58,7 +58,7 @@ npm run dev
 │   │   └── services/  # Business Logic
 │   └── scripts/       # Dev/Test Scripts
 ├── src/               # React Frontend
-│   ├── api/           # API Client (vsvvClient)
+│   ├── api/           # API Client (avaSysClient)
 │   ├── components/    # Shared Components
 │   └── pages/         # Route Pages
 └── docker-compose.yml # Postgres, Redis, etc.
@@ -66,4 +66,4 @@ npm run dev
 
 ## Lizenz
 
-Proprietär — VSVV AG
+Proprietär — avaSysAIByNik AG

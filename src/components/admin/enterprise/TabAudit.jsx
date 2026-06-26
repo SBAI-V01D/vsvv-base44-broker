@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Clock, User, CheckCircle2, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 
 function fmtDt(iso) {
@@ -17,13 +17,13 @@ const ACTION_ICON = {
 export default function TabAudit() {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['enterprise_system_logs'],
-    queryFn: () => vsvv.entities.SystemLog.list('-created_date', 100),
+    queryFn: () => avasys.entities.SystemLog.list('-created_date', 100),
     staleTime: 30_000,
   });
 
   const { data: dossiers = [] } = useQuery({
     queryKey: ['enterprise_audit_dossiers'],
-    queryFn: () => vsvv.entities.AdvisoryDossier.list('-updated_date', 50),
+    queryFn: () => avasys.entities.AdvisoryDossier.list('-updated_date', 50),
     staleTime: 60_000,
   });
 

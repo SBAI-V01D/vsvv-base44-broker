@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -34,23 +34,23 @@ export default function MutationRequestsPanel() {
 
   const { data: mutations = [] } = useQuery({
     queryKey: ['mutation-requests'],
-    queryFn: () => vsvv.entities.MutationRequest.filter({ status: 'pending' }, '-created_date'),
+    queryFn: () => avasys.entities.MutationRequest.filter({ status: 'pending' }, '-created_date'),
   })
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => vsvv.entities.Customer.list(),
+    queryFn: () => avasys.entities.Customer.list(),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => vsvv.entities.Contract.list(),
+    queryFn: () => avasys.entities.Contract.list(),
   })
 
   const rejectMutation = useMutation({
     mutationFn: async (mutationId) => {
-      const user = await vsvv.auth.me()
-      return vsvv.entities.MutationRequest.update(mutationId, {
+      const user = await avasys.auth.me()
+      return avasys.entities.MutationRequest.update(mutationId, {
         status: 'rejected',
         reviewed_by: user.email,
         reviewed_at: new Date().toISOString(),
@@ -89,13 +89,13 @@ export default function MutationRequestsPanel() {
   const handleApprove = async () => {
     if (!selectedRequest || !form) return
     setSaving(true)
-    const user = await vsvv.auth.me()
+    const user = await avasys.auth.me()
 
     // Archive old policy
-    await vsvv.entities.Contract.update(selectedRequest.policy_id, { status: 'pending_change' })
+    await avasys.entities.Contract.update(selectedRequest.policy_id, { status: 'pending_change' })
 
     // Create new version with updated data
-    await vsvv.entities.Contract.create({
+    await avasys.entities.Contract.create({
       ...(selectedContract || {}),
       id: undefined,
       created_date: undefined,
@@ -119,7 +119,7 @@ export default function MutationRequestsPanel() {
     })
 
     // Update mutation request
-    await vsvv.entities.MutationRequest.update(selectedRequest.id, {
+    await avasys.entities.MutationRequest.update(selectedRequest.id, {
       status: 'approved',
       reviewed_by: user.email,
       reviewed_at: new Date().toISOString(),

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,7 +28,7 @@ export default function MutationRequestDialog({ contract, customerId, open, onOp
       if (!type || !description.trim()) {
         throw new Error('Bitte füllen Sie alle Felder aus')
       }
-      return vsvv.entities.MutationRequest.create({
+      return avasys.entities.MutationRequest.create({
         customer_id: customerId,
         policy_id: contract.id,
         policy_number: contract.policy_number,

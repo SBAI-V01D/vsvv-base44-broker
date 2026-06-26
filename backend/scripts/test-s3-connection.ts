@@ -1,5 +1,5 @@
 /**
- * VSVV — Exoscale S3 Connection Quick-Check
+ * avaSysAIByNik — Exoscale S3 Connection Quick-Check
  *
  * Testet Verbindig zu Exoscale SOS: Bucket check, Upload, Presigned URL, Löschig.
  * Lauf mit: npx tsx scripts/test-s3-connection.ts
@@ -74,7 +74,7 @@ async function main() {
 
   // 2. Upload test file
   console.log('📤  Step 2: Test-File ufelade...');
-  const testContent = Buffer.from(`VSVV Premium Broker — S3 Test ${new Date().toISOString()}\n`);
+  const testContent = Buffer.from(`avaSysAIByNik Premium Broker — S3 Test ${new Date().toISOString()}\n`);
   const key = `_s3test_${crypto.randomUUID()}.txt`;
   await client.putObject(BUCKET, key, testContent, testContent.length, {
     'Content-Type': 'text/plain',

@@ -1,4 +1,4 @@
-# VSVV CRM - Backup & Rollback Konzept
+# avaSysAIByNik CRM - Backup & Rollback Konzept
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -8,7 +8,7 @@
 
 ## Übersicht
 
-Dieses Dokument beschreibt die Backup- und Rollback-Strategie für die VSVV CRM-Migration zu Supabase.
+Dieses Dokument beschreibt die Backup- und Rollback-Strategie für die avaSysAIByNik CRM-Migration zu Supabase.
 
 ---
 
@@ -54,7 +54,7 @@ pg_dump -h db.xxx.supabase.co -U postgres \
 
 ```javascript
 // Function: createFullBackup
-const backup = await vsvv.functions.invoke('createFullBackup', {
+const backup = await avasys.functions.invoke('createFullBackup', {
   entities: ['BAGPraemienDaten', 'Kunde', 'Vertrag'],
   format: 'json',
   storage: 'supabase' // oder 's3', 'local'
@@ -121,7 +121,7 @@ WHERE import_version_id = 'import-version-uuid';
 -- 3. Fehlerjournal aktualisieren
 UPDATE bag_import_errors
 SET manuell_korrigiert = true,
-    manuell_korrigiert_von = 'admin@vsvv.ch',
+    manuell_korrigiert_von = 'admin@avasys.ch',
     manuell_korrigiert_am = NOW()
 WHERE import_version_id = 'import-version-uuid';
 
@@ -136,7 +136,7 @@ VALUES (
     'timestamp', NOW(),
     'previous_status', 'completed'
   ),
-  'admin@vsvv.ch'
+  'admin@avasys.ch'
 );
 
 -- 5. Bestätigung
@@ -214,7 +214,7 @@ GROUP BY entity_type;
 SELECT k.id, k.email, k.updated_at
 FROM kunden k
 WHERE k.updated_at > NOW() - INTERVAL '1 hour'
-  AND k.updated_by = 'problematic-user@vsvv.ch';
+  AND k.updated_by = 'problematic-user@avasys.ch';
 
 -- 3. Backup-Stand finden
 SELECT 
@@ -255,7 +255,7 @@ VALUES (
     'affected_records', 15,
     'restore_source', 'backup_kunden_20260609.csv'
   ),
-  'admin@vsvv.ch'
+  'admin@avasys.ch'
 );
 ```
 
@@ -448,16 +448,16 @@ const checkDailyBackup = async () => {
 
 ```
 Critical Alerts:
-├─ Email: admin@vsvv.ch
+├─ Email: admin@avasys.ch
 ├─ SMS: +41 79 XXX XX XX
-└─ Slack: #vsvv-alerts
+└─ Slack: #avasys-alerts
 
 Warning Alerts:
-├─ Email: admin@vsvv.ch
-└─ Slack: #vsvv-alerts
+├─ Email: admin@avasys.ch
+└─ Slack: #avasys-alerts
 
 Info Alerts:
-└─ Slack: #vsvv-monitoring
+└─ Slack: #avasys-monitoring
 ```
 
 ---
@@ -556,7 +556,7 @@ docs/backups/
 - [ ] Pre-Import-Validation verschärfen
 - [ ] Alert bei Prämie < 0
 
-**Report erstellt von:** admin@vsvv.ch
+**Report erstellt von:** admin@avasys.ch
 **Datum:** 2026-06-09
 ```
 

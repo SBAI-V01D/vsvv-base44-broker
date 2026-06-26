@@ -1,14 +1,14 @@
 /**
- * VSVV API Client — Drop-in replacement for @vsvv/sdk
+ * avaSysAIByNik API Client — Drop-in replacement for @avasys/sdk
  *
- * Usage: import { vsvv } from '@/api/vsvvClient'
+ * Usage: import { avasys } from '@/api/avasysClient'
  *
- * This module creates a `vsvv`-compatible interface that talks to our
- * self-hosted Fastify backend instead of Base44's cloud API.
+ * This module creates a `avasys`-compatible interface that talks to our
+ * self-hosted Fastify backend.
  *
  * ALL existing frontend code continues to work without changes.
  *
- * Supported calling patterns (matching @vsvv/sdk exactly):
+ * Supported calling patterns (matching @avasys/sdk exactly):
  *   list()                    → GET /api/{entities}
  *   list(sort, pageSize)      → GET /api/{entities}?sortBy=...&limit=...
  *   list(sort, pageSize, offset) → GET /api/{entities}?sortBy=...&limit=...&page=...
@@ -21,17 +21,17 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 // ─── Token Management ───────────────────────────────────────────────────────
 
-let accessToken = localStorage.getItem('vsvv_access_token') || null
-let refreshToken = localStorage.getItem('vsvv_refresh_token') || null
+let accessToken = localStorage.getItem('avasys_access_token') || null
+let refreshToken = localStorage.getItem('avasys_refresh_token') || null
 let refreshPromise = null
 
 export function setTokens(access, refresh) {
   accessToken = access
   refreshToken = refresh
-  if (access) localStorage.setItem('vsvv_access_token', access)
-  else localStorage.removeItem('vsvv_access_token')
-  if (refresh) localStorage.setItem('vsvv_refresh_token', refresh)
-  else localStorage.removeItem('vsvv_refresh_token')
+  if (access) localStorage.setItem('avasys_access_token', access)
+  else localStorage.removeItem('avasys_access_token')
+  if (refresh) localStorage.setItem('avasys_refresh_token', refresh)
+  else localStorage.removeItem('avasys_refresh_token')
 }
 
 export function clearTokens() {
@@ -144,7 +144,7 @@ async function request(method, path, options = {}) {
 
 // ─── Service-Role Proxy ─────────────────────────────────────────────────────
 // Bypasses RLS for admin use. Mirrors the entity proxy but adds a service-role header.
-// Used via vsvv.asServiceRole.entities.X.list() in hooks like useAccessControl.js
+// Used via avasys.asServiceRole.entities.X.list() in hooks like useAccessControl.js
 
 function createServiceRoleEntityProxy() {
   return new Proxy({}, {
@@ -257,7 +257,7 @@ function createEntityProxy() {
 
       const entityMethods = {
         /**
-         * list() — supports MULTIPLE calling patterns matching @vsvv/sdk:
+         * list() — supports MULTIPLE calling patterns matching @avasys/sdk:
          *
          *   list()                                    → all records, default sort
          *   list(sort, pageSize)                      → e.g. list('-created_date', 500)
@@ -311,7 +311,7 @@ function createEntityProxy() {
             ...filters,
           }
 
-          // Handle Base44's string-based sort: '-field' → desc, 'field' → asc
+          // Handle string-based sort: '-field' → desc, 'field' → asc
           if (typeof sort === 'string') {
             if (sort.startsWith('-')) {
               params.sortBy = sort.substring(1)
@@ -495,7 +495,7 @@ const integrations = {
     },
 
     /**
-     * SendEmail — matches vsvv.integrations.Core.SendEmail({ to, subject, body })
+     * SendEmail — matches avasys.integrations.Core.SendEmail({ to, subject, body })
      * Used in src/lib/notifications.js
      */
     SendEmail: async ({ to, subject, body, ...rest }) => {
@@ -509,11 +509,11 @@ const integrations = {
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 /**
- * The main VSVV API client export.
+ * The main avaSysAIByNik API client export.
  *
- * Usage: import { vsvv } from '@/api/vsvvClient'
+ * Usage: import { avasys } from '@/api/avasysClient'
  */
-export const vsvv = {
+export const avasys = {
   entities: createEntityProxy(),
   asServiceRole: {
     entities: createServiceRoleEntityProxy(),
@@ -525,9 +525,9 @@ export const vsvv = {
 
 // Listen for forced logout events (e.g., from token refresh failure)
 window.addEventListener('auth:logout', () => {
-  window.dispatchEvent(new CustomEvent('vsvv:logout'))
+  window.dispatchEvent(new CustomEvent('avasys:logout'))
   // Redirect to login
   window.location.href = '/login'
 })
 
-export default vsvv
+export default avasys

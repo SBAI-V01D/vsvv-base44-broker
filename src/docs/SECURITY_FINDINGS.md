@@ -26,7 +26,7 @@ Die Plattform verfügt über eine mehrschichtige Sicherheitsarchitektur:
 |-----------------------------------|-----------|----------------------------------------------|
 | Role-based Access Control (RBAC)  | ✅ Aktiv   | User.role: admin/broker/assistenz/reviewer   |
 | Row-Level Security                | ✅ Aktiv   | RLS auf Contract, Application, Customer      |
-| Serverseitige Rollenprüfung       | ✅ Aktiv   | `vsvv.auth.me()` + role check in functions |
+| Serverseitige Rollenprüfung       | ✅ Aktiv   | `avasys.auth.me()` + role check in functions |
 | Admin-only Functions              | ✅ Aktiv   | guardRoleAccess, guardDataAccess             |
 | Session-Verwaltung                | ✅ Aktiv   | Plattform-Standard (Base44)                  |
 

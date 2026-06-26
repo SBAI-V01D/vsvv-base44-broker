@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Search, Users, FileText, Target, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { cn } from '@/lib/utils'
 
 /**
@@ -38,9 +38,9 @@ export default function QuickSearchBar() {
       try {
         const q = query.toLowerCase()
         const [customers, contracts, leads] = await Promise.all([
-          vsvv.entities.Customer.list(),
-          vsvv.entities.Contract.list(),
-          vsvv.entities.Lead.list(),
+          avasys.entities.Customer.list(),
+          avasys.entities.Contract.list(),
+          avasys.entities.Lead.list(),
         ])
 
         const customerResults = customers

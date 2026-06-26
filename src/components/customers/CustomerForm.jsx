@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { useAuth } from '@/lib/AuthContext'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,7 +28,7 @@ const MANDATE_STATUSES = {
   expired: 'Abgelaufen',
 }
 const ASSOCIATIONS = {
-  vsvv: 'VSVV',
+  avasys: 'avaSysAIByNik',
   skv: 'SKV',
   reka: 'REKA',
   vfs: 'VFS',
@@ -262,7 +262,7 @@ export default function CustomerForm({ customer, primaryCustomers = [], onSave, 
 
    const { data: advisors = [] } = useQuery({
      queryKey: ['advisors'],
-     queryFn: () => vsvv.entities.Advisor.filter({ status: 'active' }),
+     queryFn: () => avasys.entities.Advisor.filter({ status: 'active' }),
    })
 
   // Auto-fill Berater aus eingeloggtem User (nur bei neuen Kunden)

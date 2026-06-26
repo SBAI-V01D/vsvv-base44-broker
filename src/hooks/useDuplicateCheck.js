@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 
 export function useDuplicateCheck() {
   const checkDuplicates = useCallback(async ({ entity_type, email, phone, mobile, first_name, last_name, birthdate }) => {
     try {
-      const result = await vsvv.functions.invoke('detectDuplicates', {
+      const result = await avasys.functions.invoke('detectDuplicates', {
         entity_type,
         email,
         phone,
@@ -22,7 +22,7 @@ export function useDuplicateCheck() {
 
   const logError = useCallback(async ({ error_type, entity_type, entity_id, error_message, function_name }) => {
     try {
-      await vsvv.functions.invoke('logError', {
+      await avasys.functions.invoke('logError', {
         error_type,
         entity_type,
         entity_id,
@@ -36,7 +36,7 @@ export function useDuplicateCheck() {
 
   const createAudit = useCallback(async ({ entity_type, entity_id, action, old_values, new_values, summary }) => {
     try {
-      await vsvv.functions.invoke('createAuditLog', {
+      await avasys.functions.invoke('createAuditLog', {
         entity_type,
         entity_id,
         action,

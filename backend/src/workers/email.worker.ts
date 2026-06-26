@@ -1,7 +1,7 @@
 // ============================================================================
-// VSVV Backend — Email Worker (BullMQ)
+// avaSysAIByNik Backend — Email Worker (BullMQ)
 //
-// Processes email jobs from the 'vsvv:email' queue.
+// Processes email jobs from the 'avasys:email' queue.
 // Supports: password reset, notifications, campaign emails.
 //
 // Start with: node dist/workers/email.worker.js

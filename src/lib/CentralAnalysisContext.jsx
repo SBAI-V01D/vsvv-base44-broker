@@ -7,7 +7,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 
 const CentralAnalysisContext = createContext(null);
 
@@ -21,7 +21,7 @@ export function CentralAnalysisProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await vsvv.functions.invoke('centralAnalysisEngine', {});
+      const res = await avasys.functions.invoke('centralAnalysisEngine', {});
       setAnalysisData(res.data);
       setLastRun(new Date());
       return res.data;

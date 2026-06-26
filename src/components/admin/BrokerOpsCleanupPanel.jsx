@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertTriangle, Clock, UserX, FileWarning, CheckCircle2, Loader2, ChevronDown, ChevronUp, Zap } from 'lucide-react'
@@ -18,7 +18,7 @@ export default function BrokerOpsCleanupPanel() {
     setError(null)
     setResults(null)
     setFixedMessages({})
-    const res = await vsvv.functions.invoke('brokerOpsCleanup', { mode: 'analyze' })
+    const res = await avasys.functions.invoke('brokerOpsCleanup', { mode: 'analyze' })
     if (res.data?.success) {
       setResults(res.data.results)
     } else {
@@ -29,7 +29,7 @@ export default function BrokerOpsCleanupPanel() {
 
   const runFix = async (fixType, label) => {
     setFixing(fixType)
-    const res = await vsvv.functions.invoke('brokerOpsCleanup', { mode: 'fix', fix_type: fixType })
+    const res = await avasys.functions.invoke('brokerOpsCleanup', { mode: 'fix', fix_type: fixType })
     if (res.data?.success) {
       setFixedMessages(prev => ({ ...prev, [fixType]: res.data.message }))
     } else {

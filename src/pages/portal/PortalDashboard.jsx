@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { usePortalData } from '@/hooks/usePortalData'
 import { usePortalCustomer } from '@/hooks/usePortalCustomer'
 
-const LOGO_URL = 'https://media.vsvv.com/images/public/69f07890d7d9106eb68a2c98/10f5c3d63_VSVV.png'
+const LOGO_URL = 'https://media.avasys.com/images/public/69f07890d7d9106eb68a2c98/10f5c3d63_VSVV.png'
 
 export default function PortalDashboard() {
   const { customer } = usePortalCustomer()
@@ -104,7 +104,7 @@ export default function PortalDashboard() {
       
       const session_token = localStorage.getItem('portal_session_token') || ''
       // Update via secured getPortalData endpoint
-      await vsvv.functions.invoke('getPortalData', {
+      await avasys.functions.invoke('getPortalData', {
         customer_id: customerId,
         session_token,
         action: 'update_customer',
@@ -154,7 +154,7 @@ export default function PortalDashboard() {
       })
 
       const session_token = localStorage.getItem('portal_session_token') || ''
-      await vsvv.functions.invoke('uploadPortalDocument', {
+      await avasys.functions.invoke('uploadPortalDocument', {
         file_base64,
         filename: uploadFile.name,
         customer_id: localStorage.getItem('portal_customer_id'),
@@ -224,7 +224,7 @@ export default function PortalDashboard() {
         <section style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 32 }}>
           <div style={{ flex: 1 }}>
             <h1 style={{ fontSize: 26, fontWeight: 700, margin: '0 0 6px', lineHeight: 1.2, color: '#0f172a' }}>
-              Willkommen bei VSVV
+              Willkommen bei avaSysAIByNik
             </h1>
             <p style={{ fontSize: 13, color: '#4b5563', margin: 0, lineHeight: 1.4 }}>
               Ihre Versicherungen im Überblick.
@@ -800,7 +800,7 @@ export default function PortalDashboard() {
 
       {/* FOOTER */}
       <footer style={{ padding: '16px 40px', textAlign: 'center', fontSize: 11, color: '#9ca3af', borderTop: '1px solid #e5e7eb', marginTop: 32 }}>
-        © 2025 VSVV
+        © 2025 avaSysAIByNik
       </footer>
 
 

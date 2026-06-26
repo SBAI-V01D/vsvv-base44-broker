@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { usePortalCustomer } from '@/hooks/usePortalCustomer';
 import { FileText, AlertCircle, FolderOpen, CheckCircle2, Clock, ChevronRight, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,13 +18,13 @@ export default function PortalOverview() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['portal-contracts', customerId],
-    queryFn: () => vsvv.entities.Contract.filter({ customer_id: customerId }),
+    queryFn: () => avasys.entities.Contract.filter({ customer_id: customerId }),
     enabled: !!customerId,
   });
 
   const { data: claims = [] } = useQuery({
     queryKey: ['portal-claims', customerId],
-    queryFn: () => vsvv.entities.Claim.filter({ customer_id: customerId }),
+    queryFn: () => avasys.entities.Claim.filter({ customer_id: customerId }),
     enabled: !!customerId,
   });
 

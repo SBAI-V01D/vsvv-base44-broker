@@ -1,4 +1,4 @@
-# 🏗️ VSVV Premium Broker → 100% Base44-freie Fullstack Docker Lösung
+# 🏗️ avaSysAIByNik Premium Broker → 100% Base44-freie Fullstack Docker Lösung
 
 ## Migrationsplan v1.0 — Stand: 2026-06-23
 
@@ -49,7 +49,7 @@
 | Base44 Entities (auto CRUD) | Prisma ORM + Custom Routes |
 | Base44 Integrations (Email) | SendGrid/Mailjet/Postmark |
 | Vite + Base44 Plugin | Plain Vite + React |
-| @base44/sdk frontend | Eigenes `@vsvv/api-client` Package |
+| @base44/sdk frontend | Eigenes `@avasys/api-client` Package |
 
 ---
 
@@ -388,11 +388,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: vsvv
-      POSTGRES_USER: vsvv
+      POSTGRES_DB: avasys
+      POSTGRES_USER: avasys
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vsvv"]
+      test: ["CMD-SHELL", "pg_isready -U avasys"]
   
   redis:
     image: redis:7-alpine
@@ -414,7 +414,7 @@ services:
       postgres: { condition: service_healthy }
       redis: { condition: service_started }
     environment:
-      DATABASE_URL: postgresql://vsvv:${DB_PASSWORD}@postgres:5432/vsvv
+      DATABASE_URL: postgresql://avasys:${DB_PASSWORD}@postgres:5432/avasys
       REDIS_URL: redis://redis:6379
       MINIO_ENDPOINT: minio:9000
       JWT_SECRET: ${JWT_SECRET}

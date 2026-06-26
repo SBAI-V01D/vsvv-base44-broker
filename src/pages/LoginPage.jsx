@@ -28,7 +28,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-lg">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">VSVV Premium Broker</h1>
+          <h1 className="text-2xl font-bold text-gray-900">avaSysAIByNik Premium Broker</h1>
           <p className="mt-2 text-sm text-gray-600">Melde dich an</p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -47,7 +47,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="admin@vsvv.ch"
+              placeholder="admin@avasys.ch"
               required
             />
           </div>
@@ -73,7 +73,7 @@ export default function LoginPage() {
             {loading ? 'Wird geladen...' : 'Anmelden'}
           </button>
           <div className="text-center text-xs text-gray-400">
-            Test: admin@vsvv.ch / Test1234!
+            Test: admin@avasys.ch / Test1234!
           </div>
         </form>
       </div>

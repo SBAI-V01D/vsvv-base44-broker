@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 function fmtDt(iso) {
@@ -10,13 +10,13 @@ function fmtDt(iso) {
 export default function TabPerformance() {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['enterprise_perf_logs'],
-    queryFn: () => vsvv.entities.SystemLog.filter({ source: 'enterprise_monitoring' }, '-created_date', 100),
+    queryFn: () => avasys.entities.SystemLog.filter({ source: 'enterprise_monitoring' }, '-created_date', 100),
     staleTime: 30_000,
   });
 
   const { data: errorLogs = [] } = useQuery({
     queryKey: ['enterprise_error_logs'],
-    queryFn: () => vsvv.entities.SystemLog.filter({ source: 'query_client' }, '-created_date', 50),
+    queryFn: () => avasys.entities.SystemLog.filter({ source: 'query_client' }, '-created_date', 50),
     staleTime: 30_000,
   });
 

@@ -1,4 +1,4 @@
-# VSVV CRM - SQL-Schema für Supabase
+# avaSysAIByNik CRM - SQL-Schema für Supabase
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  

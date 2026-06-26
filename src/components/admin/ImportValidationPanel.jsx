@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -41,10 +41,10 @@ export default function ImportValidationPanel() {
       }
 
       // Upload file first
-      const { file_url } = await vsvv.integrations.Core.UploadFile({ file });
+      const { file_url } = await avasys.integrations.Core.UploadFile({ file });
 
       // Validate
-      const result = await vsvv.functions.invoke('validateImportBatch', {
+      const result = await avasys.functions.invoke('validateImportBatch', {
         records,
         entity_type: entityType,
         key_fields: entityType === 'customer' ? ['email'] : ['id']

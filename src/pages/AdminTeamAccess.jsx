@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import AuditLogTab from '@/components/admin/AuditLogTab'
 export default function AdminTeamAccess() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => vsvv.auth.me(),
+    queryFn: () => avasys.auth.me(),
   })
 
   // Admin-only

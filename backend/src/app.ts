@@ -28,7 +28,7 @@ import uploadRoutes from './modules/upload/upload.routes.js';
 import functionsRoutes from './modules/functions/functions.routes.js';
 
 // ---------------------------------------------------------------------------
-// VSVV Backend — Fastify Application Bootstrap
+// avaSysAIByNik Backend — Fastify Application Bootstrap
 // ---------------------------------------------------------------------------
 
 // Augment @fastify/jwt's FastifyJWT interface so UserType resolves to our shape

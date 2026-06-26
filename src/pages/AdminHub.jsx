@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { cn } from '@/lib/utils'
 import { getScoreColor, getScoreBg } from '@/lib/CentralAnalysisContext'
 import {
@@ -120,20 +120,20 @@ export default function AdminHub() {
   // Current user
   const { data: currentUser } = useQuery({
     queryKey: ['admin_hub_me'],
-    queryFn: () => vsvv.auth.me(),
+    queryFn: () => avasys.auth.me(),
   })
 
   // Audit logs
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['admin_hub_audit'],
-    queryFn: () => vsvv.entities.AuditLog.list('-created_date', 10),
+    queryFn: () => avasys.entities.AuditLog.list('-created_date', 10),
     refetchInterval: 30_000,
   })
 
   // Offene Verbesserungen
   const { data: improvements = [] } = useQuery({
     queryKey: ['admin_hub_improvements'],
-    queryFn: () => vsvv.entities.EnterpriseImprovement.list('-proposed_at', 100),
+    queryFn: () => avasys.entities.EnterpriseImprovement.list('-proposed_at', 100),
   })
   const openImprovements = improvements.filter(i => !['verified', 'rejected'].includes(i.status))
   const verifiedCount = improvements.filter(i => i.status === 'verified').length
@@ -146,7 +146,7 @@ export default function AdminHub() {
   const runAnalysis = async () => {
     setAnalysisLoading(true)
     try {
-      const res = await vsvv.functions.invoke('centralAnalysisEngine', {})
+      const res = await avasys.functions.invoke('centralAnalysisEngine', {})
       setAnalysisData(res.data)
     } catch { /* silent */ }
     setAnalysisLoading(false)

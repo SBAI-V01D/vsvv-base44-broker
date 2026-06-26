@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — Service-Role Access Control Middleware
+// avaSysAIByNik Backend — Service-Role Access Control Middleware
 //
 // Enforces that the `X-Service-Role: true` header can ONLY be used by users
 // with the 'admin' role. This prevents privilege escalation where non-admin

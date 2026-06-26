@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — Authentication Routes
+// avaSysAIByNik Backend — Authentication Routes
 // Complete auth system: register, login, refresh, logout, me, forgot/reset password.
 // JWT access tokens (15min) + refresh tokens (7d) with rotation.
 // ============================================================================

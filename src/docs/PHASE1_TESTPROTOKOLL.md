@@ -1,4 +1,4 @@
-# VSVV CRM - Phase 1 Testprotokoll
+# avaSysAIByNik CRM - Phase 1 Testprotokoll
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -440,11 +440,11 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 **Test-Szenario:**
 
 ```
-Benutzer A (Advisor: advisor_a@vsvv.ch):
+Benutzer A (Advisor: advisor_a@avasys.ch):
 - Erstellt Kunde: "Test Kunde A"
 - Advisor_ID: [User A ID]
 
-Benutzer B (Advisor: advisor_b@vsvv.ch):
+Benutzer B (Advisor: advisor_b@avasys.ch):
 - Versucht Kunde A zu sehen
 - Erwartet: ❌ Kein Zugriff
 
@@ -670,9 +670,9 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 
 | Rolle | Name | Email | Telefon |
 |---|---|---|---|
-| **Tester** | Peter Adam | admin@vsvv.ch | +41 XX XXX XX XX |
+| **Tester** | Peter Adam | admin@avasys.ch | +41 XX XXX XX XX |
 | **Support** | Supabase | support@supabase.com | - |
-| **Support** | Base44 | support@vsvv.com | - |
+| **Support** | Base44 | support@avasys.com | - |
 
 ### C. Versionierung
 

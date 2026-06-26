@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — Entity Route Registry
+// avaSysAIByNik Backend — Entity Route Registry
 //
 // Central configuration for all 58 Prisma models. Each entry defines how
 // the generic CRUD factory creates list/get/create/update/delete routes.

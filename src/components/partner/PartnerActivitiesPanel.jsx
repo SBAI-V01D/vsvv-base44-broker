@@ -1,6 +1,6 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Trash2, Edit3, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -34,7 +34,7 @@ export default function PartnerActivitiesPanel({ partnerId }) {
     queryKey: ['partner-activities', partnerId],
     queryFn: async () => {
       try {
-        return await vsvv.entities.PartnerActivity.filter({ partner_id: partnerId }, '-created_date', 100)
+        return await avasys.entities.PartnerActivity.filter({ partner_id: partnerId }, '-created_date', 100)
       } catch {
         return []
       }

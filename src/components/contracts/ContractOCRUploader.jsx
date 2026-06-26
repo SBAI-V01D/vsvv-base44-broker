@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Upload, Loader, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,10 +42,10 @@ export default function ContractOCRUploader({ customerId, onExtractedData, onClo
 
     try {
       // Upload PDF
-      const { file_url } = await vsvv.integrations.Core.UploadFile({ file });
+      const { file_url } = await avasys.integrations.Core.UploadFile({ file });
 
       // Extract data
-      const response = await vsvv.functions.invoke('extractContractDataFromPDF', {
+      const response = await avasys.functions.invoke('extractContractDataFromPDF', {
         file_url,
         customer_id: customerId
       });

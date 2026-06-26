@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — BullMQ Queue Configuration
+// avaSysAIByNik Backend — BullMQ Queue Configuration
 //
 // Provides a centralized queue factory for async job processing.
 // Supported queues:
@@ -43,10 +43,10 @@ function getConnection(): IORedis {
 // ---------------------------------------------------------------------------
 
 export enum QueueName {
-  EMAIL = 'vsvv:email',
-  DOCUMENT = 'vsvv:document',
-  AUDIT = 'vsvv:audit',
-  CLEANUP = 'vsvv:cleanup',
+  EMAIL = 'avasys:email',
+  DOCUMENT = 'avasys:document',
+  AUDIT = 'avasys:audit',
+  CLEANUP = 'avasys:cleanup',
 }
 
 // ---------------------------------------------------------------------------

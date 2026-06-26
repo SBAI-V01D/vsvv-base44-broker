@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import TodayPrioritySection from '@/components/execution/TodayPrioritySection'
 import ContactTodaySection from '@/components/execution/ContactTodaySection'
 import RenewalExecutionSection from '@/components/execution/RenewalExecutionSection'
@@ -10,10 +10,10 @@ import DailyPlanSection from '@/components/execution/DailyPlanSection'
 
 export default function ExecutionMode() {
   // Fetch data
-  const { data: leads = [] } = useQuery({ queryKey: ['leads'], queryFn: () => vsvv.entities.Lead.list() })
-  const { data: contracts = [] } = useQuery({ queryKey: ['contracts'], queryFn: () => vsvv.entities.Contract.list() })
-  const { data: applications = [] } = useQuery({ queryKey: ['applications'], queryFn: () => vsvv.entities.Application.list() })
-  const { data: tasks = [] } = useQuery({ queryKey: ['tasks'], queryFn: () => vsvv.entities.Task.list() })
+  const { data: leads = [] } = useQuery({ queryKey: ['leads'], queryFn: () => avasys.entities.Lead.list() })
+  const { data: contracts = [] } = useQuery({ queryKey: ['contracts'], queryFn: () => avasys.entities.Contract.list() })
+  const { data: applications = [] } = useQuery({ queryKey: ['applications'], queryFn: () => avasys.entities.Application.list() })
+  const { data: tasks = [] } = useQuery({ queryKey: ['tasks'], queryFn: () => avasys.entities.Task.list() })
 
   const metrics = useMemo(() => {
     const today = new Date()

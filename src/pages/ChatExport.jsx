@@ -63,7 +63,7 @@ const CHAT_HISTORY = [
     timestamp: "2026-06-08",
     session: "Export Session",
     content: "Erstelle ein Skript, das alle meine Datenbanktabellen und die zugehörigen Implementierungen in einem ZIP-Archiv zusammenfasst, damit ich das System lokal sichern kann. und erstelle ein push nach Azure DevOps fullstack und mindestens 99% Genauigkeit",
-    context: "Azure DevOps URL: https://dev.azure.com/swissbotsai/ch.vsvv/_git/ch.vsvv"
+    context: "Azure DevOps URL: https://dev.azure.com/swissbotsai/ch.avasys/_git/ch.avasys"
   },
   {
     id: 8,

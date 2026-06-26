@@ -6,7 +6,7 @@
  */
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import * as XLSX from 'xlsx';
 import {
   Download, Filter, Table2, ChevronRight, ChevronDown, Plus, X,
@@ -35,7 +35,7 @@ const fmtVal = (v) => {
 const ENTITIES = [
   {
     id: 'customers', label: 'Kunden', icon: Users, adminOnly: false,
-    fetch: () => vsvv.entities.Customer.filter({ archived: false }, '-updated_date', 1000),
+    fetch: () => avasys.entities.Customer.filter({ archived: false }, '-updated_date', 1000),
     fields: [
       { id: 'customer_number', label: 'Kundennummer' },
       { id: 'last_name',       label: 'Nachname' },
@@ -58,7 +58,7 @@ const ENTITIES = [
   },
   {
     id: 'contracts', label: 'Verträge', icon: FileText, adminOnly: false,
-    fetch: () => vsvv.entities.Contract.filter({ archived: false }, '-created_date', 1000),
+    fetch: () => avasys.entities.Contract.filter({ archived: false }, '-created_date', 1000),
     fields: [
       { id: 'policy_number',    label: 'Police-Nummer' },
       { id: 'customer_name',    label: 'Kunde' },
@@ -78,7 +78,7 @@ const ENTITIES = [
   },
   {
     id: 'tasks', label: 'Aufgaben', icon: CheckSquare, adminOnly: false,
-    fetch: () => vsvv.entities.Task.list('-created_date', 1000),
+    fetch: () => avasys.entities.Task.list('-created_date', 1000),
     fields: [
       { id: 'title',       label: 'Titel' },
       { id: 'status',      label: 'Status' },
@@ -93,7 +93,7 @@ const ENTITIES = [
   },
   {
     id: 'commissions', label: 'Provisionen', icon: Wallet, adminOnly: true,
-    fetch: () => vsvv.entities.CommissionEntry.list('-created_date', 1000),
+    fetch: () => avasys.entities.CommissionEntry.list('-created_date', 1000),
     fields: [
       { id: 'advisor_name',             label: 'Berater' },
       { id: 'customer_name',            label: 'Kunde' },
@@ -112,7 +112,7 @@ const ENTITIES = [
   },
   {
     id: 'opportunities', label: 'Verkaufschancen', icon: Target, adminOnly: false,
-    fetch: () => vsvv.entities.Verkaufschance.list('-created_date', 500),
+    fetch: () => avasys.entities.Verkaufschance.list('-created_date', 500),
     fields: [
       { id: 'title',           label: 'Bezeichnung' },
       { id: 'customer_name',   label: 'Kunde' },
@@ -127,7 +127,7 @@ const ENTITIES = [
   },
   {
     id: 'documents', label: 'Dokumente', icon: FolderOpen, adminOnly: false,
-    fetch: () => vsvv.entities.Document.list('-uploaded_at', 500),
+    fetch: () => avasys.entities.Document.list('-uploaded_at', 500),
     fields: [
       { id: 'name',                    label: 'Dokumentname' },
       { id: 'customer_name',           label: 'Kunde' },
@@ -373,7 +373,7 @@ export default function BrokerReporting() {
   const [postFilterFn, setPostFilterFn] = useState(null);
   const [showAllRows, setShowAllRows] = useState(false);
 
-  const { data: currentUser } = useQuery({ queryKey: ['me'], queryFn: () => vsvv.auth.me() });
+  const { data: currentUser } = useQuery({ queryKey: ['me'], queryFn: () => avasys.auth.me() });
   const isAdmin  = currentUser?.role === 'admin';
   const isBroker = currentUser?.role === 'broker' || isAdmin;
 

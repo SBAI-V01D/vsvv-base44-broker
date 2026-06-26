@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,7 +17,7 @@ export default function CustomerSelector({ formData, setFormData, onSelect }) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['kkv_customers'],
-    queryFn: () => vsvv.entities.Customer.filter({ archived: false }, 'last_name', 1000),
+    queryFn: () => avasys.entities.Customer.filter({ archived: false }, 'last_name', 1000),
     staleTime: 2 * 60 * 1000,
   });
 

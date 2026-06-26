@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Plus, Search, Edit, Trash2, MoreHorizontal } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,11 +18,11 @@ export default function EmailTemplates() {
 
   const { data: templates = [] } = useQuery({
     queryKey: ['email-templates'],
-    queryFn: () => vsvv.entities.EmailTemplate.list(),
+    queryFn: () => avasys.entities.EmailTemplate.list(),
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => vsvv.entities.EmailTemplate.create(data),
+    mutationFn: (data) => avasys.entities.EmailTemplate.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-templates'] })
       setShowForm(false)
@@ -31,7 +31,7 @@ export default function EmailTemplates() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => vsvv.entities.EmailTemplate.update(id, data),
+    mutationFn: ({ id, data }) => avasys.entities.EmailTemplate.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-templates'] })
       setShowForm(false)
@@ -40,7 +40,7 @@ export default function EmailTemplates() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => vsvv.entities.EmailTemplate.delete(id),
+    mutationFn: (id) => avasys.entities.EmailTemplate.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['email-templates'] }),
   })
 

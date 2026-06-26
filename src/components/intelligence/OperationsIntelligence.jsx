@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { AlertTriangle, UserX, FileX, CheckCircle, Clock, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,25 +28,25 @@ function daysSince(dateStr) {
 export default function OperationsIntelligence() {
   const { data: customers = [] } = useQuery({
     queryKey: ['ops_customers'],
-    queryFn: () => vsvv.entities.Customer.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => avasys.entities.Customer.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['ops_contracts'],
-    queryFn: () => vsvv.entities.Contract.filter({ status: 'active', archived: false }, '-created_date', 500),
+    queryFn: () => avasys.entities.Contract.filter({ status: 'active', archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['ops_tasks'],
-    queryFn: () => vsvv.entities.Task.filter({ status: 'open' }, '-due_date', 200),
+    queryFn: () => avasys.entities.Task.filter({ status: 'open' }, '-due_date', 200),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['ops_opportunities'],
-    queryFn: () => vsvv.entities.Verkaufschance.filter({}),
+    queryFn: () => avasys.entities.Verkaufschance.filter({}),
     staleTime: 5 * 60 * 1000,
   });
 

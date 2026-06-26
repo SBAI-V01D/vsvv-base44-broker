@@ -1,13 +1,13 @@
 #!/bin/bash
 # =============================================================================
-# VSVV Premium Broker — Quickstart Setup
+# avaSysAIByNik Premium Broker — Quickstart Setup
 # One-command setup for local development.
 # =============================================================================
 
 set -e
 
 echo "================================================"
-echo "  VSVV Premium Broker — Quickstart Setup"
+echo "  avaSysAIByNik Premium Broker — Quickstart Setup"
 echo "================================================"
 echo ""
 
@@ -19,7 +19,7 @@ echo ""
 
 # ── 2. Wait for PostgreSQL ──────────────────────────────────────────────────
 echo "⏳ Waiting for PostgreSQL..."
-until docker exec vsvv-postgres pg_isready -U vsvv 2>/dev/null; do
+until docker exec avasys-postgres pg_isready -U avasys 2>/dev/null; do
   sleep 1
 done
 echo "   ✅ PostgreSQL is ready"
@@ -81,5 +81,5 @@ echo "    Backend API:        http://localhost:3003/api/health"
 echo "    MinIO Console:      http://localhost:9001"
 echo "    MailHog:            http://localhost:8025"
 echo ""
-echo "  Login: admin@vsvv.ch / Test1234!"
+echo "  Login: admin@avasys.ch / Test1234!"
 echo "================================================"

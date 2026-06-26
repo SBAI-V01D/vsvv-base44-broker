@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — Health Check Route
+// avaSysAIByNik Backend — Health Check Route
 // Provides enhanced health check with database connectivity verification.
 // Excluded from JWT auth via PUBLIC_ROUTES whitelist in src/middleware/auth.ts.
 // ============================================================================

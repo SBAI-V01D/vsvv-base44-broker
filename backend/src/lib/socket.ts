@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — Socket.io Server
+// avaSysAIByNik Backend — Socket.io Server
 //
 // Provides real-time event broadcasting for entity CRUD operations.
 // Integrates with Fastify's underlying Node.js HTTP server.

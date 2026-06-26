@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,7 +18,7 @@ export default function PortalAccessPanel({ customer, onUpdate }) {
   const handleTogglePortal = async (enabled) => {
     if (!customer?.id) return
     setPortalEnabled(enabled)
-    await vsvv.entities.Customer.update(customer.id, {
+    await avasys.entities.Customer.update(customer.id, {
       portal_access_enabled: enabled,
     })
     onUpdate?.()
@@ -31,7 +31,7 @@ export default function PortalAccessPanel({ customer, onUpdate }) {
     }
     setLoading(true)
     try {
-      await vsvv.functions.invoke('managePortalPassword', {
+      await avasys.functions.invoke('managePortalPassword', {
         action: 'set_password',
         customer_id: customer.id,
         password,
@@ -53,7 +53,7 @@ export default function PortalAccessPanel({ customer, onUpdate }) {
     }
     setLoading(true)
     try {
-      await vsvv.functions.invoke('managePortalPassword', {
+      await avasys.functions.invoke('managePortalPassword', {
         action: 'reset_password',
         customer_id: customer.id,
         password,

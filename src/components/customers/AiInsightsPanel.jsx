@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +30,7 @@ export default function AiInsightsPanel({ customerId }) {
     setLoading(true)
     setError(null)
     try {
-      const res = await vsvv.functions.invoke('aiCustomerInsights', { customer_id: customerId })
+      const res = await avasys.functions.invoke('aiCustomerInsights', { customer_id: customerId })
       setInsights(res.data.insights)
       setContext(res.data.context)
     } catch (e) {

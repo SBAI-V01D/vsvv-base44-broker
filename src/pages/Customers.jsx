@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import {
   Plus, User, Building2, Upload, Download, Users, Search,
   AlertTriangle, Loader2, XCircle
@@ -274,18 +274,18 @@ export default function Customers() {
   const [showMerge, setShowMerge]       = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => vsvv.auth.me() });
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => avasys.auth.me() });
 
   const { data: organizations = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => vsvv.entities.Organization.list('-created_date', 50),
+    queryFn: () => avasys.entities.Organization.list('-created_date', 50),
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
-      const all = await vsvv.entities.Customer.filter({ archived: false }, '-updated_date', 500);
+      const all = await avasys.entities.Customer.filter({ archived: false }, '-updated_date', 500);
       if (currentUser?.role === 'admin') return all;
       if (currentUser?.role === 'broker' || currentUser?.role === 'assistenz') {
         return all.filter(c =>
@@ -302,44 +302,44 @@ export default function Customers() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['customers_tasks'],
-    queryFn: () => vsvv.entities.Task.filter({ status: 'open' }, '-due_date', 200),
+    queryFn: () => avasys.entities.Task.filter({ status: 'open' }, '-due_date', 200),
     staleTime: 60_000,
   });
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['customers_contracts'],
-    queryFn: () => vsvv.entities.Contract.filter({ status: 'active', archived: false }, '-created_date', 500),
+    queryFn: () => avasys.entities.Contract.filter({ status: 'active', archived: false }, '-created_date', 500),
     staleTime: 60_000,
   });
 
   const { data: leads = [] } = useQuery({
     queryKey: ['customers_leads'],
-    queryFn: () => vsvv.entities.Lead.filter({ status: 'new' }, '-created_date', 100),
+    queryFn: () => avasys.entities.Lead.filter({ status: 'new' }, '-created_date', 100),
     staleTime: 60_000,
   });
 
   const { data: documents = [] } = useQuery({
     queryKey: ['customers_documents'],
-    queryFn: () => vsvv.entities.Document.filter({ archived: false }, '-uploaded_at', 500),
+    queryFn: () => avasys.entities.Document.filter({ archived: false }, '-uploaded_at', 500),
     staleTime: 60_000,
   });
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['customers_verkaufschancen'],
-    queryFn: () => vsvv.entities.Verkaufschance.filter({}),
+    queryFn: () => avasys.entities.Verkaufschance.filter({}),
     staleTime: 60_000,
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => vsvv.entities.Customer.create(data),
+    mutationFn: (data) => avasys.entities.Customer.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['customers'] }); setShowForm(false); setEditing(null); },
   });
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => vsvv.entities.Customer.update(id, data),
+    mutationFn: ({ id, data }) => avasys.entities.Customer.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['customers'] }); setShowForm(false); setEditing(null); },
   });
   const deleteMutation = useMutation({
-    mutationFn: (id) => vsvv.entities.Customer.delete(id),
+    mutationFn: (id) => avasys.entities.Customer.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['customers'] }),
   });
 
@@ -426,7 +426,7 @@ export default function Customers() {
     let cData = { ...data, organization_id: orgId };
     if (!cData.customer_number) {
       try {
-        const r = await vsvv.functions.invoke('generateCustomerNumber', {});
+        const r = await avasys.functions.invoke('generateCustomerNumber', {});
         if (r?.data?.customer_number) cData.customer_number = r.data.customer_number;
       } catch {}
     }

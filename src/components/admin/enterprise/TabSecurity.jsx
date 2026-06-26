@@ -1,17 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Shield, Users, Lock, CheckCircle2, User } from 'lucide-react';
 
 export default function TabSecurity() {
   const { data: users = [], isLoading: loadingUsers } = useQuery({
     queryKey: ['enterprise_users_security'],
-    queryFn: () => vsvv.entities.User.list('-created_date', 200),
+    queryFn: () => avasys.entities.User.list('-created_date', 200),
     staleTime: 120_000,
   });
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['enterprise_security_logs'],
-    queryFn: () => vsvv.entities.SystemLog.filter({ source: 'audit_action' }, '-created_date', 50),
+    queryFn: () => avasys.entities.SystemLog.filter({ source: 'audit_action' }, '-created_date', 50),
     staleTime: 30_000,
   });
 

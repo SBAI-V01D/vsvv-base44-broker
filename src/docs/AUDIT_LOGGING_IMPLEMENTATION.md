@@ -16,7 +16,7 @@
 
 **Verwendung:**
 ```javascript
-await vsvv.functions.invoke('auditLogWrite', {
+await avasys.functions.invoke('auditLogWrite', {
   entity_type: 'Contract',
   entity_id: contractId,
   action: 'create',

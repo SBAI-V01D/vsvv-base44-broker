@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import {
   Brain, Zap, Activity, Building2, ChevronDown, ChevronUp, ExternalLink,
   AlertTriangle, Info, TrendingUp, CheckCircle2, Loader2, RefreshCw,
@@ -277,7 +277,7 @@ export default function AiReviewCenter() {
   useEffect(() => {
     const loadLastReview = async () => {
       try {
-        const reviews = await vsvv.entities.AiReview.list('-reviewed_at', 1);
+        const reviews = await avasys.entities.AiReview.list('-reviewed_at', 1);
         if (reviews.length > 0) {
           const lastReview = reviews[0];
           setResult({
@@ -299,7 +299,7 @@ export default function AiReviewCenter() {
     setLoading(true); setError(null); setResult(null);
     setFilterArea('all'); setFilterSev('all');
     try {
-      const res = await vsvv.functions.invoke('aiSystemReview', { level: selectedLevel });
+      const res = await avasys.functions.invoke('aiSystemReview', { level: selectedLevel });
       setResult(res.data);
     } catch (e) {
       setError(e.message || 'Review fehlgeschlagen');

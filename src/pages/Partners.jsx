@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -149,21 +149,21 @@ export default function Partners() {
 
   const { data: partners = [] } = useQuery({
     queryKey: ['partners'],
-    queryFn: () => vsvv.entities.Partner.list(),
+    queryFn: () => avasys.entities.Partner.list(),
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => vsvv.entities.Partner.create(data),
+    mutationFn: (data) => avasys.entities.Partner.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['partners'] }); setShowForm(false); setEditing(null) }
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => vsvv.entities.Partner.update(id, data),
+    mutationFn: ({ id, data }) => avasys.entities.Partner.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['partners'] }); setShowForm(false); setEditing(null) }
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => vsvv.entities.Partner.delete(id),
+    mutationFn: (id) => avasys.entities.Partner.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['partners'] })
   })
 

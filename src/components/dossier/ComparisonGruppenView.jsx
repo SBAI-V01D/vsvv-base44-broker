@@ -13,7 +13,7 @@
  */
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import {
   Trash2, Edit3, Check, X, AlertTriangle, ShieldCheck,
   Info, TrendingDown, TrendingUp, Minus, Star, ChevronDown, ChevronUp
@@ -122,7 +122,7 @@ function ProductRow({ entry, dossierId, onDelete }) {
   const qc = useQueryClient();
 
   const updateMutation = useMutation({
-    mutationFn: (data) => vsvv.entities.ComparisonEntry.update(entry.id, data),
+    mutationFn: (data) => avasys.entities.ComparisonEntry.update(entry.id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['dossier_comparison', dossierId] }); setEditing(false); },
   });
 
@@ -435,7 +435,7 @@ export default function ComparisonGruppenView({ entries, dossierId }) {
   const qc = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => vsvv.entities.ComparisonEntry.delete(id),
+    mutationFn: (id) => avasys.entities.ComparisonEntry.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dossier_comparison', dossierId] }),
   });
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,16 +18,16 @@ export default function UserManagementTab() {
 
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
-    queryFn: () => vsvv.entities.User.list(),
+    queryFn: () => avasys.entities.User.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => vsvv.entities.Advisor.list(),
+    queryFn: () => avasys.entities.Advisor.list(),
   })
 
   const updateUserMutation = useMutation({
-    mutationFn: (data) => vsvv.auth.updateMe(data),
+    mutationFn: (data) => avasys.auth.updateMe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       setShowDialog(false)

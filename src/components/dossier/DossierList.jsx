@@ -7,7 +7,7 @@
  */
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Search, FileText, AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
 import ConfidenceBadge from '@/components/dossier/ConfidenceBadge';
 
@@ -42,7 +42,7 @@ export default function DossierList({ onOpen, onNew }) {
 
   const { data: dossiers = [], isLoading } = useQuery({
     queryKey: ['advisory_dossiers'],
-    queryFn: () => vsvv.entities.AdvisoryDossier.list('-updated_date', 100),
+    queryFn: () => avasys.entities.AdvisoryDossier.list('-updated_date', 100),
   });
 
   const filtered = useMemo(() => {

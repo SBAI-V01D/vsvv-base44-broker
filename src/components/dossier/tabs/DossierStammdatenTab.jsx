@@ -5,7 +5,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 
 const DOSSIER_TYPES = [
   { value: 'kk_vergleich',    label: 'Krankenversicherungsvergleich' },
@@ -60,9 +60,9 @@ export default function DossierStammdatenTab({ dossier, onSave, isSaving }) {
       const term = search.trim().toLowerCase();
       // Parallel: Suche nach Vor-/Nachname-Splits + E-Mail
       const [byFirst, byLast, byEmail] = await Promise.all([
-        vsvv.entities.Customer.filter({ first_name: { $regex: term, $options: 'i' } }, '-created_date', 10),
-        vsvv.entities.Customer.filter({ last_name:  { $regex: term, $options: 'i' } }, '-created_date', 10),
-        vsvv.entities.Customer.filter({ email:      { $regex: term, $options: 'i' } }, '-created_date', 10),
+        avasys.entities.Customer.filter({ first_name: { $regex: term, $options: 'i' } }, '-created_date', 10),
+        avasys.entities.Customer.filter({ last_name:  { $regex: term, $options: 'i' } }, '-created_date', 10),
+        avasys.entities.Customer.filter({ email:      { $regex: term, $options: 'i' } }, '-created_date', 10),
       ]);
       // Deduplizieren nach ID
       const seen = new Set();

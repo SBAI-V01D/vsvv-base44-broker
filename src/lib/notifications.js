@@ -1,16 +1,16 @@
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 
 /**
  * Send an email notification and log it to the Notification entity.
  */
 export async function sendNotification({ type, recipientEmail, recipientName, subject, body, referenceId, referenceType, sentBy }) {
-  await vsvv.integrations.Core.SendEmail({
+  await avasys.integrations.Core.SendEmail({
     to: recipientEmail,
     subject,
     body,
   });
 
-  await vsvv.entities.Notification.create({
+  await avasys.entities.Notification.create({
     type,
     recipient_email: recipientEmail,
     recipient_name: recipientName || '',

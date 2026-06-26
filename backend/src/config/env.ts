@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
-// VSVV Backend — Environment Variable Validation
+// avaSysAIByNik Backend — Environment Variable Validation
 // All env vars are parsed and validated at import time via Zod.
 // Access the validated `env` singleton throughout the app.
 // ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ const envSchema = z.object({
   // Production-Konfiguration (Exoscale):
   //   S3_ENDPOINT=https://sos-ch-dk-2.exo.io
   //   S3_REGION=ch-dk-2
-  //   S3_BUCKET=vsvv-premium-broker-app-documentuploads
+  //   S3_BUCKET=avasys-premium-broker-app-documentuploads
   //   S3_ACCESS_KEY_ID=EXO...
   //   S3_SECRET_ACCESS_KEY=...
   //
@@ -63,7 +63,7 @@ const envSchema = z.object({
     .transform((v) => v === 'true' || v === '1'),
   MINIO_ACCESS_KEY: z.string().optional(),
   MINIO_SECRET_KEY: z.string().optional(),
-  MINIO_BUCKET: z.string().default('vsvv-documents'),
+  MINIO_BUCKET: z.string().default('avasys-documents'),
 
   // ----- SMTP / Email -----
   SMTP_HOST: z.string().default('localhost'),
@@ -74,11 +74,11 @@ const envSchema = z.object({
     .pipe(z.number().positive().max(65535)),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  SMTP_FROM: z.string().email().default('noreply@vsvv.ch'),
+  SMTP_FROM: z.string().email().default('noreply@avasys.ch'),
 
   // ----- CORS -----
   // SECURITY: In production, ALWAYS set CORS_ORIGIN to the explicit
-  // frontend domain (e.g. 'https://app.vsvv.ch'). Wildcard '*' allows
+  // frontend domain (e.g. 'https://app.avasys.ch'). Wildcard '*' allows
   // any website to make cross-origin API calls.
   CORS_ORIGIN: z.string().default('http://localhost:3004'),
 });

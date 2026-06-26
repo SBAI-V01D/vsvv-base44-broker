@@ -1,5 +1,5 @@
 // ============================================================================
-// VSVV Backend — DSGVO/FINMA-Compliant Access Audit Middleware
+// avaSysAIByNik Backend — DSGVO/FINMA-Compliant Access Audit Middleware
 //
 // Records read and write access to personal data for compliance with:
 // - DSGVO Art. 5(1)(f) — Integrity and confidentiality

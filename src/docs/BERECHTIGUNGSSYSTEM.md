@@ -75,7 +75,7 @@ if (!canViewCustomer(customerId)) {
 
 ### 4. Backend-Filterung
 ```jsx
-const response = await vsvv.functions.invoke('getVisibleData', {
+const response = await avasys.functions.invoke('getVisibleData', {
   entity: 'Customer',
   entityId: id,
 })

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,7 @@ export default function AuditLogTab() {
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['auditLogs'],
     queryFn: async () => {
-      const result = await vsvv.entities.AuditLog.list(null, 200);
+      const result = await avasys.entities.AuditLog.list(null, 200);
       return result.sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at))
     },
   })

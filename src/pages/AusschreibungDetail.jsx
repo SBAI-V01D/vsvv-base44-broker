@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,7 +43,7 @@ function RisikoTab({ id, ausschreibung, setAusschreibung }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await vsvv.entities.Ausschreibung.update(id, { risiko_daten: risikoRef.current });
+    await avasys.entities.Ausschreibung.update(id, { risiko_daten: risikoRef.current });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -78,14 +78,14 @@ export default function AusschreibungDetail() {
 
   const load = async () => {
     const [list, o] = await Promise.all([
-      vsvv.entities.Ausschreibung.filter({ id }),
-      vsvv.entities.Offerte.filter({ ausschreibung_id: id }),
+      avasys.entities.Ausschreibung.filter({ id }),
+      avasys.entities.Offerte.filter({ ausschreibung_id: id }),
     ]);
     const a = list[0] || null;
     setAusschreibung(a);
     setOfferten(o);
     if (a?.customer_id) {
-      vsvv.entities.Customer.filter({ id: a.customer_id }).then(res => setCustomer(res[0] || null));
+      avasys.entities.Customer.filter({ id: a.customer_id }).then(res => setCustomer(res[0] || null));
     }
     setLoading(false);
   };
@@ -107,18 +107,18 @@ export default function AusschreibungDetail() {
     }
 
     if (newStatus && newStatus !== currentStatus) {
-      await vsvv.entities.Ausschreibung.update(currentAusschreibung.id, { status: newStatus });
+      await avasys.entities.Ausschreibung.update(currentAusschreibung.id, { status: newStatus });
     }
   };
 
   const saveOfferte = async (data) => {
-    if (editingOfferte?.id) await vsvv.entities.Offerte.update(editingOfferte.id, data);
-    else await vsvv.entities.Offerte.create(data);
+    if (editingOfferte?.id) await avasys.entities.Offerte.update(editingOfferte.id, data);
+    else await avasys.entities.Offerte.create(data);
     setShowOfferteDialog(false);
     setEditingOfferte(null);
     // Reload and then auto-update status
     const [updatedOfferten] = await Promise.all([
-      vsvv.entities.Offerte.filter({ ausschreibung_id: id }),
+      avasys.entities.Offerte.filter({ ausschreibung_id: id }),
     ]);
     setOfferten(updatedOfferten);
     await autoUpdateStatus(ausschreibung, updatedOfferten);
@@ -135,7 +135,7 @@ export default function AusschreibungDetail() {
     if (['entwurf', 'vorbereitung'].includes(updatedData.status) && (data.ausgewaehlte_versicherer || []).length > 0 && offerten.length === 0) {
       updatedData.status = 'offerten_ausstehend';
     }
-    await vsvv.entities.Ausschreibung.update(id, updatedData);
+    await avasys.entities.Ausschreibung.update(id, updatedData);
     setShowEditDialog(false);
     load();
   };
@@ -245,7 +245,7 @@ export default function AusschreibungDetail() {
         <TabsContent value="analyse" className="mt-4">
           <div className="surface p-6">
             <KIEmpfehlung ausschreibung={ausschreibung} offerten={offerten} onUpdate={async (res) => {
-              await vsvv.entities.Ausschreibung.update(id, {
+              await avasys.entities.Ausschreibung.update(id, {
                 ki_analyse: res, ki_empfehlung_text: res.broker_fazit,
                 ki_empfohlener_versicherer: res.empfohlener_versicherer, status: 'in_analyse',
               });

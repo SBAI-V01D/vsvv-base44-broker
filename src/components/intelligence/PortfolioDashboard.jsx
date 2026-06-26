@@ -7,7 +7,7 @@
  */
 import React, { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { AlertTriangle, TrendingUp, CheckSquare, ArrowRight, Gift, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -63,14 +63,14 @@ export default function PortfolioDashboard({ setWorkspaceMode }) {
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
-      const all = await vsvv.entities.Customer.filter({ archived: false }, '-updated_date', 500);
+      const all = await avasys.entities.Customer.filter({ archived: false }, '-updated_date', 500);
       return all.filter(c => !c.is_family_member);
     },
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['portfolio_tasks'],
-    queryFn: () => vsvv.entities.Task.filter({ status: 'open' }, '-due_date', 200),
+    queryFn: () => avasys.entities.Task.filter({ status: 'open' }, '-due_date', 200),
     staleTime: 60_000,
   });
 

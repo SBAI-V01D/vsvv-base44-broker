@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Upload, Loader2, FileText, FileEdit, RefreshCw, Paperclip, X, FolderOpen, Search } from 'lucide-react'
@@ -60,17 +60,17 @@ export default function SmartDocumentUpload({ open, onOpenChange, onSuccess }) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => vsvv.entities.Customer.list('-created_date', 500),
+    queryFn: () => avasys.entities.Customer.list('-created_date', 500),
     enabled: open && documentType === 'anlage',
   })
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => vsvv.entities.Contract.list(null, 1000),
+    queryFn: () => avasys.entities.Contract.list(null, 1000),
     enabled: open && documentType === 'anlage',
   })
   const { data: existingDocs = [] } = useQuery({
     queryKey: ['documents-for-reassign'],
-    queryFn: () => vsvv.entities.Document.list('-created_date', 200),
+    queryFn: () => avasys.entities.Document.list('-created_date', 200),
     enabled: open && step === 'upload' && sourceMode === 'existing',
   })
   const filteredExistingDocs = existingDocs.filter(d =>
@@ -82,14 +82,14 @@ export default function SmartDocumentUpload({ open, onOpenChange, onSuccess }) {
 
   const uploadMutation = useMutation({
     mutationFn: async (f) => {
-      const { file_url } = await vsvv.integrations.Core.UploadFile({ file: f })
+      const { file_url } = await avasys.integrations.Core.UploadFile({ file: f })
       return file_url
     },
   })
 
   const analysisMutation = useMutation({
     mutationFn: async ({ file_url, document_type }) => {
-      const res = await vsvv.functions.invoke('smartDocumentAnalysis', { file_url, document_type })
+      const res = await avasys.functions.invoke('smartDocumentAnalysis', { file_url, document_type })
       return res.data
     },
   })
@@ -109,9 +109,9 @@ export default function SmartDocumentUpload({ open, onOpenChange, onSuccess }) {
     setAnlageUploading(true)
     setErrorMsg(null)
     try {
-      const { file_url } = await vsvv.integrations.Core.UploadFile({ file })
+      const { file_url } = await avasys.integrations.Core.UploadFile({ file })
       const selectedCustomer = customers.find(c => c.id === anlageForm.customer_id)
-      await vsvv.entities.Document.create({
+      await avasys.entities.Document.create({
         name: anlageForm.name || file.name,
         file_url,
         category: 'other',
@@ -147,7 +147,7 @@ export default function SmartDocumentUpload({ open, onOpenChange, onSuccess }) {
       if (sourceMode === 'existing') {
         // Bestehendes Dokument neu klassifizieren
         fileUrl = selectedExistingDoc.file_url
-        await vsvv.entities.Document.update(selectedExistingDoc.id, {
+        await avasys.entities.Document.update(selectedExistingDoc.id, {
           category: 'application',
           doc_type: 'antrag',
           classification_status: 'ausstehend',
@@ -157,7 +157,7 @@ export default function SmartDocumentUpload({ open, onOpenChange, onSuccess }) {
       } else {
         setStep('uploading')
         fileUrl = await uploadMutation.mutateAsync(file)
-        doc = await vsvv.entities.Document.create({
+        doc = await avasys.entities.Document.create({
           name: file.name.replace(/\.[^/.]+$/, ''),
           file_url: fileUrl,
           category: 'application',

@@ -11,7 +11,7 @@ import {
   RefreshCw, Loader2, Sparkles, PlayCircle, BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import toast from 'react-hot-toast';
@@ -218,7 +218,7 @@ export default function AdminEnterpriseControlCenter() {
 
   const { data: improvements = [], refetch: refetchImprovements } = useQuery({
     queryKey: ['enterprise_improvements'],
-    queryFn: () => vsvv.entities.EnterpriseImprovement.list('-proposed_at', 100),
+    queryFn: () => avasys.entities.EnterpriseImprovement.list('-proposed_at', 100),
   });
 
   const activeImprovements = improvements.filter(i => !['verified', 'rejected'].includes(i.status));
@@ -229,7 +229,7 @@ export default function AdminEnterpriseControlCenter() {
   const runAnalysis = async () => {
     setLoading(true);
     try {
-      const res = await vsvv.functions.invoke('centralAnalysisEngine', {});
+      const res = await avasys.functions.invoke('centralAnalysisEngine', {});
       setAnalysisData(res.data);
     } catch (e) {
       toast.error('Analyse fehlgeschlagen');
@@ -239,7 +239,7 @@ export default function AdminEnterpriseControlCenter() {
 
   const generateMutation = useMutation({
     mutationFn: async () => {
-      const res = await vsvv.functions.invoke('generateEnterpriseImprovements', {});
+      const res = await avasys.functions.invoke('generateEnterpriseImprovements', {});
       return res.data;
     },
     onSuccess: (data) => {
@@ -250,8 +250,8 @@ export default function AdminEnterpriseControlCenter() {
 
   const approveMutation = useMutation({
     mutationFn: async (imp) => {
-      const me = await vsvv.auth.me();
-      await vsvv.entities.EnterpriseImprovement.update(imp.id, {
+      const me = await avasys.auth.me();
+      await avasys.entities.EnterpriseImprovement.update(imp.id, {
         status: 'implemented',
         approved_by: me?.email,
         approved_at: new Date().toISOString(),
@@ -262,13 +262,13 @@ export default function AdminEnterpriseControlCenter() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async (id) => vsvv.entities.EnterpriseImprovement.update(id, { status: 'rejected' }),
+    mutationFn: async (id) => avasys.entities.EnterpriseImprovement.update(id, { status: 'rejected' }),
     onSuccess: () => { refetchImprovements(); toast.success('Abgelehnt — KI lernt daraus'); },
   });
 
   const learnMutation = useMutation({
     mutationFn: async () => {
-      const res = await vsvv.functions.invoke('learnAndGenerateImprovements', { mode: 'all', limit: 5 });
+      const res = await avasys.functions.invoke('learnAndGenerateImprovements', { mode: 'all', limit: 5 });
       return res.data;
     },
     onSuccess: (data) => {
@@ -281,7 +281,7 @@ export default function AdminEnterpriseControlCenter() {
     setReviewLoading(true);
     setReviewResult(null);
     try {
-      const res = await vsvv.functions.invoke('aiSystemReview', { level: reviewLevel });
+      const res = await avasys.functions.invoke('aiSystemReview', { level: reviewLevel });
       setReviewResult(res.data);
     } catch (e) {
       toast.error('KI-Review fehlgeschlagen: ' + e.message);
@@ -291,7 +291,7 @@ export default function AdminEnterpriseControlCenter() {
 
   const generateFromReviewMutation = useMutation({
     mutationFn: async (findings) => {
-      const res = await vsvv.functions.invoke('generateEnterpriseImprovements', { audit_result: { findings } });
+      const res = await avasys.functions.invoke('generateEnterpriseImprovements', { audit_result: { findings } });
       return res.data;
     },
     onSuccess: (data) => {
@@ -303,16 +303,16 @@ export default function AdminEnterpriseControlCenter() {
   const measureImpact = async (imp) => {
     setMeasuringId(imp.id);
     try {
-      const res = await vsvv.functions.invoke('measureImprovementImpact', { improvement_id: imp.id });
+      const res = await avasys.functions.invoke('measureImprovementImpact', { improvement_id: imp.id });
       const result = res.data;
       const actualPct = result?.actual_improvement_percent ?? result?.performance_improvement_actual_percent;
-      await vsvv.entities.EnterpriseImprovement.update(imp.id, {
+      await avasys.entities.EnterpriseImprovement.update(imp.id, {
         status: 'verified',
         verified_at: new Date().toISOString(),
         actual_impact: {
           performance_improvement_actual_percent: actualPct,
           measured_at: new Date().toISOString(),
-          verified_by: (await vsvv.auth.me())?.email,
+          verified_by: (await avasys.auth.me())?.email,
           ...result,
         },
       });

@@ -6,7 +6,7 @@ import {
   BarChart3, User
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 
 /**
  * RECOVERY SIDEBAR
@@ -51,7 +51,7 @@ export default function RecoverySidebar({ onNavigate }) {
   const location = useLocation()
 
   React.useEffect(() => {
-    vsvv.auth.me().then(u => setCurrentUser(u)).catch(() => {})
+    avasys.auth.me().then(u => setCurrentUser(u)).catch(() => {})
   }, [])
 
   return (
@@ -167,7 +167,7 @@ export default function RecoverySidebar({ onNavigate }) {
         )}
       >
         <button
-          onClick={() => vsvv.auth.logout()}
+          onClick={() => avasys.auth.logout()}
           title="Abmelden"
           className={cn(
             'flex items-center gap-2.5 rounded-[8px] text-[13px] font-medium text-white/35 hover:text-white/70 hover:bg-white/[0.05] transition-all',

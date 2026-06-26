@@ -4,7 +4,7 @@
 
 ### 1. Single Source of Truth (Financial Engine)
 ```
-All KPIs → calcKPIs() {vsvv}
+All KPIs → calcKPIs() {avasys}
                 ↓
         ├→ Dashboard
         ├→ BI Analytics

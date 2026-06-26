@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import {
   Users, User, Building2, Plus, Calendar, CheckCircle2,
   AlertTriangle, FileText, Target, Upload,
@@ -184,7 +184,7 @@ export default function NewCustomers() {
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['new_customers'],
     queryFn: async () => {
-      const all = await vsvv.entities.Customer.filter({ archived: false }, '-created_date', 500);
+      const all = await avasys.entities.Customer.filter({ archived: false }, '-created_date', 500);
       return all.filter(c => {
         const created = c.created_date ? new Date(c.created_date) : null;
         if (!created) return false;
@@ -197,14 +197,14 @@ export default function NewCustomers() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['new_customers_contracts'],
-    queryFn: () => vsvv.entities.Contract.filter({ archived: false }, '-created_date', 1000),
+    queryFn: () => avasys.entities.Contract.filter({ archived: false }, '-created_date', 1000),
     enabled: !isLoading,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['new_customers_tasks'],
-    queryFn: () => vsvv.entities.Task.filter({}, '-created_date', 500),
+    queryFn: () => avasys.entities.Task.filter({}, '-created_date', 500),
     enabled: !isLoading,
     staleTime: 5 * 60 * 1000,
   });

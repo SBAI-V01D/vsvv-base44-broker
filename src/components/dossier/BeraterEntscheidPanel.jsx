@@ -11,7 +11,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Award, CheckCircle2, AlertCircle, Lock, ShieldOff } from 'lucide-react';
 import { toast } from 'sonner';
@@ -75,7 +75,7 @@ export default function BeraterEntscheidPanel({ dossier, entries = [] }) {
       // Benutzer laden für Audit-Trail
       let userInfo = {};
       try {
-        const me = await vsvv.auth.me();
+        const me = await avasys.auth.me();
         userInfo = { user_id: me.id, user_name: me.full_name || me.email };
       } catch {}
 
@@ -136,7 +136,7 @@ export default function BeraterEntscheidPanel({ dossier, entries = [] }) {
           };
         }
       }
-      return vsvv.entities.AdvisoryDossier.update(dossier.id, data);
+      return avasys.entities.AdvisoryDossier.update(dossier.id, data);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['advisory_dossier'] });

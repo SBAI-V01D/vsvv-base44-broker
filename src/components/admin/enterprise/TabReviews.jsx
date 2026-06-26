@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Clock, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 
 const REVIEW_STATUS_LABEL = {
@@ -19,7 +19,7 @@ function fmtDate(iso) {
 export default function TabReviews() {
   const { data: dossiers = [], isLoading } = useQuery({
     queryKey: ['enterprise_review_queue'],
-    queryFn: () => vsvv.entities.AdvisoryDossier.filter({ archived: false }, '-updated_date', 100),
+    queryFn: () => avasys.entities.AdvisoryDossier.filter({ archived: false }, '-updated_date', 100),
     staleTime: 30_000,
   });
 

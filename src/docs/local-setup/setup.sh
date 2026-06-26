@@ -8,7 +8,7 @@
 set -e  # Exit on error
 
 PROJECT_NAME="kkv-crm"
-AZURE_REMOTE="https://swissbotsai:TOKEN@dev.azure.com/swissbotsai/ch.vsvv/_git/ch.vsvv"
+AZURE_REMOTE="https://swissbotsai:TOKEN@dev.azure.com/swissbotsai/ch.avasys/_git/ch.avasys"
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
@@ -121,14 +121,14 @@ echo ""
 
 # ── 5. Base44 SDK Client ─────────────────────────────────────────────────────
 echo "▶ Creating Base44 SDK client..."
-cat > src/api/vsvvClient.js << 'SDK'
-import { createClient } from '@vsvv/sdk';
+cat > src/api/avasysClient.js << 'SDK'
+import { createClient } from '@avasys/sdk';
 
-export const vsvv = createClient({
+export const avasys = createClient({
   appId: process.env.VITE_BASE44_APP_ID || 'YOUR_APP_ID_HERE',
 });
 
-export default vsvv;
+export default avasys;
 SDK
 echo "✅ SDK client created"
 echo ""
@@ -395,7 +395,7 @@ cat > .env.example << 'ENV'
 VITE_BASE44_APP_ID=your_app_id_here
 
 # Optional: Override API endpoint
-# VITE_BASE44_API_URL=https://api.vsvv.com
+# # VITE_API_URL for development
 ENV
 
 cp .env.example .env
@@ -476,6 +476,6 @@ echo "║  3. See docs/REBUILD_COMPLETE.md for all routes         ║"
 echo "║  4. See docs/DATABASE_EXPORT.json for all 29 entities   ║"
 echo "║                                                          ║"
 echo "║  🔗 Azure:                                               ║"
-echo "║  https://dev.azure.com/swissbotsai/ch.vsvv/_git/ch.vsvv ║"
+echo "║  https://dev.azure.com/swissbotsai/ch.avasys/_git/ch.avasys ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""

@@ -1,5 +1,5 @@
 /**
- * VSVV Socket.io Client — replaces Base44 subscriptions.
+ * avaSysAIByNik Socket.io Client — replaces Base44 subscriptions.
  *
  * Usage:
  *   import { socket } from '@/api/socket'
@@ -14,7 +14,7 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || ''
 let socket = null
 
 export function getSocket() {
-  const token = localStorage.getItem('vsvv_access_token')
+  const token = localStorage.getItem('avasys_access_token')
 
   if (!socket || !socket.connected) {
     socket = io(SOCKET_URL, {
@@ -30,7 +30,7 @@ export function getSocket() {
 export function connectSocket() {
   const s = getSocket()
   if (!s.connected) {
-    const token = localStorage.getItem('vsvv_access_token')
+    const token = localStorage.getItem('avasys_access_token')
     s.auth = { token }
     s.connect()
   }

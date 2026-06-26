@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { useQuery } from '@tanstack/react-query';
 
 
@@ -11,7 +11,7 @@ export default function PageNotFound({}) {
         queryKey: ['user'],
         queryFn: async () => {
             try {
-                const user = await vsvv.auth.me();
+                const user = await avasys.auth.me();
                 return { user, isAuthenticated: true };
             } catch (error) {
                 return { user: null, isAuthenticated: false };

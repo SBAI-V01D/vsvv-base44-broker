@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { AlertTriangle, CheckCircle2, TrendingDown } from 'lucide-react';
 
 const RISK_CFG = {
@@ -26,7 +26,7 @@ function ConfBar({ value }) {
 export default function TabCompliance() {
   const { data: dossiers = [], isLoading } = useQuery({
     queryKey: ['enterprise_compliance_dossiers'],
-    queryFn: () => vsvv.entities.AdvisoryDossier.filter({ archived: false }, '-updated_date', 100),
+    queryFn: () => avasys.entities.AdvisoryDossier.filter({ archived: false }, '-updated_date', 100),
     staleTime: 30_000,
   });
 

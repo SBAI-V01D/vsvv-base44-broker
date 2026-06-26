@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { TrendingUp, AlertTriangle, Clock, Target, Wallet, Zap, ArrowRight } from 'lucide-react'
 import { formatCHF } from '@/lib/commissionEngine'
 import { cn } from '@/lib/utils'
@@ -58,22 +58,22 @@ export default function MoneyDashboard() {
 
   const { data: entries = [] } = useQuery({
     queryKey: ['commissionEntries'],
-    queryFn: () => vsvv.entities.CommissionEntry.filter({ archived: false }, '-entry_date', 500),
+    queryFn: () => avasys.entities.CommissionEntry.filter({ archived: false }, '-entry_date', 500),
     staleTime: 2 * 60 * 1000,
   })
   const { data: leads = [] } = useQuery({
     queryKey: ['leads-hot'],
-    queryFn: () => vsvv.entities.Lead.filter({ status: ['new', 'contacted', 'qualified'] }, '-lead_score', 50),
+    queryFn: () => avasys.entities.Lead.filter({ status: ['new', 'contacted', 'qualified'] }, '-lead_score', 50),
     staleTime: 5 * 60 * 1000,
   })
   const { data: opps = [] } = useQuery({
     queryKey: ['opportunities-top'],
-    queryFn: () => vsvv.entities.Verkaufschance.filter({ status: ['neu', 'in_ausschreibung', 'offerten_erhalten'] }, '-estimated_value', 50),
+    queryFn: () => avasys.entities.Verkaufschance.filter({ status: ['neu', 'in_ausschreibung', 'offerten_erhalten'] }, '-estimated_value', 50),
     staleTime: 5 * 60 * 1000,
   })
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts-renewal'],
-    queryFn: () => vsvv.entities.Contract.filter({ status: ['active', 'expired'] }, '-renewal_date', 500),
+    queryFn: () => avasys.entities.Contract.filter({ status: ['active', 'expired'] }, '-renewal_date', 500),
     staleTime: 5 * 60 * 1000,
   })
 

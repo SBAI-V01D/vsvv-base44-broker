@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -14,27 +14,27 @@ export default function FinanceDashboard() {
 
   const { data: orgs = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => vsvv.entities.Organization.list(),
+    queryFn: () => avasys.entities.Organization.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => vsvv.entities.Advisor.list(),
+    queryFn: () => avasys.entities.Advisor.list(),
   })
 
   const { data: commissionEntries = [] } = useQuery({
     queryKey: ['commission_entries'],
-    queryFn: () => vsvv.entities.CommissionEntry.list(null, 1000),
+    queryFn: () => avasys.entities.CommissionEntry.list(null, 1000),
   })
 
   const { data: commissionSplits = [] } = useQuery({
     queryKey: ['commission_splits'],
-    queryFn: () => vsvv.entities.CommissionSplit.list(null, 1000),
+    queryFn: () => avasys.entities.CommissionSplit.list(null, 1000),
   })
 
   const { data: accountingEntries = [] } = useQuery({
     queryKey: ['accounting_entries'],
-    queryFn: () => vsvv.entities.AccountingEntry.list(null, 1000),
+    queryFn: () => avasys.entities.AccountingEntry.list(null, 1000),
   })
 
   // 🔴 CRITICAL: Use central calcKPIs engine for all financial aggregations

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Upload, FileText, Trash2, ExternalLink, Tag, Eye, EyeOff, Pencil, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,12 +49,12 @@ export default function DocumentsTab({ customerId, customerName, contracts = [],
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ['documents', customerId],
-    queryFn: () => vsvv.entities.Document.filter({ customer_id: customerId }, '-created_date'),
+    queryFn: () => avasys.entities.Document.filter({ customer_id: customerId }, '-created_date'),
     enabled: !!customerId,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => vsvv.entities.Document.delete(id),
+    mutationFn: (id) => avasys.entities.Document.delete(id),
     onMutate: (id) => {
       // Optimistic: sofort aus Liste entfernen
       queryClient.setQueryData(['documents', customerId], (old = []) => old.filter(d => d.id !== id));
@@ -62,7 +62,7 @@ export default function DocumentsTab({ customerId, customerName, contracts = [],
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => vsvv.entities.Document.update(id, data),
+    mutationFn: ({ id, data }) => avasys.entities.Document.update(id, data),
     onSuccess: (updated) => {
       queryClient.setQueryData(['documents', customerId], (old = []) =>
         old.map(d => d.id === updated.id ? updated : d)
@@ -114,8 +114,8 @@ export default function DocumentsTab({ customerId, customerName, contracts = [],
     e.preventDefault();
     if (!file) return;
     setUploading(true);
-    const { file_url } = await vsvv.integrations.Core.UploadFile({ file });
-    const newDoc = await vsvv.entities.Document.create({
+    const { file_url } = await avasys.integrations.Core.UploadFile({ file });
+    const newDoc = await avasys.entities.Document.create({
       customer_id: customerId,
       customer_name: customerName,
       name: form.name,
@@ -139,7 +139,7 @@ export default function DocumentsTab({ customerId, customerName, contracts = [],
     setAiAnalyzingDocId(doc.id);
     setAiAnalyzing(true);
     try {
-      const res = await vsvv.functions.invoke('smartDocumentAnalysis', {
+      const res = await avasys.functions.invoke('smartDocumentAnalysis', {
         file_url: doc.file_url,
         document_type: doc.category || 'police',
       });

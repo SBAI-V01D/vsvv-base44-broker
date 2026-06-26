@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -67,40 +67,40 @@ export default function CommissionsAndCourtage() {
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: entries = [], isLoading: loadingEntries } = useQuery({
     queryKey: ['commissionEntries'],
-    queryFn: () => vsvv.entities.CommissionEntry.list('-entry_date', 5000),
+    queryFn: () => avasys.entities.CommissionEntry.list('-entry_date', 5000),
     staleTime: 30_000,
   })
   const { data: organizations = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => vsvv.entities.Organization.filter({ status: 'active' }),
+    queryFn: () => avasys.entities.Organization.filter({ status: 'active' }),
     staleTime: 60_000,
   })
   const { data: brokers = [] } = useQuery({
     queryKey: ['brokers'],
-    queryFn: () => vsvv.entities.Broker.list(),
+    queryFn: () => avasys.entities.Broker.list(),
     staleTime: 60_000,
   })
   const { data: customers = [] } = useQuery({
     queryKey: ['customers-for-commission'],
-    queryFn: () => vsvv.entities.Customer.list(null, 2000),
+    queryFn: () => avasys.entities.Customer.list(null, 2000),
     staleTime: 60_000,
   })
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts-for-commission'],
-    queryFn: () => vsvv.entities.Contract.filter({ archived: false }, null, 5000),
+    queryFn: () => avasys.entities.Contract.filter({ archived: false }, null, 5000),
     staleTime: 60_000,
   })
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['auditLogs-commission'],
-    queryFn: () => vsvv.entities.AuditLog.filter({ entity_type: 'commission' }, '-changed_at', 500),
+    queryFn: () => avasys.entities.AuditLog.filter({ entity_type: 'commission' }, '-changed_at', 500),
     enabled: showAuditLog,
     staleTime: 10_000,
   })
 
   // ── Audit helper ─────────────────────────────────────────────────────────
   const writeAuditLog = useCallback(async (entityId, action, summary, oldValues, newValues) => {
-    const user = await vsvv.auth.me().catch(() => null)
-    vsvv.entities.AuditLog.create({
+    const user = await avasys.auth.me().catch(() => null)
+    avasys.entities.AuditLog.create({
       entity_type: 'commission',
       entity_id: entityId,
       action,
@@ -116,7 +116,7 @@ export default function CommissionsAndCourtage() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // SECURITY GATE: Prüfe ob User darf erstellen
-      const accessCheck = await vsvv.functions.invoke('guardCommissionAccess', {
+      const accessCheck = await avasys.functions.invoke('guardCommissionAccess', {
         action: 'create',
         advisor_id: data.advisor_id,
       }).catch(e => ({ data: { allowed: false, reason: e.message } }));
@@ -125,7 +125,7 @@ export default function CommissionsAndCourtage() {
         throw new Error(`Zugriff verweigert: ${accessCheck.data?.reason || 'Keine Berechtigung'}`);
       }
 
-      return vsvv.entities.CommissionEntry.create(data.is_storno ? data : calcCommissionFields(data));
+      return avasys.entities.CommissionEntry.create(data.is_storno ? data : calcCommissionFields(data));
     },
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['commissionEntries'] })
@@ -141,7 +141,7 @@ export default function CommissionsAndCourtage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data, oldData }) =>
-      vsvv.entities.CommissionEntry.update(id, data.is_storno ? data : calcCommissionFields(data)).then(r => ({ result: r, oldData })),
+      avasys.entities.CommissionEntry.update(id, data.is_storno ? data : calcCommissionFields(data)).then(r => ({ result: r, oldData })),
     onSuccess: ({ result, oldData }) => {
       queryClient.invalidateQueries({ queryKey: ['commissionEntries'] })
       const c = normalizeLegacyEntry(result)
@@ -156,7 +156,7 @@ export default function CommissionsAndCourtage() {
 
   const archiveMutation = useMutation({
     mutationFn: ({ id, entry }) =>
-      vsvv.entities.CommissionEntry.update(id, { archived: true, archived_at: new Date().toISOString() })
+      avasys.entities.CommissionEntry.update(id, { archived: true, archived_at: new Date().toISOString() })
         .then(r => ({ result: r, entry })),
     onSuccess: ({ entry }) => {
       queryClient.invalidateQueries({ queryKey: ['commissionEntries'] })
@@ -169,7 +169,7 @@ export default function CommissionsAndCourtage() {
   const statusChangeMutation = useMutation({
     mutationFn: ({ id, newStatus, entry, type }) => {
       const updates = getStatusDates(newStatus, type)
-      return vsvv.entities.CommissionEntry.update(id, updates).then(r => ({ result: r, entry, newStatus, type }))
+      return avasys.entities.CommissionEntry.update(id, updates).then(r => ({ result: r, entry, newStatus, type }))
     },
     onSuccess: ({ result, entry, newStatus, type }) => {
       queryClient.invalidateQueries({ queryKey: ['commissionEntries'] })

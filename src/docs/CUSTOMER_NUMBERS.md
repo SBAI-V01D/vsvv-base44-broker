@@ -84,7 +84,7 @@ Gibt die nächste verfügbare Kundennummer zurück.
 
 **Aufruf:**
 ```javascript
-const result = await vsvv.functions.invoke('generateCustomerNumber', {});
+const result = await avasys.functions.invoke('generateCustomerNumber', {});
 // Result: { success: true, customer_number: 'K-500', next_number: 500 }
 ```
 
@@ -97,7 +97,7 @@ Migriert alle bestehenden Kunden ohne `customer_number`.
 
 **Aufruf (nur Admin):**
 ```javascript
-const result = await vsvv.functions.invoke('migrateCustomerNumbers', {});
+const result = await avasys.functions.invoke('migrateCustomerNumbers', {});
 // Result: { success: true, migrated: 42, customers: [...] }
 ```
 
@@ -196,7 +196,7 @@ if (!customer.customer_number) {
 }
 
 // Keine Duplikate
-const existing = await vsvv.entities.Customer.filter({
+const existing = await avasys.entities.Customer.filter({
   customer_number: customer.customer_number
 });
 if (existing.length > 1) throw new Error('Duplicate customer number');
@@ -232,7 +232,7 @@ if (existing.length > 1) throw new Error('Duplicate customer number');
 **Lösung:**
 ```javascript
 // Admin-Function aufrufen
-await vsvv.functions.invoke('migrateCustomerNumbers', {});
+await avasys.functions.invoke('migrateCustomerNumbers', {});
 ```
 
 ### Problem: Duplikate (sollte nicht vorkommen)

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 import VerkaufschanceStatusBadge from './VerkaufschanceStatusBadge'
@@ -122,7 +122,7 @@ export default function VerkaufschancenKanban({ verkaufschancen, onSelect }) {
   const queryClient = useQueryClient()
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, status }) => vsvv.entities.Verkaufschance.update(id, { status }),
+    mutationFn: ({ id, status }) => avasys.entities.Verkaufschance.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] }),
   })
 

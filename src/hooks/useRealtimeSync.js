@@ -6,7 +6,7 @@
  */
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 
 // Entity → QueryKey(s) die bei Änderung invalidiert werden
 const ENTITY_QUERY_MAP = {
@@ -25,7 +25,7 @@ export function useRealtimeSync() {
   useEffect(() => {
     const unsubscribers = Object.entries(ENTITY_QUERY_MAP).map(([entityName, queryKeys]) => {
       try {
-        const entity = vsvv.entities[entityName];
+        const entity = avasys.entities[entityName];
         if (!entity?.subscribe) return null;
 
         return entity.subscribe(() => {

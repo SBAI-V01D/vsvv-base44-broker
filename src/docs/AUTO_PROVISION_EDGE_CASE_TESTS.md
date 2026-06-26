@@ -246,7 +246,7 @@ Aber: Zeige in UI "5 erwartete Provisionen" getrennt an
 ### Fix 2: Duplikatschutz verschärfen
 ```javascript
 // In createAutomaticProvisionOnActiveContract Zeile 75-82
-const existingProvisions = await vsvv.asServiceRole.entities.CommissionEntry.filter({
+const existingProvisions = await avasys.asServiceRole.entities.CommissionEntry.filter({
   policy_id: contractId,
   is_storno: false,  // ← ADD THIS
   archived: false

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,13 +35,13 @@ export default function DocumentEditDialog({ document, open, onOpenChange }) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers-minimal'],
-    queryFn: () => vsvv.entities.Customer.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => avasys.entities.Customer.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   })
 
   const updateMutation = useMutation({
-    mutationFn: (data) => vsvv.entities.Document.update(document.id, data),
+    mutationFn: (data) => avasys.entities.Document.update(document.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] })
       queryClient.invalidateQueries({ queryKey: ['documents', document?.customer_id] })

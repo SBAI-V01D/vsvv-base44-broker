@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { vsvv } from '@/api/vsvvClient'
+import { avasys } from '@/api/avasysClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
@@ -18,7 +18,7 @@ export default function VisibilityAnalyzer() {
     queryKey: ['raw-all-customers'],
     queryFn: async () => {
       try {
-        return await vsvv.entities.Customer.list('', 1000)
+        return await avasys.entities.Customer.list('', 1000)
       } catch (e) {
         console.error('Failed to load customers:', e)
         return []

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { vsvv } from '@/api/vsvvClient';
+import { avasys } from '@/api/avasysClient';
 import { Hash, ExternalLink, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -13,14 +13,14 @@ export default function TabExports() {
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['enterprise_export_logs'],
-    queryFn: () => vsvv.entities.PdfExportLog.list('-exported_at', 100),
+    queryFn: () => avasys.entities.PdfExportLog.list('-exported_at', 100),
     staleTime: 30_000,
   });
 
   const openPdf = async (log) => {
     if (!log.file_uri) return;
     setSignedLoading(log.id);
-    const res = await vsvv.integrations.Core.CreateFileSignedUrl({ file_uri: log.file_uri, expires_in: 300 });
+    const res = await avasys.integrations.Core.CreateFileSignedUrl({ file_uri: log.file_uri, expires_in: 300 });
     setSignedLoading(null);
     if (res?.signed_url) window.open(res.signed_url, '_blank');
   };
