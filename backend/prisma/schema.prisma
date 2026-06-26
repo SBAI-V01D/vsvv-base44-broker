@@ -1,6 +1,6 @@
 // ============================================================================
-// avaSysAIByNik Premium Broker — Prisma Schema (59 Entities)
-// Generated from base44/entities/*.jsonc — Multi-Tenant PostgreSQL
+// avaai Premium Broker — Prisma Schema (59 Entities)
+// Multi-Tenant PostgreSQL
 // ============================================================================
 
 generator client {

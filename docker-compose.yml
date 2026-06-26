@@ -8,13 +8,13 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: avaai
-      POSTGRES_USER: avaai
+      POSTGRES_DB: vsvv
+      POSTGRES_USER: vsvv
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password is required. Set DB_PASSWORD in .env}
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U avaai"]
+      test: ["CMD-SHELL", "pg_isready -U vsvv"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -85,9 +85,8 @@ services:
       NODE_ENV: development
       PORT: 3003
       HOST: 0.0.0.0
-      DATABASE_URL: postgresql://avaai:${DB_PASSWORD:?}@postgres:5432/avaai
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:?JWT secret is required. Generate with: openssl rand -hex 64}
+      DATABASE_URL: postgresql://vsvv:${DB_PASSWORD:?}@postgres:5432/vsvv
+      JWT_SECRET: "${JWT_SECRET:?JWT secret is required. Generate with: openssl rand -hex 64}"
       JWT_ACCESS_EXPIRY: 15m
       JWT_REFRESH_EXPIRY: 7d
       MINIO_ENDPOINT: minio
@@ -124,9 +123,8 @@ services:
 
 volumes:
   pgdata:
-    driver: local
-  redisdata:
-    driver: local
+    external: true
+    name: vsvv_pgdata
   miniodata:
     driver: local
 

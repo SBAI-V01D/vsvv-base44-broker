@@ -1,5 +1,5 @@
 # =============================================================================
-# avaSysAIByNik Premium Broker — Backend Dockerfile
+# avaai Premium Broker — Backend Dockerfile
 # Two-stage build: npm ci → prisma generate → tsc → dist/app.js
 # =============================================================================
 
