@@ -74,15 +74,6 @@ import ModuleLeads from './modules/leads/pages/Leads.jsx'
 import ModuleMigration from './modules/migration/pages/Migration.jsx'
 import ModuleReports from './modules/reports/pages/Reports.jsx'
 
-// Module Kunde Routes (Modern KUNDE-Module)
-import KundencoOverview from './modules/kunden/pages/KundencoOverview.jsx'
-import KundencoCustomerDetail from './modules/kunden/pages/KundencoCustomerDetail.jsx'
-import KundencoCustomerDossier from './modules/kunden/pages/KundencoCustomerDossier.jsx'
-import KundencoCustomerContacts from './modules/kunden/pages/KundencoCustomerContacts.jsx'
-import KundencoCustomerInsurance from './modules/kunden/pages/KundencoCustomerInsurance.jsx'
-import KundencoCustomerRisk from './modules/kunden/pages/KundencoCustomerRisk.jsx'
-import KundencoCustomerIntelligence from './modules/kunden/pages/KundencoCustomerIntelligence.jsx'
-
 // Portal
 import PortalRoot from './pages/portal/PortalRoot'
 import PortalDashboard from './pages/portal/PortalDashboard.jsx'
@@ -152,13 +143,7 @@ const AuthenticatedApp = () => {
         <Route path="/kunden" element={<ModuleCustomers />} />
         <Route path="/neukunden" element={<NewCustomers />} />
         <Route path="/kunden/:customerId/detail" element={<ModuleCustomers />} />
-        <Route path="/kunden/overview" element={<KundencoOverview />} />
-        <Route path="/kunden/detail" element={<KundencoCustomerDetail />} />
-        <Route path="/kunden/dossier" element={<KundencoCustomerDossier />} />
-        <Route path="/kunden/contacts" element={<KundencoCustomerContacts />} />
-        <Route path="/kunden/insurance" element={<KundencoCustomerInsurance />} />
-        <Route path="/kunden/risk" element={<KundencoCustomerRisk />} />
-        <Route path="/kunden/intelligence" element={<KundencoCustomerIntelligence />} />
+
         <Route path="/vertraege" element={<ModuleContracts />} />
         <Route path="/antraege" element={<ModuleApplications />} />
         <Route path="/aufgaben" element={<ModuleTasks />} />

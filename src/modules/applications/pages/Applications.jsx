@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import ApplicationKanban from '../components/applications/ApplicationKanban'
+import ApplicationKanban from '@/components/applications/ApplicationKanban'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { avaai } from '@/api/avaaiClient'
 import { Plus, Search, Edit, Trash2, FileText, TrendingUp, Clock, CheckCircle, Calendar, Building2, Tag, Archive, Inbox, LayoutGrid, List } from 'lucide-react'
@@ -18,12 +18,12 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import ApplicationForm from '../components/applications/ApplicationForm'
-import ApplicationDocumentsPanel from '../components/applications/ApplicationDocumentsPanel'
+import ApplicationForm from '@/components/applications/ApplicationForm'
+import ApplicationDocumentsPanel from '@/components/applications/ApplicationDocumentsPanel'
 import StatusBadge from '@/components/status/StatusBadge'
 import StatusChangeDialog from '@/components/status/StatusChangeDialog'
 import { PageHeader, KpiCard, ActionMenu, ConfirmDialog } from '@/components/shared'
-import SparteFilterButtons from '../components/applications/SparteFilterButtons'
+import SparteFilterButtons from '@/components/applications/SparteFilterButtons'
 import { getSparteLabel, ALL_SPARTEN } from '@/lib/insuranceSparten'
 
 export default function Applications() {
