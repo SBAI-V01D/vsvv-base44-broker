@@ -149,18 +149,20 @@ const uploadRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // ---------------------------------------------------------------------------
-  // GET /api/upload/:key — Get a fresh presigned download URL
+  // GET /api/upload/:orgId/:fileId — Get a fresh presigned download URL
   //
+  // The key is split into orgId/fileId to avoid slash issues in route params.
   // Presigned URLs expire after 1 hour by default. This endpoint generates
   // a new one on-the-fly so stored document references never go stale.
   // ---------------------------------------------------------------------------
   app.get(
-    '/api/upload/:key',
+    '/api/upload/:orgId/:fileId',
     {
       preHandler: [app.requireAuth, requireTenant],
     },
     async (request, reply) => {
-      const { key } = request.params as { key: string };
+      const { orgId, fileId } = request.params as { orgId: string; fileId: string };
+      const key = `${orgId}/${fileId}`;
 
       // Verify the file belongs to this tenant
       const document = await prisma.document.findFirst({
@@ -190,15 +192,16 @@ const uploadRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // ---------------------------------------------------------------------------
-  // DELETE /api/upload/:key — Delete a file
+  // DELETE /api/upload/:orgId/:fileId — Delete a file
   // ---------------------------------------------------------------------------
   app.delete(
-    '/api/upload/:key',
+    '/api/upload/:orgId/:fileId',
     {
       preHandler: [app.requireAuth, requireTenant],
     },
     async (request, reply) => {
-      const { key } = request.params as { key: string };
+      const { orgId, fileId } = request.params as { orgId: string; fileId: string };
+      const key = `${orgId}/${fileId}`;
 
       // Verify the file belongs to this tenant
       const document = await prisma.document.findFirst({

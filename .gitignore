@@ -21,6 +21,15 @@ backend/dist
 # Temporary files
 .tmp
 
+# Test artifacts
+login-test.*
+schema-prisma-chunk-*
+
+# Editor backup files
+*.bak
+*.new
+*.full
+
 # Base44 SDK (externally provided)
 base44
 

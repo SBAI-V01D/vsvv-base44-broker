@@ -54,7 +54,7 @@ export const registerSchema = z.object({
     .default('broker'),
   organization_id: z
     .string()
-    .uuid('Organization ID must be a valid UUID')
+    .min(1, 'Organization ID is required')
     .optional(),
 });
 

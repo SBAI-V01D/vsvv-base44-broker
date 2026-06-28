@@ -110,6 +110,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        VITE_CODY_API_URL: /api
+        VITE_BASE_PATH: /
+        VITE_ROUTER_BASENAME: /
     container_name: avaai-frontend
     restart: unless-stopped
     depends_on:
@@ -118,6 +122,13 @@ services:
       - "3004:80"
     environment:
       VITE_API_URL: /api
+      VITE_SOCKET_URL: /api
+      VITE_CODY_API_URL: /api
+      VITE_BASE_PATH: /
+      VITE_ROUTER_BASENAME: /
+      VITE_AVASYS_APP_ID: avaai
+      VITE_AVASYS_FUNCTIONS_VERSION: v1
+      VITE_AVASYS_APP_BASE_URL: /
     networks:
       - avaai-network
 

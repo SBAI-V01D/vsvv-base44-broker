@@ -62,6 +62,27 @@ import AdminBackup from './pages/AdminBackup'
 import EnterpriseImprovements from './pages/EnterpriseImprovements'
 import Login from './pages/Login'
 
+// ── Module Pages (Modular Backend) ──
+import ModuleDashboard from './modules/dashboard/pages/Dashboard.jsx'
+import ModuleCustomers from './modules/customers/pages/Customers.jsx'
+import ModuleContracts from './modules/contracts/pages/Contracts.jsx'
+import ModuleApplications from './modules/applications/pages/Applications.jsx'
+import ModuleTasks from './modules/tasks/pages/Tasks.jsx'
+import ModuleDocuments from './modules/documents/pages/Documents.jsx'
+import ModuleCommissions from './modules/commissions/pages/Commissions.jsx'
+import ModuleLeads from './modules/leads/pages/Leads.jsx'
+import ModuleMigration from './modules/migration/pages/Migration.jsx'
+import ModuleReports from './modules/reports/pages/Reports.jsx'
+
+// Module Kunde Routes (Modern KUNDE-Module)
+import KundencoOverview from './modules/kunden/pages/KundencoOverview.jsx'
+import KundencoCustomerDetail from './modules/kunden/pages/KundencoCustomerDetail.jsx'
+import KundencoCustomerDossier from './modules/kunden/pages/KundencoCustomerDossier.jsx'
+import KundencoCustomerContacts from './modules/kunden/pages/KundencoCustomerContacts.jsx'
+import KundencoCustomerInsurance from './modules/kunden/pages/KundencoCustomerInsurance.jsx'
+import KundencoCustomerRisk from './modules/kunden/pages/KundencoCustomerRisk.jsx'
+import KundencoCustomerIntelligence from './modules/kunden/pages/KundencoCustomerIntelligence.jsx'
+
 // Portal
 import PortalRoot from './pages/portal/PortalRoot'
 import PortalDashboard from './pages/portal/PortalDashboard.jsx'
@@ -125,23 +146,27 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Routes>
-      {/* Public routes — no AppLayout wrapper */}
-      <Route path="/login" element={<Login />} />
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/kunden" element={<CustomerIntelligenceWorkspace />} />
+    <AppLayout>
+      <Routes>
+        <Route path="/" element={<ModuleDashboard />} />
+        <Route path="/kunden" element={<ModuleCustomers />} />
         <Route path="/neukunden" element={<NewCustomers />} />
-        <Route path="/kunden/:customerId/360" element={<Customer360 />} />
-        <Route path="/kunden/:customerId/detail" element={<CustomerDetail />} />
-        <Route path="/vertraege" element={<Contracts />} />
-        <Route path="/antraege" element={<Applications />} />
-        <Route path="/aufgaben" element={<Tasks />} />
-        <Route path="/dokumente" element={<Documents />} />
+        <Route path="/kunden/:customerId/detail" element={<ModuleCustomers />} />
+        <Route path="/kunden/overview" element={<KundencoOverview />} />
+        <Route path="/kunden/detail" element={<KundencoCustomerDetail />} />
+        <Route path="/kunden/dossier" element={<KundencoCustomerDossier />} />
+        <Route path="/kunden/contacts" element={<KundencoCustomerContacts />} />
+        <Route path="/kunden/insurance" element={<KundencoCustomerInsurance />} />
+        <Route path="/kunden/risk" element={<KundencoCustomerRisk />} />
+        <Route path="/kunden/intelligence" element={<KundencoCustomerIntelligence />} />
+        <Route path="/vertraege" element={<ModuleContracts />} />
+        <Route path="/antraege" element={<ModuleApplications />} />
+        <Route path="/aufgaben" element={<ModuleTasks />} />
+        <Route path="/dokumente" element={<ModuleDocuments />} />
         <Route path="/email-templates" element={<EmailTemplates />} />
         <Route path="/email-kampagnen" element={<EmailCampaigns />} />
         <Route path="/status-verwaltung" element={<StatusVerwaltung />} />
-        <Route path="/provisionen-courtagen" element={<CommissionsAndCourtage />} />
+        <Route path="/provisionen-courtagen" element={<ModuleCommissions />} />
         <Route path="/berater-organisation" element={<BeratungOrganisation />} />
         <Route path="/finanz-dashboard" element={<FinanceDashboard />} />
         <Route path="/ceo-dashboard" element={<CEODashboard />} />
@@ -149,9 +174,11 @@ const AuthenticatedApp = () => {
         <Route path="/advanced-dashboard" element={<AdvancedDashboard />} />
         <Route path="/execution-mode" element={<ExecutionMode />} />
         <Route path="/sales-autopilot" element={<SalesAutopilot />} />
-        <Route path="/leads" element={<Leads />} />
+        <Route path="/leads" element={<ModuleLeads />} />
         <Route path="/coverage-intelligence" element={<CoverageIntelligence />} />
         <Route path="/system-logs" element={<SystemLogs />} />
+        <Route path="/migration" element={<ModuleMigration />} />
+        <Route path="/reports" element={<ModuleReports />} />
         <Route path="/partner" element={<Partners />} />
         <Route path="/partner/:id" element={<PartnerDetail />} />
         <Route path="/verkaufschancen" element={<Verkaufschancen />} />
@@ -182,7 +209,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/security" element={<ProtectedRoute allowedRoles={['admin']}><AdminSecurity /></ProtectedRoute>} />
         <Route path="/admin/backup" element={<ProtectedRoute allowedRoles={['admin']}><AdminBackup /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminHub /></ProtectedRoute>} />
-      </Route>
+      </Routes>
 
       {/* ── LEGACY ROUTE REDIRECTS ───────────────────────────── */}
       <Route path="/admin/team-zugriffsrechte" element={<Navigate to="/admin/team" replace />} />
@@ -192,22 +219,11 @@ const AuthenticatedApp = () => {
       <Route path="/system-logs" element={<Navigate to="/admin/logs" replace />} />
 
       <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    </AppLayout>
   )
 }
 
 function App() {
-  React.useEffect(() => {
-    // Clear localStorage recovery flags only
-    localStorage.removeItem('recovery_mode_enabled')
-    localStorage.removeItem('bypass_visibility')
-    
-    // Force reload Krankenkassenvergleich page cache
-    if (window.location.pathname === '/krankenkassen-vergleich') {
-      sessionStorage.setItem('kkv_cache_buster', Date.now().toString())
-    }
-  }, [])
-
   return (
     <ErrorBoundary>
       <AuthProvider>
@@ -215,7 +231,8 @@ function App() {
           <Router>
             <ScrollToTop />
             <Routes>
-              <Route path="*" element={<AuthenticatedApp />} />
+              <Route path="/" element={<AuthenticatedApp />} />
+              <Route path="/portal/*" element={<AuthenticatedApp />} />
             </Routes>
           </Router>
           <Toaster />
