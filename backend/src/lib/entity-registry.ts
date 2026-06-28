@@ -20,6 +20,7 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     prefix: 'organizations',
     searchFields: ['name', 'email', 'type'],
     sortableFields: ['created_at', 'updated_at', 'name'],
+    skipTenantFilter: true,
   },
   {
     model: 'user',

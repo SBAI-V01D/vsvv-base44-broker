@@ -1520,10 +1520,10 @@ model Customer {
   street                    String?
   zip_code                  String?
   city                      String?
-  canton                    SwissCanton?
+  canton                    SwissCanton?   @default(ZH)
   birthdate                 DateTime?
   ahv_number                String?
-  civil_status              CivilStatus?
+  civil_status              CivilStatus?   @default(single)
   profession                String?
   nationality               String?
   drivers_license_date      DateTime?
@@ -1619,7 +1619,7 @@ model Contract {
   policy_number                   String?
   version_number                  Float           @default(1)
   parent_policy_id                String?
-  insurance_type                  InsuranceType
+  insurance_type            InsuranceType    @default(other)
   product                         String?
   premium_monthly                 Float?
   premium_yearly                  Float?
@@ -1791,7 +1791,7 @@ model Commission {
   customer_name     String?
   broker_email      String?
   broker_name       String?
-  type              CommissionType
+  type              CommissionType @default(einmalig)
   amount            Float
   insurance_type    String?
   provider          String?
@@ -2069,7 +2069,7 @@ model Lead {
   phone                  String?
   birthdate              DateTime?
   company                String?
-  source                 LeadSource
+  source                 LeadSource   @default(manual)
   advisor_id             String?
   advisor_name           String?
   organization_id        String?
@@ -2200,7 +2200,7 @@ model SystemLog {
 // --------------------------------------------------------------------------
 model Notification {
   id                String           @id @default(uuid())
-  type              NotificationType
+  type              NotificationType @default(contract_expiry)
   recipient_email   String
   recipient_name    String?
   subject           String
@@ -2256,7 +2256,7 @@ model Message {
 // --------------------------------------------------------------------------
 model StatusDefinition {
   id              String              @id @default(uuid())
-  type            StatusDefinitionType
+  type            StatusDefinitionType @default(application)
   key             String
   label           String
   color           StatusColor         @default(gray)
@@ -2282,7 +2282,7 @@ model StatusDefinition {
 // --------------------------------------------------------------------------
 model StatusHistory {
   id                String                 @id @default(uuid())
-  entity_type       StatusHistoryEntityType
+  entity_type       StatusHistoryEntityType @default(application)
   entity_id         String
   customer_id       String?
   from_status       String?
@@ -2313,7 +2313,7 @@ model BAGPraemienDaten {
   krankenkasse      String
   kanton            String
   region            String?
-  modell            BAGModell
+  modell            BAGModell  @default(standard)
   modell_label      String
   franchise         Int
   unfall            Boolean      @default(false)
@@ -2446,7 +2446,7 @@ model VergleichsAnalyse {
 model AccountingEntry {
   id                String                 @id @default(uuid())
   entry_date        DateTime
-  entry_type        AccountingEntryType
+  entry_type        AccountingEntryType @default(commission)
   amount            Float
   advisor_id        String
   advisor_name      String?
@@ -2699,7 +2699,7 @@ model VersichererDB {
 model Partner {
   id                String          @id @default(uuid())
   name              String
-  category          PartnerCategory
+  category          PartnerCategory  @default(versicherung)
   contact_person    String?
   phone             String?
   email             String?
@@ -2731,7 +2731,7 @@ model PartnerActivity {
   id                String              @id @default(uuid())
   partner_id                     String
   partner_name      String?
-  activity_type     PartnerActivityType
+  activity_type     PartnerActivityType @default(partner_created)
   description       String
   document_id       String?
   document_name     String?
@@ -2760,7 +2760,7 @@ model PartnerDocument {
   partner_name      String?
   file_name         String
   file_url          String
-  category          PartnerDocumentCategory
+  category          PartnerDocumentCategory @default(sonstige)
   uploaded_by       String?
   uploaded_by_name  String?
   file_size         Float?
@@ -3001,7 +3001,7 @@ model MutationRequest {
   customer_id                    String
   policy_id         String
   policy_number     String?
-  request_type      MutationRequestType
+  request_type      MutationRequestType @default(other)
   description       String
   status            MutationRequestStatus @default(pending)
   reviewed_by       String?
@@ -3123,7 +3123,7 @@ model Interaction {
   id                  String                  @id @default(uuid())
   customer_id                    String
   customer_name       String?
-  type                InteractionType
+  type                InteractionType       @default(notiz)
   subject             String
   content             String?
   date                DateTime?
@@ -3151,7 +3151,7 @@ model InsuranceKnowledgePattern {
   id                  String   @id @default(uuid())
   insurer             String
   document_type       String?
-  pattern_type        PatternType
+  pattern_type        PatternType     @default(field_signal)
   signal              String
   maps_to             String
   maps_to_value       String?
@@ -3186,8 +3186,8 @@ model EnterpriseImprovement {
   id                      String                      @id @default(uuid())
   audit_id                String?
   title                   String
-  priority                EnterpriseImprovementPriority
-  area                    EnterpriseImprovementArea
+  priority                EnterpriseImprovementPriority @default(medium)
+  area                    EnterpriseImprovementArea @default(performance)
   current_state           String
   target_state            String
   ki_recommendation       String?
@@ -3228,7 +3228,7 @@ model EnterpriseIncident {
   id                      String                    @id @default(uuid())
   priority                EnterpriseIncidentPriority @default(medium)
   severity                EnterpriseIncidentSeverity @default(warning)
-  category                EnterpriseIncidentCategory
+  category                EnterpriseIncidentCategory  @default(other)
   module                  String?
   entity_type             String?
   entity_id               String?
@@ -3287,7 +3287,7 @@ model GovernanceRule {
   effective_to                DateTime?
   entity_type                 String
   event_types                 GovernanceEventType[]
-  layer                       GovernanceRuleLayer
+  layer                       GovernanceRuleLayer @default(VALIDATION)
   business_criticality        GovernanceBusinessCriticality @default(MEDIUM)
   enforcement_mode            GovernanceEnforcementMode @default(monitor)
   simulate_only               Boolean                   @default(true)
@@ -3356,7 +3356,7 @@ model GovernanceScoreSnapshot {
 // --------------------------------------------------------------------------
 model DuplicateAlert {
   id                  String                  @id @default(uuid())
-  entity_type         DuplicateAlertEntityType
+  entity_type         DuplicateAlertEntityType @default(customer)
   primary_entity_id   String
   duplicate_entity_id String
   match_criteria      DuplicateMatchCriteria[]
@@ -3385,7 +3385,7 @@ model DuplicateAlert {
 model BackupLog {
   id                String       @id @default(uuid())
   backup_id         String?
-  backup_type       BackupType
+  backup_type       BackupType  @default(full)
   status            BackupStatus @default(completed)
   timestamp         DateTime
   error_message     String?
@@ -3414,7 +3414,7 @@ model BackupLog {
 // --------------------------------------------------------------------------
 model ErrorLog {
   id                String        @id @default(uuid())
-  error_type        ErrorType
+  error_type        ErrorType @default(other)
   entity_type       String?
   entity_id         String?
   error_message     String
@@ -3511,7 +3511,7 @@ model PdfExportLog {
 // --------------------------------------------------------------------------
 model AutomationQueue {
   id                  String             @id @default(uuid())
-  job_type            AutomationJobType
+  job_type            AutomationJobType @default(other)
   status              AutomationJobStatus @default(pending)
   related_document_id String?
   related_entity_type String?
@@ -3542,7 +3542,7 @@ model AiFinding {
   id                    String           @id @default(uuid())
   review_id             String?
   organization_id       String
-  finding_type          AiFindingType
+  finding_type          AiFindingType  @default(other)
   severity              FindingSeverity  @default(warning)
   confidence_score      Float?
   evidence_strength     EvidenceStrength?
@@ -3579,7 +3579,7 @@ model AiFinding {
 // --------------------------------------------------------------------------
 model AiReview {
   id                  String         @id @default(uuid())
-  level               AiReviewLevel
+  level               AiReviewLevel @default(quick)
   status              AiReviewStatus @default(completed)
   findings            Json
   finding_count       Float?
