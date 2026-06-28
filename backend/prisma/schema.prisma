@@ -2971,7 +2971,7 @@ model AdvisoryDossier {
 model DossierSnapshot {
   id                String   @id @default(uuid())
   dossier_id                     String
-  version           Float
+  version           Float  @default(1)
   snapshot_data     String?
   pdf_url           String?
   created_by_name   String?
@@ -3581,13 +3581,13 @@ model AiReview {
   id                  String         @id @default(uuid())
   level               AiReviewLevel @default(quick)
   status              AiReviewStatus @default(completed)
-  findings            Json
+  findings            Json?
   finding_count       Float?
   critical_count      Float?
   warning_count       Float?
   opportunity_count   Float?
-  reviewed_at         DateTime
-  reviewed_by         String
+  reviewed_at         DateTime?
+  reviewed_by         String?
   previous_review_id  String?
   notes               String?
   organization_id     String?

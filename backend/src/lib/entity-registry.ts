@@ -244,6 +244,7 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     model: 'comparisonEntry',
     prefix: 'comparison-entries',
     sortableFields: ['created_at', 'praemie_monatlich'],
+    skipTenantFilter: true,  // model has no organization_id field
     permissions: { list: ['admin', 'management', 'broker', 'backoffice'], get: ['admin', 'management', 'broker', 'backoffice'], create: ['admin', 'management', 'broker', 'backoffice'], update: ['admin', 'management', 'broker', 'backoffice'], delete: ['admin'] },
   },
   {
