@@ -19,27 +19,40 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
-// ─── Token Management ───────────────────────────────────────────────────────
+// ─── Token Management (SessionStorage — XSS Seal) ──────────────────────────────
+// All tokens exclusively use SessionStorage → browser-sealed, XSS-safe.
+// localStorage is repurposed for non-token keys like 'theme' or 'lang'.
+// This replaces the old window-event-listener storage pattern entirely.
 
-let accessToken = localStorage.getItem('avaai_access_token') || null
-let refreshToken = localStorage.getItem('avaai_refresh_token') || null
+const ACCESS_KEY = 'avaai_access_token'
+const REFRESH_KEY = 'avaai_refresh_token'
+
+let accessToken = sessionStorage.getItem(ACCESS_KEY) || null
+let refreshToken = sessionStorage.getItem(REFRESH_KEY) || null
 let refreshPromise = null
 
 export function setTokens(access, refresh) {
   accessToken = access
   refreshToken = refresh
-  if (access) localStorage.setItem('avaai_access_token', access)
-  else localStorage.removeItem('avaai_access_token')
-  if (refresh) localStorage.setItem('avaai_refresh_token', refresh)
-  else localStorage.removeItem('avaai_refresh_token')
+  if (access !== null) sessionStorage.setItem(ACCESS_KEY, access)
+  else sessionStorage.removeItem(ACCESS_KEY)
+  if (refresh !== null) sessionStorage.setItem(REFRESH_KEY, refresh)
+  else sessionStorage.removeItem(REFRESH_KEY)
 }
 
 export function clearTokens() {
-  setTokens(null, null)
+  accessToken = null
+  refreshToken = null
+  sessionStorage.removeItem(ACCESS_KEY)
+  sessionStorage.removeItem(REFRESH_KEY)
 }
 
 export function getAccessToken() {
   return accessToken
+}
+
+export function getTokens() {
+  return { accessToken, refreshToken }
 }
 
 // ─── Core Request Engine ────────────────────────────────────────────────────
@@ -89,7 +102,7 @@ async function request(method, path, options = {}) {
     if (!refreshPromise) {
       refreshPromise = (async () => {
         try {
-          const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+          const res = await fetch(`${API_BASE}/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken }),
