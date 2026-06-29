@@ -43,10 +43,10 @@ function getConnection(): IORedis {
 // ---------------------------------------------------------------------------
 
 export enum QueueName {
-  EMAIL = 'avaai:email',
-  DOCUMENT = 'avaai:document',
-  AUDIT = 'avaai:audit',
-  CLEANUP = 'avaai:cleanup',
+  EMAIL = 'avaai-email',
+  DOCUMENT = 'avaai-document',
+  AUDIT = 'avaai-audit',
+  CLEANUP = 'avaai-cleanup',
 }
 
 // ---------------------------------------------------------------------------

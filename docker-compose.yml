@@ -23,19 +23,19 @@ services:
 
   # Redis is OPTIONAL — only needed for queues/sessions.
   # Uncomment if Redis is available on this host.
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: avaai-redis
-  #   restart: unless-stopped
-  #   ports:
-  #     - "6379:6379"
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks:
-  #     - avaai-network
+  redis:
+    image: redis:7-alpine
+    container_name: avaai-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - avaai-network
 
   minio:
     image: minio/minio:latest
@@ -79,6 +79,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
+      redis:
+        condition: service_healthy
     ports:
       - "3003:3003"
     environment:
@@ -100,6 +102,10 @@ services:
       SMTP_FROM: noreply@avaai.ch
       # SECURITY: In production, set this to the explicit frontend URL
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3004}
+      REDIS_URL: redis://redis:6379
+      AI_BASE_URL: https://aipi.coredy.ai/ollama/v1/
+      AI_API_KEY: ${AI_API_KEY:-sk-sbai-aipi-v1-7f9e2b4a8c1d0e3f5b6a9d8c7f2e1a0b}
+      AI_MODEL: ava-nucl3us
       LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:
       - ./backend/src:/app/src

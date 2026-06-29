@@ -32,7 +32,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apk add --no-cache openssl curl postgresql-client
+RUN apk add --no-cache openssl curl postgresql-client poppler-utils
 
 # Copy built assets
 COPY --from=builder /app/dist ./dist

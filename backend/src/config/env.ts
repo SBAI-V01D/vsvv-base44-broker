@@ -76,6 +76,11 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().email().default('noreply@avaai.ch'),
 
+  // ----- AI / Document Extraction -----
+  AI_BASE_URL: z.string().default('https://aipi.coredy.ai/ollama/v1/'),
+  AI_API_KEY: z.string().default('sk-sbai-aipi-v1-7f9e2b4a8c1d0e3f5b6a9d8c7f2e1a0b'),
+  AI_MODEL: z.string().default('ava-nucl3us'),
+
   // ----- CORS -----
   // SECURITY: In production, ALWAYS set CORS_ORIGIN to the explicit
   // frontend domain (e.g. 'https://app.avaai.ch'). Wildcard '*' allows

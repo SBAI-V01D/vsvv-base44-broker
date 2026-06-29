@@ -10,6 +10,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { requireTenant } from '../../middleware/tenant.js';
 import { prisma } from '../../lib/prisma.js';
+import { extractFromBuffer } from '../../services/ai-extraction.js';
+import { addJob, QueueName } from '../../lib/queue.js';
 
 // ---------------------------------------------------------------------------
 // Function Registry — maps function names to handler implementations
@@ -159,6 +161,63 @@ const functionRegistry: Record<string, FunctionHandler> = {
         take: limit,
         orderBy: { created_at: 'desc' },
       });
+    },
+  },
+
+  'extractInsuranceDocument': {
+    description: 'Extract structured insurance data from a document (PDF/image)',
+    handler: async (params, { userId, orgId }) => {
+      const { file_url, file_name, mime_type } = params as Record<string, string>;
+      if (!file_url) throw new Error('file_url is required');
+
+      // Fetch file content
+      const response = await fetch(file_url);
+      if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+      const buffer = Buffer.from(await response.arrayBuffer());
+
+      // Extract using AI
+      const result = await extractFromBuffer(buffer, file_name || 'document', mime_type || 'application/pdf');
+
+      // If document was uploaded in our system, queue it for background processing
+      if (params.documentId) {
+        await addJob(QueueName.DOCUMENT, 'extract-document', {
+          documentId: params.documentId as string,
+          fileKey: params.file_key as string || file_url,
+          mimeType: mime_type as string || 'application/pdf',
+          organizationId: orgId,
+          userId,
+        });
+      }
+
+      return result;
+    },
+  },
+
+  'smartDocumentAnalysis': {
+    description: 'Analyse a document with AI (general purpose)',
+    handler: async (params, { orgId }) => {
+      const { file_url, file_name, mime_type } = params as Record<string, string>;
+      if (!file_url) throw new Error('file_url is required');
+
+      const response = await fetch(file_url);
+      if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+      const buffer = Buffer.from(await response.arrayBuffer());
+
+      return extractFromBuffer(buffer, file_name || 'document', mime_type || 'application/pdf');
+    },
+  },
+
+  'extractApplicationData': {
+    description: 'Extract application form data from a document',
+    handler: async (params, { orgId }) => {
+      const { file_url, file_name, mime_type } = params as Record<string, string>;
+      if (!file_url) throw new Error('file_url is required');
+
+      const response = await fetch(file_url);
+      if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+      const buffer = Buffer.from(await response.arrayBuffer());
+
+      return extractFromBuffer(buffer, file_name || 'document', mime_type || 'application/pdf');
     },
   },
 

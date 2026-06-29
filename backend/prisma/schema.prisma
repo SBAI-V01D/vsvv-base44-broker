@@ -1991,6 +1991,7 @@ model Document {
   classification_status     DocumentClassificationStatus  @default(ausstehend)
   classification_confidence Float?
   classification_reason     String?
+  extracted_data            Json?                          @map("extracted_data")
   linked_contract_id        String?
   linked_application_id     String?
   uploaded_by               String?

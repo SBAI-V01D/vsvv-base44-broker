@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { avaai } from '@/api/avaaiClient';
 import { Button } from '@/components/ui/button';
@@ -6,101 +6,86 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
   Upload, FileText, CheckCircle2, AlertTriangle, User, Shield,
-  ChevronDown, ChevronUp, Loader2, X, Save, Search
+  ChevronDown, ChevronUp, Loader2, X, Save, Search, Activity, Eye
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getSocket, connectSocket } from '@/api/socket';
+import ReviewField from '@/components/documents/ReviewField';
+import ExtractionValidationPanel from '@/components/documents/ExtractionValidationPanel';
+import ExtractionConfidenceBar from '@/components/documents/ExtractionConfidenceBar';
 
+// ─── Utility ──────────────────────────────────────────────────────────────────
 const MONTH_LAST = [31,28,31,30,31,30,31,31,30,31,30,31];
 const fmtDate = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('de-CH') : '–';
 const fmtCHF = (n) => n != null ? `CHF ${Number(n).toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '–';
 
-function KonfidenzBadge({ value }) {
-  if (value == null) return null;
-  const pct = Math.round(value * 100);
-  const cls = value >= 0.8 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-    : value >= 0.6 ? 'bg-amber-50 text-amber-700 border-amber-200'
-    : 'bg-red-50 text-red-600 border-red-200';
-  return <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded border', cls)}>{pct}%</span>;
+function determineConfidence(value, overall) {
+  if (!value) return 'missing';
+  if (overall >= 0.85) return 'high';
+  if (overall >= 0.6) return 'low';
+  return 'missing';
 }
 
-function PolicyCard({ policy, index, unsichere, editData, onChange }) {
-  const [open, setOpen] = useState(true);
-  const isKvg = policy.typ === 'kvg';
-  const fields = editData[index] || policy;
+function buildConfidenceSections(data) {
+  const sections = [];
+  if (data.gesamt_konfidenz != null) {
+    sections.push({ label: 'Gesamt', value: data.gesamt_konfidenz });
+  }
+  if (data.persons?.length) {
+    const personConfs = data.persons.map(p => p.konfidenz).filter(Boolean);
+    if (personConfs.length) {
+      sections.push({ label: 'Personen', value: personConfs.reduce((a, b) => a + b, 0) / personConfs.length });
+    }
+  }
+  if (data.policies?.length) {
+    const polConfs = data.policies.map(p => p.konfidenz).filter(Boolean);
+    if (polConfs.length) {
+      sections.push({ label: 'Polices', value: polConfs.reduce((a, b) => a + b, 0) / polConfs.length });
+    }
+  }
+  if (data.dokument_typ) {
+    sections.push({ label: 'Dokument-Typ', value: data.versicherer ? 0.9 : 0.5 });
+  }
+  return sections;
+}
 
-  const set = (key, val) => onChange(index, { ...fields, [key]: val });
-  const isUnsicher = (key) => unsichere.some(f => f.includes(`policy[${index}]`) || f.includes(key));
-
+// ─── Status Steps ─────────────────────────────────────────────────────────────
+function StepIndicator({ steps }) {
   return (
-    <div className={cn('rounded-xl border overflow-hidden', isKvg ? 'border-blue-200' : 'border-violet-200')}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className={cn('w-full flex items-center gap-3 px-4 py-3 text-left', isKvg ? 'bg-blue-50' : 'bg-violet-50')}
-      >
-        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full uppercase', isKvg ? 'bg-blue-600 text-white' : 'bg-violet-600 text-white')}>
-          {isKvg ? 'KVG' : 'VVG'}
-        </span>
-        <span className="font-semibold text-sm flex-1">{fields.produkt_name || '–'}</span>
-        {fields.praemie_netto != null && <span className="text-sm font-bold text-emerald-700">{fmtCHF(fields.praemie_netto)}/Mt</span>}
-        <KonfidenzBadge value={fields.konfidenz} />
-        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-      </button>
-
-      {open && (
-        <div className="p-4 grid grid-cols-2 gap-3 bg-white">
-          {[
-            { key: 'produkt_name', label: 'Produkt' },
-            { key: 'produkt_code', label: 'Code' },
-            { key: 'modell', label: 'Modell' },
-            { key: 'polnummer', label: 'Police-Nr.' },
-            ...(isKvg ? [{ key: 'franchise', label: 'Franchise CHF', type: 'number' }] : []),
-            { key: 'praemie_brutto', label: 'Prämie Brutto', type: 'number' },
-            { key: 'praemie_netto', label: 'Prämie Netto', type: 'number' },
-            { key: 'gueltig_ab', label: 'Gültig ab' },
-              { key: 'gueltig_bis', label: 'Gültig bis' },
-              ...(!isKvg ? [
-                { key: 'tod_kapital_chf', label: 'Tod-Kapital CHF', type: 'number' },
-                { key: 'invaliditaet_kapital_chf', label: 'Invalidität-Kapital CHF', type: 'number' },
-                { key: 'spital_franchise_chf', label: 'Spital-Franchise CHF', type: 'number' },
-              ] : []),
-            ].map(({ key, label, type }) => (
-            <div key={key}>
-              <label className={cn('text-[10px] font-semibold uppercase tracking-wide block mb-1', isUnsicher(key) ? 'text-amber-600' : 'text-muted-foreground')}>
-                {label}{isUnsicher(key) && ' ⚠'}
-              </label>
-              <Input
-                type={type || 'text'}
-                value={fields[key] ?? ''}
-                onChange={e => set(key, type === 'number' ? parseFloat(e.target.value) || null : e.target.value)}
-                className={cn('h-8 text-sm', isUnsicher(key) && 'border-amber-300 bg-amber-50/30')}
-              />
-            </div>
-          ))}
-          <div className="col-span-2 flex gap-4 text-sm">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={fields.unfall_gedeckt ?? true}
-                onChange={e => set('unfall_gedeckt', e.target.checked)} className="rounded" />
-              Unfall gedeckt
-            </label>
-            {fields.bonus_stufe != null && (
-              <span className="text-muted-foreground">Bonusstufe: <strong>{fields.bonus_stufe}</strong></span>
-            )}
-          </div>
+    <div className="flex items-center gap-1.5 px-1">
+      {steps.map((s, i) => (
+        <div key={i} className="flex items-center gap-1.5">
+          <div className={cn(
+            'w-2 h-2 rounded-full transition-colors',
+            s.done ? 'bg-emerald-500' : s.active ? 'bg-primary animate-pulse' : 'bg-slate-200'
+          )} />
+          <span className={cn(
+            'text-[10px]',
+            s.done ? 'text-emerald-700 font-medium' : s.active ? 'text-primary font-medium' : 'text-muted-foreground'
+          )}>
+            {s.label}
+          </span>
+          {i < steps.length - 1 && <span className="text-muted-foreground/30 text-[10px]">›</span>}
         </div>
-      )}
+      ))}
     </div>
   );
 }
 
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function DocumentExtractor() {
   const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
+  const [documentId, setDocumentId] = useState(null);
   const [extractResult, setExtractResult] = useState(null);
   const [editPolicies, setEditPolicies] = useState({});
   const [editPersons, setEditPersons] = useState({});
   const [customerMatches, setCustomerMatches] = useState([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [stepState, setStepState] = useState(null); // 'upload' | 'extracting' | 'done'
+  const [extractStage, setExtractStage] = useState(null); // from socket events
+  const [socketStatus, setSocketStatus] = useState(null);
 
   const { data: allCustomers = [] } = useQuery({
     queryKey: ['customers', 'all'],
@@ -108,47 +93,130 @@ export default function DocumentExtractor() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // ── Socket.io: extraction status updates ──────────────────────────────────
+  useEffect(() => {
+    let socket;
+    try {
+      socket = getSocket();
+      if (socket && documentId) {
+        socket.on('extraction:status', (payload) => {
+          if (payload.documentId === documentId) {
+            setExtractStage(payload.stage);
+            setSocketStatus(payload);
+          }
+        });
+        socket.on('extraction:complete', (payload) => {
+          if (payload.documentId === documentId) {
+            setExtractStage('complete');
+            setSocketStatus(payload);
+            // Auto-load result
+            if (payload.documentId) {
+              avaai.functions.invoke('getExtractionResult', { documentId: payload.documentId })
+                .then(res => {
+                  if (res.data?.success) {
+                    setExtractResult(res.data.data);
+                    setStepState('done');
+                  }
+                })
+                .catch(() => {});
+            }
+          }
+        });
+      }
+    } catch (_) {}
+    return () => {
+      if (socket) {
+        socket.off('extraction:status');
+        socket.off('extraction:complete');
+      }
+    };
+  }, [documentId]);
+
+  // ── Mutations ─────────────────────────────────────────────────────────────
   const uploadMutation = useMutation({
     mutationFn: async (f) => {
-      const { file_url } = await avaai.integrations.Core.UploadFile({ file: f });
-      return file_url;
+      // Upload via internal endpoint
+      const formData = new FormData();
+      formData.append('file', f);
+      const res = await fetch('/api/upload/file', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('avaai_access_token')}`,
+        },
+      });
+      if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
+      const data = await res.json();
+      return data; // { file_url, file_key, id }
     }
   });
 
   const extractMutation = useMutation({
-    mutationFn: async (file_url) => {
-      const res = await avaai.functions.invoke('extractInsuranceDocument', { file_url, file_name: file?.name });
+    mutationFn: async ({ file_url, file_key, uploadId }) => {
+      // Try async document route first (returns jobId)
+      try {
+        const res = await fetch('/api/document/extract', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('avaai_access_token')}`,
+          },
+          body: JSON.stringify({ documentId: uploadId }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDocumentId(data.documentId);
+          return { async: true, ...data };
+        }
+      } catch (_) {
+        // Fall back to synchronous function invoke
+      }
+
+      // Fallback: synchronous extraction via function
+      const res = await avaai.functions.invoke('extractInsuranceDocument', {
+        file_url,
+        file_name: file?.name,
+        mime_type: file?.type,
+      });
       return res.data;
     },
     onSuccess: (data) => {
+      if (data.async) {
+        // Async mode: wait for socket events
+        return;
+      }
       if (!data.success) return;
-      setExtractResult(data.data);
-      setEditPolicies({});
-      setEditPersons({});
-      setSaved(false);
-
-      // Auto-Matching gegen Kundenstamm
-      const persons = data.data.persons || [];
-      const matches = [];
-      persons.forEach((p, pi) => {
-        if (!p.nachname) return;
-        const found = allCustomers.filter(c =>
-          c.last_name?.toLowerCase() === p.nachname?.toLowerCase() &&
-          (!p.plz || c.zip_code === p.plz)
-        );
-        found.forEach(c => matches.push({ person_index: pi, customer: c }));
-      });
-      setCustomerMatches(matches);
-      if (matches.length === 1) setSelectedCustomerId(matches[0].customer.id);
+      applyExtractionResult(data.data);
     }
   });
+
+  const applyExtractionResult = (data) => {
+    setExtractResult(data);
+    setEditPolicies({});
+    setEditPersons({});
+    setSaved(false);
+    setStepState('done');
+
+    // Auto-Matching gegen Kundenstamm
+    const persons = data.persons || [];
+    const matches = [];
+    persons.forEach((p, pi) => {
+      if (!p.nachname) return;
+      const found = allCustomers.filter(c =>
+        c.last_name?.toLowerCase() === p.nachname?.toLowerCase() &&
+        (!p.plz || c.zip_code === p.plz)
+      );
+      found.forEach(c => matches.push({ person_index: pi, customer: c }));
+    });
+    setCustomerMatches(matches);
+    if (matches.length === 1) setSelectedCustomerId(matches[0].customer.id);
+  };
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       const data = extractResult;
       const policies = (data.policies || []).map((p, i) => ({ ...p, ...(editPolicies[i] || {}) }));
 
-      // Für jede Police einen Vertrag erstellen
       for (const pol of policies) {
         const personIdx = pol.person_index ?? 0;
         const person = (data.persons || [])[personIdx] || {};
@@ -186,19 +254,38 @@ export default function DocumentExtractor() {
     }
   });
 
-  const handleFile = (f) => {
+  const handleFile = useCallback((f) => {
     if (!f) return;
     setFile(f);
     setExtractResult(null);
     setCustomerMatches([]);
     setSelectedCustomerId(null);
     setSaved(false);
-  };
+    setDocumentId(null);
+    setStepState('upload');
+    setExtractStage(null);
+    setSocketStatus(null);
+  }, []);
 
   const handleExtract = async () => {
     if (!file) return;
-    const url = await uploadMutation.mutateAsync(file);
-    extractMutation.mutate(url);
+    setStepState('extracting');
+    setExtractStage('uploading');
+    try {
+      const uploadResult = await uploadMutation.mutateAsync(file);
+      setExtractStage('queued');
+      extractMutation.mutate({
+        file_url: uploadResult.file_url,
+        file_key: uploadResult.file_key,
+        uploadId: uploadResult.id,
+      });
+    } catch (err) {
+      // Fallback: direct upload via avaai
+      setExtractStage('uploading');
+      const { file_url } = await avaai.integrations.Core.UploadFile({ file });
+      setExtractStage('extracting');
+      extractMutation.mutate({ file_url });
+    }
   };
 
   const handlePolicyChange = (index, updated) => {
@@ -209,6 +296,14 @@ export default function DocumentExtractor() {
   const data = extractResult;
   const unsichere = data?.unsichere_felder || [];
 
+  // Build steps for indicator
+  const steps = [
+    { label: 'Upload', done: stepState !== null, active: stepState === 'upload' },
+    { label: 'Extraktion', done: stepState === 'done', active: stepState === 'extracting' },
+    { label: 'Prüfung', done: saved, active: stepState === 'done' && !saved },
+    { label: 'Speichern', done: saved, active: saved },
+  ];
+
   return (
     <div className="page-enter flex flex-col h-full">
       <div className="px-6 py-5 border-b border-border bg-card shrink-0">
@@ -216,22 +311,26 @@ export default function DocumentExtractor() {
           <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
             <FileText className="w-5 h-5 text-primary" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-lg font-bold tracking-tight">Dokument-Extraktor</h1>
             <p className="text-xs text-muted-foreground">PDF hochladen → KI extrahiert → Admin prüft → Verträge speichern</p>
           </div>
+          <StepIndicator steps={steps} />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6 max-w-4xl mx-auto w-full">
-        {/* Upload */}
+        {/* ── Upload Section ── */}
         <div className="surface p-5 space-y-4">
           <h2 className="text-sm font-semibold">1. Dokument hochladen</h2>
           <div
-            className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+            className={cn(
+              'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors',
+              stepState === 'extracting' ? 'border-primary/30 bg-primary/5 pointer-events-none opacity-60' : 'border-border hover:border-primary/50 hover:bg-primary/5'
+            )}
             onDragOver={e => e.preventDefault()}
             onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); }}
-            onClick={() => document.getElementById('doc-upload').click()}
+            onClick={() => document.getElementById('doc-upload')?.click()}
           >
             <input id="doc-upload" type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden"
               onChange={e => handleFile(e.target.files[0])} />
@@ -248,9 +347,40 @@ export default function DocumentExtractor() {
             )}
           </div>
           <Button onClick={handleExtract} disabled={!file || isLoading} className="w-full gap-2">
-            {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Analysiere...</> : <><Search className="w-4 h-4" /> KI-Analyse starten</>}
+            {isLoading ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Analysiere...</>
+            ) : file ? (
+              <><Search className="w-4 h-4" /> KI-Analyse starten</>
+            ) : (
+              <><Upload className="w-4 h-4" /> Datei wählen</>
+            )}
           </Button>
-          {(extractMutation.isError || (extractMutation.data && !extractMutation.data.success)) && (
+
+          {/* Extraction status during processing */}
+          {stepState === 'extracting' && extractStage && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                <span className="text-sm font-medium text-primary">
+                  {extractStage === 'uploading' && 'Datei wird hochgeladen...'}
+                  {extractStage === 'queued' && 'Extraktion in Warteschlange...'}
+                  {extractStage === 'processing' && 'KI analysiert Dokument...'}
+                  {extractStage === 'complete' && 'Extraktion abgeschlossen'}
+                </span>
+              </div>
+              {socketStatus?.progress != null && (
+                <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                  <div className="h-full rounded-full bg-primary transition-all duration-500"
+                    style={{ width: `${socketStatus.progress}%` }} />
+                </div>
+              )}
+              {socketStatus?.detail && (
+                <p className="text-xs text-muted-foreground">{socketStatus.detail}</p>
+              )}
+            </div>
+          )}
+
+          {(extractMutation.isError || (extractMutation.data && !extractMutation.data.success && !extractMutation.data.async)) && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-2">
               <p className="text-sm font-semibold text-red-700">Fehler bei der Extraktion</p>
               <p className="text-sm text-red-600">
@@ -264,7 +394,7 @@ export default function DocumentExtractor() {
           )}
         </div>
 
-        {/* Ergebnis */}
+        {/* ── Extraction Results ── */}
         {data && (
           <>
             {/* Antrag/Vorgeburt Banner */}
@@ -278,7 +408,13 @@ export default function DocumentExtractor() {
               </div>
             )}
 
-            {/* Header */}
+            {/* Confidence Bar */}
+            <ExtractionConfidenceBar
+              overall={data.gesamt_konfidenz}
+              sections={buildConfidenceSections(data)}
+            />
+
+            {/* Header Info + Validierung */}
             <div className="surface p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-primary" />
@@ -290,15 +426,44 @@ export default function DocumentExtractor() {
               <div className="flex items-center gap-3">
                 {unsichere.length > 0 && (
                   <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50 gap-1">
-                    <AlertTriangle className="w-3 h-3" /> {unsichere.length} unsichere Felder
+                    <AlertTriangle className="w-3 h-3" /> {unsichere.length} unsicher
                   </Badge>
                 )}
-                <KonfidenzBadge value={data.gesamt_konfidenz} />
                 {data.total_praemie_monatlich && (
-                  <span className="text-sm font-bold text-emerald-700">{fmtCHF(data.total_praemie_monatlich)}/Mt gesamt</span>
+                  <span className="text-sm font-bold text-emerald-700">{fmtCHF(data.total_praemie_monatlich)}/Mt</span>
                 )}
               </div>
             </div>
+
+            {/* Validation Panel */}
+            <ExtractionValidationPanel
+              extracted={{
+                document_confidence: data.gesamt_konfidenz,
+                confidence_persons: {
+                  policy_holder_name: data.gesamt_konfidenz >= 0.8 ? 0.9 : data.gesamt_konfidenz,
+                  insured_name: data.gesamt_konfidenz,
+                },
+              }}
+              policies={(data.policies || []).map(p => ({
+                product: p.produkt_name,
+                product_short: p.produkt_code,
+                insurer: data.versicherer,
+                sparte: p.typ,
+                premium_monthly: p.praemie_netto,
+                premium_yearly: p.praemie_netto ? p.praemie_netto * 12 : null,
+                franchise: p.franchise,
+                start_date: p.gueltig_ab,
+                policy_number: p.polnummer,
+                confidence: {
+                  product: p.konfidenz,
+                  premium_monthly: p.konfidenz,
+                  franchise: p.konfidenz,
+                  section: p.typ ? 0.9 : null,
+                  dates: p.gueltig_ab ? 0.9 : null,
+                  policy_number: p.polnummer ? 0.9 : null,
+                },
+              }))}
+            />
 
             {/* Personen-Matching */}
             <div className="surface p-5 space-y-3">
@@ -310,11 +475,30 @@ export default function DocumentExtractor() {
                 return (
                   <div key={pi} className="p-3 rounded-lg border border-border bg-slate-50/50">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">{person.rolle || 'Person ' + (pi + 1)}</span>
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">
+                        {person.rolle || `Person ${pi + 1}`}
+                      </span>
                       <span className="font-semibold text-sm">{person.vorname} {person.nachname}</span>
                       {person.geburtsdatum && <span className="text-xs text-muted-foreground">{fmtDate(person.geburtsdatum)}</span>}
                       {person.plz && <span className="text-xs text-muted-foreground">{person.plz} {person.ort}</span>}
                     </div>
+
+                    {/* Personen-Felder im ReviewField Stil */}
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <ReviewField label="Vorname" value={person.vorname}
+                        confidence={determineConfidence(person.vorname, data.gesamt_konfidenz)} readOnly />
+                      <ReviewField label="Nachname" value={person.nachname}
+                        confidence={determineConfidence(person.nachname, data.gesamt_konfidenz)} readOnly />
+                      <ReviewField label="Geburtsdatum" value={person.geburtsdatum}
+                        confidence={determineConfidence(person.geburtsdatum, data.gesamt_konfidenz)} readOnly />
+                      <ReviewField label="PLZ" value={person.plz}
+                        confidence={determineConfidence(person.plz, data.gesamt_konfidenz)} readOnly />
+                      <ReviewField label="Ort" value={person.ort}
+                        confidence={determineConfidence(person.ort, data.gesamt_konfidenz)} readOnly />
+                      <ReviewField label="Rolle" value={person.rolle}
+                        confidence={determineConfidence(person.rolle, data.gesamt_konfidenz)} readOnly />
+                    </div>
+
                     {matches.length > 0 ? (
                       <div className="space-y-1">
                         <p className="text-xs text-muted-foreground mb-1">{matches.length} Treffer im Kundenstamm:</p>
@@ -339,7 +523,7 @@ export default function DocumentExtractor() {
                       </div>
                     ) : (
                       <p className="text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded border border-amber-200">
-                        Kein Treffer — Verträge werden ohne Kundenzuweisung gespeichert (kann nachträglich gesetzt werden)
+                        Kein Treffer — Verträge werden ohne Kundenzuweisung gespeichert
                       </p>
                     )}
                   </div>
@@ -388,4 +572,85 @@ export default function DocumentExtractor() {
       </div>
     </div>
   );
+}
+
+// ─── Sub-Components ───────────────────────────────────────────────────────────
+function PolicyCard({ policy, index, unsichere, editData, onChange }) {
+  const [open, setOpen] = useState(true);
+  const isKvg = policy.typ === 'kvg';
+  const fields = editData[index] || policy;
+  const isUnsicher = (key) => unsichere.some(f => f.includes(`policy[${index}]`) || f.includes(key));
+
+  const set = (key, val) => onChange(index, { ...fields, [key]: val });
+
+  return (
+    <div className={cn('rounded-xl border overflow-hidden', isKvg ? 'border-blue-200' : 'border-violet-200')}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className={cn('w-full flex items-center gap-3 px-4 py-3 text-left', isKvg ? 'bg-blue-50' : 'bg-violet-50')}
+      >
+        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full uppercase', isKvg ? 'bg-blue-600 text-white' : 'bg-violet-600 text-white')}>
+          {isKvg ? 'KVG' : 'VVG'}
+        </span>
+        <span className="font-semibold text-sm flex-1">{fields.produkt_name || '–'}</span>
+        {fields.praemie_netto != null && <span className="text-sm font-bold text-emerald-700">{fmtCHF(fields.praemie_netto)}/Mt</span>}
+        <ConfidenceBadge value={fields.konfidenz} />
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+
+      {open && (
+        <div className="p-4 bg-white">
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { key: 'produkt_name', label: 'Produkt' },
+              { key: 'produkt_code', label: 'Code' },
+              { key: 'modell', label: 'Modell' },
+              { key: 'polnummer', label: 'Police-Nr.' },
+              ...(isKvg ? [{ key: 'franchise', label: 'Franchise CHF', type: 'number' }] : []),
+              { key: 'praemie_brutto', label: 'Prämie Brutto', type: 'number' },
+              { key: 'praemie_netto', label: 'Prämie Netto', type: 'number' },
+              { key: 'gueltig_ab', label: 'Gültig ab' },
+              { key: 'gueltig_bis', label: 'Gültig bis' },
+              ...(!isKvg ? [
+                { key: 'tod_kapital_chf', label: 'Tod-Kapital CHF', type: 'number' },
+                { key: 'invaliditaet_kapital_chf', label: 'Invalidität-Kapital CHF', type: 'number' },
+                { key: 'spital_franchise_chf', label: 'Spital-Franchise CHF', type: 'number' },
+              ] : []),
+            ].map(({ key, label, type }) => (
+              <div key={key}>
+                <label className={cn('text-[10px] font-semibold uppercase tracking-wide block mb-1', isUnsicher(key) ? 'text-amber-600' : 'text-muted-foreground')}>
+                  {label}{isUnsicher(key) && ' ⚠'}
+                </label>
+                <Input
+                  type={type || 'text'}
+                  value={fields[key] ?? ''}
+                  onChange={e => set(key, type === 'number' ? parseFloat(e.target.value) || null : e.target.value)}
+                  className={cn('h-8 text-sm', isUnsicher(key) && 'border-amber-300 bg-amber-50/30')}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-4 text-sm mt-3">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={fields.unfall_gedeckt ?? true}
+                onChange={e => set('unfall_gedeckt', e.target.checked)} className="rounded" />
+              Unfall gedeckt
+            </label>
+            {fields.bonus_stufe != null && (
+              <span className="text-muted-foreground">Bonusstufe: <strong>{fields.bonus_stufe}</strong></span>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ConfidenceBadge({ value }) {
+  if (value == null) return null;
+  const pct = Math.round(value * 100);
+  const cls = value >= 0.8 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    : value >= 0.6 ? 'bg-amber-50 text-amber-700 border-amber-200'
+    : 'bg-red-50 text-red-600 border-red-200';
+  return <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded border', cls)}>{pct}%</span>;
 }

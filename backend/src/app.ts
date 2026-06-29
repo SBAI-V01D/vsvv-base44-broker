@@ -26,6 +26,10 @@ import healthRoutes from './modules/health/health.routes.js';
 import uploadRoutes from './modules/upload/upload.routes.js';
 // Functions routes
 import functionsRoutes from './modules/functions/functions.routes.js';
+// Document extraction routes
+import documentRoutes from './modules/document/document.routes.js';
+// Document worker
+import { startDocumentWorker, stopDocumentWorker } from './workers/document.worker.js';
 
 // ---------------------------------------------------------------------------
 // avaai Backend — Fastify Application Bootstrap
@@ -184,11 +188,13 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '' });
   await app.register(uploadRoutes);
   await app.register(functionsRoutes);
+  await app.register(documentRoutes);
 
   // ----- Graceful Shutdown -------------------------------------------------
 
   const shutdown = async (signal: string) => {
     app.log.info(`Received ${signal} — shutting down gracefully`);
+    await stopDocumentWorker();
     await closeSocketServer();
     await prisma.$disconnect();
     await app.close();
@@ -215,6 +221,11 @@ async function start(): Promise<void> {
 
     // Initialize Socket.io on top of Fastify's HTTP server
     initSocketServer(app);
+
+    // Start background workers
+    if (env.NODE_ENV !== 'test') {
+      startDocumentWorker();
+    }
   } catch (err) {
     app.log.fatal(err);
     process.exit(1);
