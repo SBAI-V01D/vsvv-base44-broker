@@ -217,6 +217,7 @@ function App() {
             <ScrollToTop />
             <Routes>
               <Route path="/" element={<AuthenticatedApp />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/portal/*" element={<AuthenticatedApp />} />
             </Routes>
           </Router>
