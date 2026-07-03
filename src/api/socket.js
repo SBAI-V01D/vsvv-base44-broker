@@ -19,7 +19,7 @@ export function getSocket() {
   if (!socket || !socket.connected) {
     socket = io(SOCKET_URL, {
       auth: { token },
-      transports: ['websocket', 'polling'],
+      transports: ['websocket'],
       autoConnect: false,
     })
   }

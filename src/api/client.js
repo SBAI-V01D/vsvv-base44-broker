@@ -238,7 +238,7 @@ async function getSocketIo() {
     const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || ''
     socketIoInstance = io(SOCKET_URL, {
       auth: { token: accessToken },
-      transports: ['websocket', 'polling'],
+      transports: ['websocket'],
       autoConnect: false,
     })
     // Auto-connect if we have a token
