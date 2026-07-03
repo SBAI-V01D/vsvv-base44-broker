@@ -20,10 +20,12 @@ backend/dist
 
 # Temporary files
 .tmp
+TEMP/
 
 # Test artifacts
 login-test.*
 schema-prisma-chunk-*
+/.playwright-mcp
 
 # Editor backup files
 *.bak
