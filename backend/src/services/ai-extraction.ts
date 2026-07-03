@@ -54,7 +54,7 @@ function getClient(): OpenAI {
     _client = new OpenAI({
       baseURL: env.AI_BASE_URL,
       apiKey: env.AI_API_KEY,
-      timeout: 60_000, // 60s timeout for vision requests
+      timeout: 300_000, // 5min timeout for vision requests
       maxRetries: 2,
     });
   }

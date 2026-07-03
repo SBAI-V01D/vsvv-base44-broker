@@ -27,6 +27,26 @@ export interface DocumentJobData {
   userId: string;
 }
 
+export interface AutoContractJobData {
+  documentId: string;
+  policy: {
+    insurer: string | null;
+    policyNumber: string | null;
+    policyHolder: string | null;
+    insuredPersons: string[];
+    premium: number | null;
+    premiumInterval: string | null;
+    coverage: string[];
+    deductible: number | null;
+    model: string | null;
+    startDate: string | null;
+    endDate: string | null;
+    documentType: string | null;
+  };
+  organizationId: string;
+  userId: string;
+}
+
 export interface ExtractionResult {
   success: boolean;
   policies: Array<Record<string, unknown>>;
@@ -36,11 +56,153 @@ export interface ExtractionResult {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const DOC_TYPE_MAP: Record<string, string> = {
+  antrag: 'antrag',
+  anlage: 'anlage',
+  police: 'police',
+  abrechnung: 'abrechnung',
+}
+
+function mapDocType(aiType: string | undefined | null): 'antrag' | 'police' | 'abrechnung' | 'anlage' | 'unbekannt' {
+  if (!aiType) return 'unbekannt'
+  const lower = aiType.toLowerCase().trim()
+  return (DOC_TYPE_MAP[lower] as any) || 'unbekannt'
+}
+
+// ---------------------------------------------------------------------------
 // Worker Handler
 // ---------------------------------------------------------------------------
 
-async function handleDocumentJob(job: Job<DocumentJobData>): Promise<void> {
-  const { documentId, fileKey, mimeType, organizationId, userId } = job.data;
+// ---------------------------------------------------------------------------
+// Auto-Contract Handler
+// ---------------------------------------------------------------------------
+
+async function handleAutoContract(job: Job<AutoContractJobData>): Promise<void> {
+  const { documentId, policy, organizationId } = job.data;
+
+  console.info(`[AUTO-CONTRACT] Creating contract from document ${documentId}`);
+
+  if (!policy.policyHolder && !policy.policyNumber) {
+    console.warn(`[AUTO-CONTRACT] Kei Policy-Holder oder -Nummer — übersprunge`);
+    return;
+  }
+
+  // 1. Find the document
+  const doc = await prisma.document.findUnique({
+    where: { id: documentId },
+  });
+
+  if (!doc) {
+    console.warn(`[AUTO-CONTRACT] Dokument ${documentId} nöd gfunde`);
+    return;
+  }
+
+  // 2. Find or create customer
+  let customerId: string | undefined | null = doc.customer_id || doc.primary_customer_id;
+
+  if (!customerId && policy.policyHolder) {
+    // Try to find customer by name
+    const nameParts = policy.policyHolder.split(' ').filter(Boolean)
+    const lastName = nameParts.pop() || ''
+    const firstName = nameParts.join(' ')
+
+    const customer = await prisma.customer.findFirst({
+      where: {
+        organization_id: organizationId,
+        OR: [
+          { last_name: { contains: lastName, mode: 'insensitive' } },
+          { first_name: { contains: firstName, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { created_at: 'desc' },
+    })
+
+    if (customer) {
+      customerId = customer.id
+      // Link document to customer
+      await prisma.document.update({
+        where: { id: documentId },
+        data: { customer_id: customer.id, customer_name: policy.policyHolder },
+      })
+    }
+  }
+
+  // 3. Check if contract already exists
+  if (policy.policyNumber) {
+    const existing = await prisma.contract.findFirst({
+      where: { policy_number: policy.policyNumber, organization_id: organizationId },
+    })
+    if (existing) {
+      console.info(`[AUTO-CONTRACT] Vertrag ${policy.policyNumber} existiert bereits`)
+      // Link document to existing contract
+      await prisma.document.update({
+        where: { id: documentId },
+        data: { linked_contract_id: existing.id },
+      })
+      return
+    }
+  }
+
+  // 4. Create/update customer if needed
+  if (!customerId) {
+    const newCust = await prisma.customer.create({
+      data: {
+        first_name: policy.policyHolder || 'Unbekannt',
+        last_name: policy.policyHolder || `Aus Dokument ${documentId.slice(0, 8)}`,
+        customer_type: 'private',
+        status: 'active',
+        organization_id: organizationId,
+      },
+    })
+    customerId = newCust.id
+    await prisma.document.update({
+      where: { id: documentId },
+      data: { customer_id: newCust.id, customer_name: policy.policyHolder },
+    })
+  }
+
+  const isHealth = ['helsana', 'css', 'swica', 'sanitas', 'kpt', 'assura', 'sympany', 'ökk', 'atupri', 'aquilana', 'philos', 'innova', 'sanag', 'egk', 'moove', 'globe']
+    .some(h => policy.insurer?.toLowerCase().includes(h))
+
+  const contract = await prisma.contract.create({
+    data: {
+      policy_number: policy.policyNumber || `AUTO-${documentId.slice(0, 8)}`,
+      insurer: policy.insurer || 'Unbekannt',
+      customer_id: customerId!,
+      insurance_type: isHealth ? 'health' : 'other',
+      premium_monthly: policy.premiumInterval === 'monatlich' ? (policy.premium ?? 0) : (policy.premium ? policy.premium / 12 : null),
+      premium_yearly: policy.premiumInterval === 'jaehrlich' ? (policy.premium ?? 0) : (policy.premium ? policy.premium * 12 : null),
+      start_date: policy.startDate ? new Date(policy.startDate) : null,
+      end_date: policy.endDate ? new Date(policy.endDate) : null,
+      status: 'active',
+      organization_id: organizationId,
+    },
+  })
+
+  // Link document to contract
+  await prisma.document.update({
+    where: { id: documentId },
+    data: { linked_contract_id: contract.id },
+  })
+
+  console.info(`[AUTO-CONTRACT] ✅ Vertrag ${contract.id} erstellt (Police: ${policy.policyNumber || 'N/A'})`)
+}
+
+// ---------------------------------------------------------------------------
+// Main Document Handler (routes by job name)
+// ---------------------------------------------------------------------------
+
+async function handleDocumentJob(job: Job<DocumentJobData | AutoContractJobData>): Promise<void> {
+  // Route by job name
+  if (job.name === 'auto-create-contract') {
+    return handleAutoContract(job as Job<AutoContractJobData>)
+  }
+
+  const data = job.data as DocumentJobData
+  const { documentId, fileKey, mimeType, organizationId, userId } = data
 
   console.info(`[DOCUMENT WORKER] Processing document ${documentId} (${fileKey})`);
 
@@ -95,8 +257,8 @@ async function handleDocumentJob(job: Job<DocumentJobData>): Promise<void> {
       processing_stage: 'entities_detected',
       classification_status: 'klassifiziert',
       classification_confidence: result.confidence,
-      // Extract the first policy's insurer as doc_type hint
-      doc_type: result.policies[0]?.documentType as any ?? 'unbekannt',
+      // Map AI documentType to valid enum value
+      doc_type: mapDocType(result.policies[0]?.documentType),
     },
   });
 

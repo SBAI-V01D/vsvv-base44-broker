@@ -203,6 +203,8 @@ enum DocumentProcessingStage {
 
 enum DocumentDocType {
   antrag
+  police
+  abrechnung
   anlage
   unbekannt
 
