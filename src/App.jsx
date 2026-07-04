@@ -194,16 +194,16 @@ const AuthenticatedApp = () => {
         <Route path="/admin/security" element={<ProtectedRoute allowedRoles={['admin']}><AdminSecurity /></ProtectedRoute>} />
         <Route path="/admin/backup" element={<ProtectedRoute allowedRoles={['admin']}><AdminBackup /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminHub /></ProtectedRoute>} />
+
+        {/* ── LEGACY ROUTE REDIRECTS ───────────────────────────── */}
+        <Route path="/admin/team-zugriffsrechte" element={<Navigate to="/admin/team" replace />} />
+        <Route path="/admin/enterprise-control-center" element={<Navigate to="/admin/control-center" replace />} />
+        <Route path="/admin/enterprise-audit" element={<Navigate to="/admin/audit" replace />} />
+        <Route path="/admin-logs" element={<Navigate to="/admin/audit-logs" replace />} />
+        <Route path="/system-logs" element={<Navigate to="/admin/logs" replace />} />
+
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
-
-      {/* ── LEGACY ROUTE REDIRECTS ───────────────────────────── */}
-      <Route path="/admin/team-zugriffsrechte" element={<Navigate to="/admin/team" replace />} />
-      <Route path="/admin/enterprise-control-center" element={<Navigate to="/admin/control-center" replace />} />
-      <Route path="/admin/enterprise-audit" element={<Navigate to="/admin/audit" replace />} />
-      <Route path="/admin-logs" element={<Navigate to="/admin/audit-logs" replace />} />
-      <Route path="/system-logs" element={<Navigate to="/admin/logs" replace />} />
-
-      <Route path="*" element={<PageNotFound />} />
     </AppLayout>
   )
 }
@@ -216,9 +216,8 @@ function App() {
           <Router>
             <ScrollToTop />
             <Routes>
-              <Route path="/" element={<AuthenticatedApp />} />
+              <Route path="/*" element={<AuthenticatedApp />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/portal/*" element={<AuthenticatedApp />} />
             </Routes>
           </Router>
           <Toaster />

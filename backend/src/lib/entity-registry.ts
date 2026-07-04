@@ -329,13 +329,8 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     sortableFields: ['created_at', 'updated_at'],
     permissions: { list: ['admin', 'management', 'broker'], get: ['admin', 'management', 'broker'], create: ['admin', 'management', 'broker'], update: ['admin', 'management', 'broker'], delete: ['admin'] },
   },
-  {
-    model: 'verkaufschance',
-    prefix: 'verkaufschancen',
-    searchFields: ['title', 'status'],
-    sortableFields: ['created_at', 'updated_at', 'status'],
-    permissions: { list: ['admin', 'management', 'broker'], get: ['admin', 'management', 'broker'], create: ['admin', 'management', 'broker'], update: ['admin', 'management', 'broker'], delete: ['admin'] },
-  },
+  // NOTE: verkaufschance is registered as a standalone module with richer config
+  // in modules/verkaufschancen/verkaufschancen.routes.ts — see app.ts registration.
 
   // ==========================================================================
   // Advisory & AI

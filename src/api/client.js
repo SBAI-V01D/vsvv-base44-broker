@@ -17,7 +17,11 @@
  *   subscribe(callback)       → bridges to Socket.io for realtime
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
+// All request paths in this client already include '/api/' (e.g. '/api/tasks').
+// VITE_API_URL must NOT contain '/api' — it should be empty (relative) or a full
+// origin for cross-origin setups. An empty fallback keeps URLs relative to the
+// current origin, which works through the nginx proxy.
+const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
 // ─── Token Management (SessionStorage — XSS Seal) ──────────────────────────────
 // All tokens exclusively use SessionStorage → browser-sealed, XSS-safe.
@@ -256,17 +260,24 @@ async function getSocketIo() {
 // Track active subscriptions for cleanup
 const subscriptionHandlers = new Map()
 
+// ─── Entity Route Overrides ─────────────────────────────────────────────
+// Entities whose pluralized route doesn't follow the default kebab+s pattern
+const ROUTE_OVERRIDES = {
+  Verkaufschance: 'verkaufschancen',
+}
+
 // ─── Entity Proxy ───────────────────────────────────────────────────────────
 
 function createEntityProxy() {
   return new Proxy({}, {
     get(target, entityName) {
       // Convert PascalCase to kebab-case: Customer → customers
-      const route = entityName
+      // Use ROUTE_OVERRIDES for entities whose route deviates from the pattern
+      const route = ROUTE_OVERRIDES[entityName] || (entityName
         .replace(/([A-Z])/g, '-$1')
         .toLowerCase()
         .replace(/^-/, '')
-        + 's' // simple pluralization
+        + 's') // default pluralization
 
       const entityMethods = {
         /**
