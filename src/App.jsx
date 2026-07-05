@@ -95,9 +95,9 @@ const AuthenticatedApp = () => {
   if (location.pathname.startsWith('/portal')) {
     return (
       <Routes>
-        <Route path="/portal/setup" element={<PortalSetup />} />
-        <Route path="/portal/reset-password" element={<PortalResetPassword />} />
-        <Route path="/portal" element={<PortalRoot />}>
+        <Route path="setup" element={<PortalSetup />} />
+        <Route path="reset-password" element={<PortalResetPassword />} />
+        <Route element={<PortalRoot />}>
           <Route index element={<PortalDashboard />} />
           <Route path="vertraege" element={<PortalContracts />} />
           <Route path="antraege" element={<PortalApplications />} />
@@ -218,6 +218,7 @@ function App() {
             <Routes>
               <Route path="/*" element={<AuthenticatedApp />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/portal/*" element={<AuthenticatedApp />} />
             </Routes>
           </Router>
           <Toaster />

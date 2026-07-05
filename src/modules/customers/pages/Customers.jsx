@@ -2,7 +2,7 @@
  * Customers — Relationship Intelligence Workspace
  * Premium Financial Platform: monochrome · whitespace · typography-first
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { avaai } from '@/api/avaaiClient';
@@ -10,6 +10,11 @@ import {
   Plus, User, Building2, Upload, Download, Users, Search,
   AlertTriangle, Loader2, XCircle
 } from 'lucide-react';
+import {
+  Pagination, PaginationContent, PaginationItem,
+  PaginationLink, PaginationPrevious, PaginationNext,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -272,7 +277,11 @@ export default function Customers() {
   const [search, setSearch]             = useState('');
   const [showImport, setShowImport]     = useState(false);
   const [showMerge, setShowMerge]       = useState(false);
+  const [page, setPage]                 = useState(1);
+  const PAGE_SIZE = 100;
   const queryClient = useQueryClient();
+
+  useEffect(() => { setPage(1); }, [search, workspaceMode, sortBy]);
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => avaai.auth.me() });
 
@@ -416,6 +425,13 @@ export default function Customers() {
     };
   }, [modeFiltered, search, customers, primaryCustomers, sortBy]);
 
+  const pagedDisplayed = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return displayed.slice(start, start + PAGE_SIZE);
+  }, [displayed, page, PAGE_SIZE]);
+
+  const totalPages = Math.max(1, Math.ceil(displayed.length / PAGE_SIZE));
+
   const openTasks = tasks.filter(t => t.status === 'open' || t.status === 'in_progress').length;
   const criticalCount = segments.critical?.count ?? 0;
   const totalPremium = contracts.reduce((s, c) => s + (c.premium_yearly || 0), 0);
@@ -535,7 +551,7 @@ export default function Customers() {
                 {WORKSPACE_MODES.find(m => m.id === workspaceMode)?.label || 'Portfolio'}
               </span>
               <span className="text-[11px] text-[hsl(var(--text-muted))]">
-                {displayed.length} Kunden{search ? ` · "${search}"` : ''}
+                {displayed.length} Kunden{displayed.length > 0 && PAGE_SIZE < displayed.length ? ` · Seite ${page} von ${totalPages}` : ''}{search ? ` · "${search}"` : ''}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -575,15 +591,15 @@ export default function Customers() {
             ) : (
               <>
                 {/* Privatkunden Gruppe */}
-                {displayed.filter(c => c.customer_type !== 'business').length > 0 && (
+                {pagedDisplayed.filter(c => c.customer_type !== 'business').length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 mb-2">
                       <User className="w-3.5 h-3.5 text-slate-400" />
                       <h3 className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Privatkunden</h3>
-                      <span className="text-[10px] text-slate-400">({displayed.filter(c => c.customer_type !== 'business').length})</span>
+                      <span className="text-[10px] text-slate-400">({pagedDisplayed.filter(c => c.customer_type !== 'business').length})</span>
                     </div>
                     <CustomerFeed
-                      displayed={displayed.filter(c => c.customer_type !== 'business')}
+                      displayed={pagedDisplayed.filter(c => c.customer_type !== 'business')}
                       customers={customers}
                       segments={segments}
                       matchedFamilyIds={matchedFamilyIds}
@@ -597,15 +613,15 @@ export default function Customers() {
                 )}
 
                 {/* Firmenkunden Gruppe */}
-                {displayed.filter(c => c.customer_type === 'business').length > 0 && (
+                {pagedDisplayed.filter(c => c.customer_type === 'business').length > 0 && (
                   <div className="space-y-3 pt-4 border-t border-border/40">
                     <div className="flex items-center gap-2 mb-2">
                       <Building2 className="w-3.5 h-3.5 text-slate-400" />
                       <h3 className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Firmenkunden</h3>
-                      <span className="text-[10px] text-slate-400">({displayed.filter(c => c.customer_type === 'business').length})</span>
+                      <span className="text-[10px] text-slate-400">({pagedDisplayed.filter(c => c.customer_type === 'business').length})</span>
                     </div>
                     <CustomerFeed
-                      displayed={displayed.filter(c => c.customer_type === 'business')}
+                      displayed={pagedDisplayed.filter(c => c.customer_type === 'business')}
                       customers={customers}
                       segments={segments}
                       matchedFamilyIds={matchedFamilyIds}
@@ -619,6 +635,46 @@ export default function Customers() {
                 )}
               </>
             )}
+          {totalPages > 1 && (
+            <div className="pb-6">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }}
+                      className={page <= 1 ? 'pointer-events-none opacity-40' : ''}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                    .map((p, idx, arr) => (
+                      <React.Fragment key={p}>
+                        {idx > 0 && arr[idx - 1] !== p - 1 && (
+                          <PaginationItem><PaginationEllipsis /></PaginationItem>
+                        )}
+                        <PaginationItem>
+                          <PaginationLink
+                            href="#"
+                            isActive={page === p}
+                            onClick={(e) => { e.preventDefault(); setPage(p); }}
+                          >
+                            {p}
+                          </PaginationLink>
+                        </PaginationItem>
+                      </React.Fragment>
+                    ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); setPage(p => Math.min(totalPages, p + 1)); }}
+                      className={page >= totalPages ? 'pointer-events-none opacity-40' : ''}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
           </div>
         </div>
 

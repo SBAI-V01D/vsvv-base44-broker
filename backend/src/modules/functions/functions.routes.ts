@@ -313,22 +313,6 @@ const functionRegistry: Record<string, FunctionHandler> = {
       return { results: { customers, contracts, documents, tasks, leads } };
     },
   },
-
-  'getAllContractsForDashboard': {
-    description: 'Get all contracts for the dashboard overview',
-    handler: async (_, { orgId }) => {
-      const contracts = await prisma.contract.findMany({
-        where: { organization_id: orgId, archived: false },
-        include: {
-          customer: { select: { id: true, first_name: true, last_name: true, email: true } },
-          commissions: { take: 1, orderBy: { created_at: 'desc' } },
-        },
-        take: 50,
-        orderBy: { created_at: 'desc' },
-      });
-      return { contracts };
-    },
-  },
 };
 
 // ============================================================================

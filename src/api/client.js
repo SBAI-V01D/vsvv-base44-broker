@@ -17,10 +17,6 @@
  *   subscribe(callback)       → bridges to Socket.io for realtime
  */
 
-// All request paths in this client already include '/api/' (e.g. '/api/tasks').
-// VITE_API_URL must NOT contain '/api' — it should be empty (relative) or a full
-// origin for cross-origin setups. An empty fallback keeps URLs relative to the
-// current origin, which works through the nginx proxy.
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
 // ─── Token Management (SessionStorage — XSS Seal) ──────────────────────────────
@@ -166,11 +162,11 @@ async function request(method, path, options = {}) {
 function createServiceRoleEntityProxy() {
   return new Proxy({}, {
     get(target, entityName) {
-      const route = entityName
+      const route = ROUTE_OVERRIDES[entityName] || (entityName
         .replace(/([A-Z])/g, '-$1')
         .toLowerCase()
         .replace(/^-/, '')
-        + 's'
+        + 's')
 
       const methods = {
         list: (...args) => {

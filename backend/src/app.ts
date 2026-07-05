@@ -28,8 +28,6 @@ import uploadRoutes from './modules/upload/upload.routes.js';
 import functionsRoutes from './modules/functions/functions.routes.js';
 // Document extraction routes
 import documentRoutes from './modules/document/document.routes.js';
-// Verkaufschancen (sales opportunities) routes
-import verkaufschancenRoutes from './modules/verkaufschancen/verkaufschancen.routes.js';
 // Document worker
 import { startDocumentWorker, stopDocumentWorker } from './workers/document.worker.js';
 
@@ -191,7 +189,6 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(uploadRoutes);
   await app.register(functionsRoutes);
   await app.register(documentRoutes);
-  await app.register(verkaufschancenRoutes);
 
   // ----- Graceful Shutdown -------------------------------------------------
 

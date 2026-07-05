@@ -297,7 +297,7 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
         try {
           const query = request.query as Record<string, string>;
           const page = Math.max(1, parseInt(query.page ?? '1', 10) || 1);
-          const limit = Math.min(100, Math.max(1, parseInt(query.limit ?? '20', 10) || 20));
+          const limit = Math.min(500, Math.max(1, parseInt(query.limit ?? '20', 10) || 20));
           const skip = (page - 1) * limit;
           const search = query.search ?? '';
           const sortBy = sortableFields.includes(query.sortBy ?? '')
