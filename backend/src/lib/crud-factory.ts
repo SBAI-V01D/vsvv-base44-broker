@@ -313,6 +313,19 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
             where.archived = false;
           }
 
+          // Pass arbitrary query params as field-level filters
+          const KNOWN_PARAMS = new Set(['page', 'limit', 'search', 'sortBy', 'sortOrder']);
+          for (const [key, value] of Object.entries(query)) {
+            if (KNOWN_PARAMS.has(key) || !value) continue;
+            // Coerce basic types
+            if (value === 'true') where[key] = true;
+            else if (value === 'false') where[key] = false;
+            else if (value === 'null') where[key] = null;
+            else if (/^\d+$/.test(value)) where[key] = parseInt(value, 10);
+            else if (/^\d+\.\d+$/.test(value)) where[key] = parseFloat(value);
+            else where[key] = value;
+          }
+
           if (search && searchFields.length > 0) {
             where.OR = searchFields.map((field) => ({
               [field]: { contains: search, mode: 'insensitive' },
