@@ -182,6 +182,19 @@ export function emitEntityEvent(
 }
 
 /**
+ * Emit a custom event to all users in an organization.
+ * Used for extraction status updates, notifications, etc.
+ */
+export function emitToOrganization(
+  eventName: string,
+  data: Record<string, unknown>,
+  orgId: string,
+): void {
+  if (!io) return;
+  io.to(`org:${orgId}`).emit(eventName, data);
+}
+
+/**
  * Gracefully shut down the Socket.io server.
  */
 export async function closeSocketServer(): Promise<void> {

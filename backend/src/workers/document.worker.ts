@@ -13,7 +13,7 @@ import { type Job } from 'bullmq';
 import { prisma } from '../lib/prisma.js';
 import { createWorker, addJob, QueueName } from '../lib/queue.js';
 import { extractFromDocument } from '../services/ai-extraction.js';
-import { emitEntityEvent } from '../lib/socket.js';
+import { emitEntityEvent, emitToOrganization } from '../lib/socket.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -187,6 +187,7 @@ async function handleAutoContract(job: Job<AutoContractJobData>): Promise<void> 
     where: { id: documentId },
     data: { linked_contract_id: contract.id, processing_stage: 'policy_created' },
   })
+  emitToOrganization('extraction:complete', { documentId, stage: 'policy_created', contractId: contract.id }, organizationId)
 
   console.info(`[AUTO-CONTRACT] ✅ Vertrag ${contract.id} erstellt (Police: ${policy.policyNumber || 'N/A'})`)
 }
@@ -211,6 +212,7 @@ async function handleDocumentJob(job: Job<DocumentJobData | AutoContractJobData>
     where: { id: documentId },
     data: { processing_stage: 'parsed' },
   });
+  emitToOrganization('extraction:status', { documentId, stage: 'parsed' }, organizationId);
 
   // 2. Call AI extraction service
   const result = await extractFromDocument(fileKey, mimeType);
@@ -275,12 +277,13 @@ async function handleDocumentJob(job: Job<DocumentJobData | AutoContractJobData>
     },
   });
 
-  // 5. Emit socket event for real-time frontend update
+  // 5. Emit socket events for real-time frontend update
   emitEntityEvent('document', 'update', {
     id: documentId,
     processing_stage: 'entities_detected',
     extraction_result: extractedData,
   }, organizationId, userId);
+  emitToOrganization('extraction:complete', { documentId, stage: 'entities_detected', confidence: result.confidence }, organizationId);
 
   console.info(`[DOCUMENT WORKER] ✅ Extraction complete for ${documentId} (confidence: ${result.confidence})`);
 
