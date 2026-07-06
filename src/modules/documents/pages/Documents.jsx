@@ -95,14 +95,7 @@ export default function Documents() {
   }
 
   const handleRequeue = async (doc) => {
-    await avaai.entities.AutomationQueue.create({
-      job_type: 'ki_extraction',
-      status: 'pending',
-      related_document_id: doc.id,
-      related_entity_type: 'Document',
-      related_entity_id: doc.id,
-      payload: JSON.stringify({ file_url: doc.file_url, file_name: doc.name, document_id: doc.id }),
-    })
+    await avaai.request('POST', '/api/document/extract', { documentId: doc.id })
     updateMutation.mutate({ id: doc.id, data: { classification_status: 'ausstehend' } })
   }
 

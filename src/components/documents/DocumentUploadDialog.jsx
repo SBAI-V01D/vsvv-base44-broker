@@ -154,14 +154,7 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
           uploaded_by: 'broker',
         })
         setUploadProgress(85)
-        avaai.entities.AutomationQueue.create({
-          job_type: 'ki_extraction',
-          status: 'pending',
-          related_document_id: doc.id,
-          related_entity_type: 'Document',
-          related_entity_id: doc.id,
-          payload: JSON.stringify({ file_url, file_name: form.name, document_id: doc.id }),
-        }).catch(err => console.error('Queue creation failed:', err))
+        avaai.request('POST', '/api/document/extract', { documentId: doc.id }).catch(err => console.error('Extraction trigger failed:', err))
       } else {
         // Kategorie je nach Modus
         const docCategory =

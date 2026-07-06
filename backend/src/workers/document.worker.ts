@@ -125,7 +125,7 @@ async function handleAutoContract(job: Job<AutoContractJobData>): Promise<void> 
       // Link document to customer
       await prisma.document.update({
         where: { id: documentId },
-        data: { customer_id: customer.id, customer_name: policy.policyHolder },
+        data: { customer_id: customer.id, customer_name: policy.policyHolder, processing_stage: 'customer_mapped' },
       })
     }
   }
@@ -140,7 +140,7 @@ async function handleAutoContract(job: Job<AutoContractJobData>): Promise<void> 
       // Link document to existing contract
       await prisma.document.update({
         where: { id: documentId },
-        data: { linked_contract_id: existing.id },
+        data: { linked_contract_id: existing.id, processing_stage: 'policy_created' },
       })
       return
     }
@@ -160,7 +160,7 @@ async function handleAutoContract(job: Job<AutoContractJobData>): Promise<void> 
     customerId = newCust.id
     await prisma.document.update({
       where: { id: documentId },
-      data: { customer_id: newCust.id, customer_name: policy.policyHolder },
+      data: { customer_id: newCust.id, customer_name: policy.policyHolder, processing_stage: 'customer_mapped' },
     })
   }
 
@@ -182,10 +182,10 @@ async function handleAutoContract(job: Job<AutoContractJobData>): Promise<void> 
     },
   })
 
-  // Link document to contract
+  // Link document to contract and advance processing stage
   await prisma.document.update({
     where: { id: documentId },
-    data: { linked_contract_id: contract.id },
+    data: { linked_contract_id: contract.id, processing_stage: 'policy_created' },
   })
 
   console.info(`[AUTO-CONTRACT] ✅ Vertrag ${contract.id} erstellt (Police: ${policy.policyNumber || 'N/A'})`)

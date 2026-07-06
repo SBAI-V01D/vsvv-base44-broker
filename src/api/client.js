@@ -260,6 +260,7 @@ const subscriptionHandlers = new Map()
 // Entities whose pluralized route doesn't follow the default kebab+s pattern
 const ROUTE_OVERRIDES = {
   Verkaufschance: 'verkaufschancen',
+  Verkaufschances: 'verkaufschancen', // English alias
 }
 
 // ─── Entity Proxy ───────────────────────────────────────────────────────────
@@ -535,6 +536,10 @@ const integrations = {
  */
 export const avaai = {
   entities: createEntityProxy(),
+
+  /** Generic HTTP request helper — used for custom endpoints not covered by entities */
+  request: (method, path, body) => request(method, path, { body }),
+
   asServiceRole: {
     entities: createServiceRoleEntityProxy(),
   },

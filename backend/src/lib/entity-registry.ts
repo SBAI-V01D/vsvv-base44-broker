@@ -9,6 +9,7 @@
 // ============================================================================
 
 import type { CrudConfig } from './crud-factory.js';
+import { OrganizationSchema, UserSchema, AdvisorSchema, ContractSchema } from './validation.js';
 
 export const ENTITY_REGISTRY: CrudConfig[] = [
   // ==========================================================================
@@ -21,6 +22,8 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     searchFields: ['name', 'email', 'type'],
     sortableFields: ['created_at', 'updated_at', 'name'],
     skipTenantFilter: true,
+    validateCreate: async (body) => { try { OrganizationSchema.create.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
+    validateUpdate: async (body) => { try { OrganizationSchema.update.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
   },
   {
     model: 'user',
@@ -28,12 +31,16 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     searchFields: ['email', 'name'],
     sortableFields: ['created_at', 'updated_at', 'email', 'name'],
     permissions: { list: ['admin', 'management'], create: ['admin'], update: ['admin', 'management'], delete: ['admin'] },
+    validateCreate: async (body) => { try { UserSchema.create.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
+    validateUpdate: async (body) => { try { UserSchema.update.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
   },
   {
     model: 'advisor',
     prefix: 'advisors',
     searchFields: ['email'],
     sortableFields: ['created_at', 'updated_at', 'email'],
+    validateCreate: async (body) => { try { AdvisorSchema.create.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
+    validateUpdate: async (body) => { try { AdvisorSchema.update.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
   },
   {
     model: 'broker',
@@ -57,6 +64,8 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     prefix: 'contracts',
     searchFields: ['status'],
     sortableFields: ['created_at', 'updated_at', 'status'],
+    validateCreate: async (body) => { try { ContractSchema.create.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
+    validateUpdate: async (body) => { try { ContractSchema.update.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
   },
   {
     model: 'contractAdvisor',

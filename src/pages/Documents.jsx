@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   Search, Plus, MoreHorizontal, FileText, ExternalLink,
-  Zap, Paperclip, Tag, Trash2, Eye, RefreshCw, Clock, Download, AlertCircle, CheckCircle2, Sparkles, Loader2
+  Zap, Paperclip, Tag, Trash2, Eye, RefreshCw, Clock, Download, CheckCircle2, Sparkles, Loader2
 } from 'lucide-react'
 import DocumentTypeBadge from '@/components/documents/DocumentTypeBadge'
 import DocumentTagBadge from '@/components/documents/DocumentTagBadge'
@@ -95,14 +95,7 @@ export default function Documents() {
   }
 
   const handleRequeue = async (doc) => {
-    await avaai.entities.AutomationQueue.create({
-      job_type: 'ki_extraction',
-      status: 'pending',
-      related_document_id: doc.id,
-      related_entity_type: 'Document',
-      related_entity_id: doc.id,
-      payload: JSON.stringify({ file_url: doc.file_url, file_name: doc.name, document_id: doc.id }),
-    })
+    await avaai.request('POST', '/api/document/extract', { documentId: doc.id })
     updateMutation.mutate({ id: doc.id, data: { classification_status: 'ausstehend' } })
   }
 
