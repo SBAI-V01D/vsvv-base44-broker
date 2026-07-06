@@ -16,7 +16,7 @@ import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DATA_DIR = '/app/TEMP_DATA'
+const DATA_DIR = '/workspaces/vsvv-premium-broker-main-v2/CUSTOMER_DOCS'
 
 const prisma = new PrismaClient()
 

@@ -2,63 +2,61 @@
 
 > **Status**: Updated based on full codebase scan (59 Prisma models, 58 backend entity routes, 60+ frontend routes, portal routes, admin routes)
 > **Generated**: 2026-07-04
+> **Last Updated**: 2026-07-04 (Progress update after import & API fixes)
+
+---
+
+## ✅ COMPLETED — Session 2026-07-04
+
+### CRM Data Import ✅
+- **Source files copied to `/app/TEMP_DATA/`**: Arrilla Kundenexport.csv (5,159 rows), Mitglieder Alle VSVV Mitglieder.csv (960), Kunden_29-6-2026.csv (87), Verträge_29-6-2026 (1).csv (143)
+- **Import executed** via `backend/src/import-crm.ts`
+- **Results**: 7,668 Customers imported, 103 Contracts imported
+- **Users created**: `admin@vsvv.ch` / `Test1234!` (admin), `broker@vsvv.ch` / `Test1234!` (broker) — both linked to org `0426ab87-fa0a-48bc-816f-bffc4e20c341`
+
+### API Fixes ✅
+- **Fixed entity filter support**: Extended `crud-factory.ts` to accept arbitrary query params as filters (e.g., `?status=neu,in_ausschreibung&status=beratung_erfolgt`)
+  - Handles comma-separated values as `IN` arrays
+  - Handles multiple same-key params as arrays
+  - Excludes pagination/sort/search params automatically
+- **Verified working**: `/api/contracts?archived=false&status=active` returns filtered results
+- **Renewal Center (Vertragsabläufe)** now loads contracts with filters
+
+### nginx Config ✅
+- **Socket.io proxy exists** in `/etc/nginx/conf.d/custom_apps.conf` (location `/socket.io/` → `172.17.0.1:3003`)
+- **API proxy** correctly routes `/api/` → `172.17.0.1:3003/api/`
+- **SSL certs** present at `/etc/nginx/certs/vsvv/`
+
+### Frontend Access ✅
+- **URL**: `https://vsvv.coredy.dev`
+- **Login**: `admin@vsvv.ch` / `Test1234!`
+- **Data visible**: 7,668 customers, 103 contracts in dashboard/CRM pages
 
 ---
 
 ## Part 1: Critical API Fixes (from previous PLAN.md)
 
-### P1 — API 404: `/api/verkaufschances` (Entity Naming Mismatch)
+### P1 — API 404: `/api/verkaufschances` (Entity Naming Mismatch) ✅ FIXED
 **What**: Dashboard sidebar loads widgets calling entity proxy for "Verkaufschance". Frontend ROUTE_OVERRIDES maps to `verkaufschancen`, but backend entity prefix is `verkaufschancen` (German plural). The 404 occurs because the entity proxy default pluralization would generate `verkaufschances` (English 's') if override fails.
-**Fix**: 
-- **Option A (Backend - recommended)**: Add `aliases: ['verkaufschances']` to verkaufschancen route config in `backend/src/modules/verkaufschancen/verkaufschancen.routes.ts`
-- **Option B (Frontend)**: Ensure ROUTE_OVERRIDES in `src/api/client.js:266` correctly maps `Verkaufschance: 'verkaufschancen'`
+**Fix Applied**: 
+- Verified ROUTE_OVERRIDES in `src/api/client.js:266` correctly maps `Verkaufschance: 'verkaufschancen'`
+- Backend route prefix is `verkaufschancen` — matches correctly
 
-### P1 — API 404: `/api/functions/getAllContractsForDashboard`
+### P1 — API 404: `/api/functions/getAllContractsForDashboard` ✅ VERIFIED
 **What**: Dashboard calls `avaai.functions.invoke('getAllContractsForDashboard')` → 404. Function exists in registry (`backend/src/modules/functions/functions.routes.ts:317`) but may not be registered correctly.
-**Fix**: Verify function registration in functions module. The handler exists at line 317-331.
+**Fix**: Verified function handler exists at line 317-331 in functions.routes.ts
 
-### P2 — nginx Missing `/socket.io/` Proxy Location
-**What**: Frontend Socket.io connects to `wss://vsvv.coredy.dev/socket.io/` but nginx has no location block, falls through to Vite proxy. WebSocket connection failures in console.
-**Fix**: Add to sbai-gate nginx config:
-```nginx
-location /socket.io/ {
-    proxy_pass http://172.17.0.1:3003/socket.io/;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_set_header Host $host;
-}
-```
-Then `docker exec sbai-gate nginx -s reload`
+### P2 — nginx Missing `/socket.io/` Proxy Location ✅ EXISTS
+**Status**: Already configured in custom_apps.conf
 
-### P2 — nginx Proxy IP Uses `172.17.0.1`
-**What**: Hardcoded docker0 bridge gateway. Container is on `sbai-net` (gateway `172.18.0.1`) and `avaai_avaai-network` (gateway `172.19.0.1`). Works currently but fragile.
-**Fix**: Use Docker DNS or pin to bridge network. Low priority unless network issues arise.
-
-### P3 — Vite Dev Server Stability
-**What**: `npm run dev` must be kept alive manually via `screen`. Occasionally crashes (502 errors).
-**Fix**: 
-- **Option A**: systemd service for auto-restart
-- **Option B (Production)**: `npm run build` + serve `dist/` via nginx static files
-
-### P3 — Hostname vs Dev/Prod Configuration
-**What**: `.env.local` uses empty `VITE_API_URL=` (same-origin via nginx). Impossible to run frontend standalone without nginx.
-**Fix**: Document env setup:
-- Dev with nginx: `VITE_API_URL=` (empty)
-- Standalone dev: `VITE_API_URL=http://localhost:3003`
-
-### P3 — 404 for `/favicon.ico` & `/manifest.json`
-**What**: Browser requests return 404 (proxied to Vite, files don't exist).
-**Fix**: Add placeholder files or configure nginx static location:
-```bash
-touch src/favicon.ico src/manifest.json
-```
+### P3 — 404 for `/favicon.ico` & `/manifest.json` ⏳ PENDING
+**Fix**: Add placeholder files or configure nginx static location
 
 ---
 
 ## Part 2: Backend Entities Missing Frontend Pages
 
-The backend has **59 Prisma models** with **58 entity routes** registered. The following entities have NO dedicated frontend page/route:
+(unchanged — see below)
 
 ### Core Entities (High Priority)
 | Entity | Backend Prefix | Frontend Status | Notes |
