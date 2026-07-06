@@ -27,6 +27,14 @@ import CommissionsAndCourtage from './pages/CommissionsAndCourtage.jsx'
 import BeratungOrganisation from './pages/BeratungOrganisation'
 import SystemLogs from './pages/SystemLogs'
 import FinanceDashboard from './pages/FinanceDashboard'
+import AccountingEntries from './pages/AccountingEntries'
+import Payouts from './pages/Payouts'
+import Advisors from './pages/Advisors'
+import FinancePeriods from './pages/FinancePeriods'
+import Offers from './pages/Offers'
+import MutationRequests from './pages/MutationRequests'
+import DuplicateAlerts from './pages/DuplicateAlerts'
+import GovernanceRules from './pages/GovernanceRules'
 import CEODashboard from './components/ceo/CEODashboard'
 import CEOCockpit from './pages/CEOCockpit'
 import AdvancedDashboard from './pages/AdvancedDashboard'
@@ -179,6 +187,14 @@ const AuthenticatedApp = () => {
         <Route path="/vergleichs-analysen" element={<VergleichsAnalysenListe />} />
         <Route path="/test/kkv" element={<TestKrankenkassenVergleich />} />
         <Route path="/compliance-schreiben" element={<ComplianceSchreiben />} />
+        <Route path="/buchhaltung" element={<AccountingEntries />} />
+        <Route path="/auszahlungen" element={<Payouts />} />
+        <Route path="/berater" element={<Advisors />} />
+        <Route path="/finanz-perioden" element={<FinancePeriods />} />
+        <Route path="/angebote" element={<Offers />} />
+        <Route path="/aenderungen" element={<MutationRequests />} />
+        <Route path="/dubletten" element={<DuplicateAlerts />} />
+        <Route path="/admin/governance-rules" element={<ProtectedRoute allowedRoles={['admin']}><GovernanceRules /></ProtectedRoute>} />
         <Route path="/chat-export" element={<ChatExport />} />
         <Route path="/archive-download" element={<ArchiveDownload />} />
 
