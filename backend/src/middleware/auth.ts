@@ -16,6 +16,7 @@ export const PUBLIC_ROUTES = [
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/health',
+  '/api/uploads/',
 ];
 
 // ---------------------------------------------------------------------------

@@ -55,7 +55,7 @@ function getClient(): OpenAI {
       baseURL: env.AI_BASE_URL,
       apiKey: env.AI_API_KEY,
       timeout: 300_000, // 5min timeout for vision requests
-      maxRetries: 2,
+      maxRetries: 3,
     });
   }
   return _client;
@@ -114,6 +114,7 @@ async function pdfToPngBuffer(pdfBuffer: Buffer): Promise<Buffer> {
       '-l', '1',      // last page (only first)
       '-singlefile',  // single file output
       '-scale-to', '1024', // max width
+      '-auto-rotate', // ensure document is oriented correctly
     ]);
 
     const chunks: Buffer[] = [];
@@ -247,11 +248,12 @@ export async function extractFromDocument(
       rawResponse: rawText,
     };
   } catch (error: any) {
+    const errorMessage = error.response?.data?.message || error.message || 'Unknown AI Extraction Error';
     return {
       success: false,
       policies: [],
       confidence: 0,
-      error: error.message,
+      error: errorMessage,
     };
   }
 }

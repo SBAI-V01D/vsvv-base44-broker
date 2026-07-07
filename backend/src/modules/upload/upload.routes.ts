@@ -17,6 +17,9 @@ import { uploadFile, uploadFiles, deleteFile, getFileUrl } from '../../services/
 import { requireTenant } from '../../middleware/tenant.js';
 import { prisma } from '../../lib/prisma.js';
 import { emitEntityEvent } from '../../lib/socket.js';
+import { env } from '../../config/env.js';
+import { createReadStream, existsSync } from 'node:fs';
+import path from 'node:path';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -237,6 +240,56 @@ const uploadRoutes: FastifyPluginAsync = async (app) => {
       );
 
       return { message: 'File deleted', documentId: document.id };
+    },
+  );
+  // ---------------------------------------------------------------------------
+  // GET /api/uploads/:filename — Serve imported PDFs from CUSTOMER_DOCS/
+  //
+  // This is a compatibility route for documents imported during CRM migration.
+  // Their file_url is /uploads/<filename> but the files live in CUSTOMER_DOCS/.
+  // Tries env.CUSTOMER_DOCS_DIR first, then falls back to common locations.
+  // ---------------------------------------------------------------------------
+  app.get(
+    '/api/uploads/:filename',
+    async (request, reply) => {
+      const { filename } = request.params as { filename: string };
+      const decoded = decodeURIComponent(filename);
+
+      // Resolve CUSTOMER_DOCS directory
+      const candidates = [
+        path.resolve(process.cwd(), env.CUSTOMER_DOCS_DIR),
+        path.resolve(process.cwd(), '..', 'CUSTOMER_DOCS'),
+        path.resolve(process.cwd(), 'CUSTOMER_DOCS'),
+      ];
+      const docsDir = candidates.find((d) => existsSync(d));
+      if (!docsDir) {
+        return reply.code(500).send({ error: 'CUSTOMER_DOCS directory not found' });
+      }
+
+      const filePath = path.resolve(docsDir, decoded);
+
+      // Prevent directory traversal
+      if (!filePath.startsWith(docsDir)) {
+        return reply.code(403).send({ error: 'forbidden' });
+      }
+
+      if (!existsSync(filePath)) {
+        return reply.code(404).send({ error: 'not_found', message: 'File not found' });
+      }
+
+      const ext = path.extname(decoded).toLowerCase();
+      const mimeTypes: Record<string, string> = {
+        '.pdf': 'application/pdf',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.json': 'application/json',
+        '.csv': 'text/csv',
+        '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      };
+
+      reply.type(mimeTypes[ext] || 'application/octet-stream');
+      return reply.send(createReadStream(filePath));
     },
   );
 };

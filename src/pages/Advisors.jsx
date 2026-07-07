@@ -33,6 +33,11 @@ export default function Advisors() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['advisors'] }); setEditing(null); toast({ title: 'Gespeichert' }) },
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => avaai.entities.Advisor.delete(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['advisors'] }); toast({ title: 'Berater gelöscht', variant: 'destructive' }) },
+  })
+
   const filtered = advisors.filter(a =>
     `${a.firstname || ''} ${a.lastname || ''} ${a.email || ''} ${a.organization || ''}`.toLowerCase().includes(search.toLowerCase())
   )
@@ -86,7 +91,10 @@ export default function Advisors() {
                   <TableCell className="text-sm flex items-center gap-1"><Building2 className="w-3 h-3 text-muted-foreground" /> {advisor.organization || '–'}</TableCell>
                   <TableCell><span className="text-xs font-medium px-2 py-0.5 rounded bg-blue-50 text-blue-700">{advisor.role || 'advisor'}</span></TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm" onClick={() => setEditing(advisor)}>Bearbeiten</Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => setEditing(advisor)}>Bearbeiten</Button>
+                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-800" onClick={() => { if (confirm('Berater wirklich löschen?')) deleteMutation.mutate(advisor.id) }}>Löschen</Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

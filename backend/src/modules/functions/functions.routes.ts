@@ -89,6 +89,150 @@ const functionRegistry: Record<string, FunctionHandler> = {
     },
   },
 
+  'generateCustomerNumber': {
+    description: 'Generate the next sequential customer number',
+    handler: async (_, { orgId }) => {
+      const lastCustomer = await prisma.customer.findFirst({
+        where: { organization_id: orgId },
+        orderBy: { created_at: 'desc' },
+        select: { customer_number: true },
+      });
+
+      let nextNum = 1001;
+      if (lastCustomer?.customer_number) {
+        const match = lastCustomer.customer_number.match(/(\d+)$/);
+        if (match) nextNum = parseInt(match[1], 10) + 1;
+      }
+
+      const customer_number = `K-${orgId.slice(0, 4).toUpperCase()}-${nextNum.toString().padStart(4, '0')}`;
+      return { customer_number };
+    },
+  },
+
+  'importEntityData': {
+    description: 'Import entity data from an uploaded CSV/Excel file',
+    handler: async (params, { orgId, userId }) => {
+      const { file_url, entity_name } = params as Record<string, string>;
+      if (!file_url || !entity_name) throw new Error('file_url and entity_name are required');
+
+      // Fetch the uploaded file
+      const response = await fetch(file_url);
+      if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+      const text = await response.text();
+
+      // Parse CSV content (first line = headers)
+      const lines = text.split('\n').filter(Boolean);
+      if (lines.length < 2) throw new Error('File must have a header row and at least one data row');
+      const headers = lines[0].split(',').map(h => h.trim().replace(/^"(.*)"$/, '$1'));
+      const rows = lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim().replace(/^"(.*)"$/, '$1'));
+        return headers.reduce((obj, h, i) => {
+          (obj as Record<string, string>)[h] = values[i];
+          return obj;
+        }, {} as Record<string, string>);
+      });
+
+      let successful = 0;
+      let failed = 0;
+
+      if (entity_name === 'Contract') {
+        for (const row of rows) {
+          try {
+            const customer_name = row.customer_name || row.Kunde || row.kunde || '';
+            const insurer = row.insurer || row.Versicherer || row.versicherer || '';
+            if (!customer_name || !insurer) { failed++; continue; }
+
+            // Find or create customer
+            let customer = await prisma.customer.findFirst({
+              where: { organization_id: orgId, last_name: { contains: customer_name.split(' ').pop() || '', mode: 'insensitive' } },
+            });
+            if (!customer) {
+              const nameParts = customer_name.split(' ');
+              customer = await prisma.customer.create({
+                data: {
+                  first_name: nameParts.slice(0, -1).join(' ') || customer_name,
+                  last_name: nameParts.pop() || customer_name,
+                  organization_id: orgId,
+                },
+              });
+            }
+
+            await prisma.contract.create({
+              data: {
+                customer_id: customer.id,
+                customer_name,
+                organization_id: orgId,
+                insurer,
+                insurance_type: (row.insurance_type || row.Sparte || row.sparte || 'other') as any,
+                product: row.product || row.Produkt || null,
+                premium_yearly: row.premium_yearly ? parseFloat(row.premium_yearly) : null,
+                start_date: row.start_date ? new Date(row.start_date) : null,
+                end_date: row.end_date ? new Date(row.end_date) : null,
+                status: 'active',
+                policy_number: row.policy_number || row.Police || null,
+              },
+            });
+            successful++;
+          } catch {
+            failed++;
+          }
+        }
+      } else {
+        throw new Error(`Import for entity '${entity_name}' not implemented yet`);
+      }
+
+      return { successful, failed, total: rows.length };
+    },
+  },
+
+  'acceptApplicationAndCreateContract': {
+    description: 'Accept an application and create a contract from it',
+    handler: async (params, { orgId, userId }) => {
+      const { application_id } = params as Record<string, string>;
+      if (!application_id) throw new Error('application_id is required');
+
+      const application = await prisma.application.findFirst({
+        where: { id: application_id, organization_id: orgId },
+        include: { customer: true },
+      });
+      if (!application) throw new Error('Application not found');
+
+      const contract = await prisma.contract.create({
+        data: {
+          customer_id: application.customer_id,
+          customer_name: application.customer_name,
+          organization_id: orgId,
+          advisor_id: application.advisor_id,
+          insurer: application.insurer,
+          insurance_type: (application.insurance_type || 'other') as any,
+          product: application.product || undefined,
+          premium_yearly: application.estimated_premium_yearly || undefined,
+          premium_monthly: application.estimated_premium_monthly || undefined,
+          start_date: application.requested_start_date || undefined,
+          policy_number: application.policy_number || undefined,
+          status: 'active',
+          source_application_id: application.id,
+        },
+      });
+
+      await prisma.application.update({
+        where: { id: application_id },
+        data: {
+          status: 'approved',
+          linked_contract_id: contract.id,
+          custom_status: 'angenommen',
+          status_changed_at: new Date(),
+        },
+      });
+
+      return {
+        contract_id: contract.id,
+        application_id,
+        status: 'accepted',
+      };
+    },
+  },
+
   'customer:mergeDuplicates': {
     description: 'Merge duplicate customer records',
     handler: async (params, { orgId }) => {

@@ -89,6 +89,11 @@ const envSchema = z.object({
   // frontend domain (e.g. 'https://app.avaai.ch'). Wildcard '*' allows
   // any website to make cross-origin API calls.
   CORS_ORIGIN: z.string().default('http://localhost:3004'),
+
+  // ----- Local Document Serving -----
+  // Path to the CUSTOMER_DOCS directory for serving imported PDFs.
+  // Dev default resolves to <project-root>/CUSTOMER_DOCS/ from backend/ CWD.
+  CUSTOMER_DOCS_DIR: z.string().default('../CUSTOMER_DOCS'),
 });
 
 /** Type definition inferred from the Zod schema */

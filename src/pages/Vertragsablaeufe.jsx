@@ -53,13 +53,15 @@ function getVvgDates(contract) {
   if (contract.end_date.startsWith('9999')) return []
   const start = new Date(contract.start_date + 'T00:00:00')
   const end   = new Date(contract.end_date   + 'T00:00:00')
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return []
   const durationYears = (end - start) / (365.25 * 24 * 3600 * 1000)
   if (durationYears <= 3) return []
   const dates = []
-  for (let n = 3; ; n++) {
+  const MAX_ITER = 50
+  for (let n = 3; n < MAX_ITER; n++) {
     const d = new Date(start)
     d.setFullYear(d.getFullYear() + n)
-    d.setDate(d.getDate() - 1) // letzter Tag des n-ten Versicherungsjahres
+    d.setDate(d.getDate() - 1)
     if (d >= end) break
     dates.push(d)
   }
@@ -441,29 +443,27 @@ export default function Vertragsablaeufe() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
   })
 
+  const vvgCache = useMemo(() => {
+    const map = new Map()
+    contracts.forEach(c => { map.set(c.id, getVvgDates(c)) })
+    return map
+  }, [contracts])
+
   const vvgItems = useMemo(() => {
     const today = new Date()
     return contracts
       .filter(c => ['active', 'pending'].includes(c.status) && !c.archived)
-      .map(c => ({ contract: c, vvgDates: getVvgDates(c) }))
+      .map(c => ({ contract: c, vvgDates: vvgCache.get(c.id) || [] }))
       .filter(({ vvgDates }) => vvgDates.length > 0 && vvgDates.some(d => d >= today))
       .sort((a, b) => {
         const nextA = a.vvgDates.find(d => d >= new Date()) || new Date(9999, 0, 1)
         const nextB = b.vvgDates.find(d => d >= new Date()) || new Date(9999, 0, 1)
         return nextA - nextB
       })
-  }, [contracts])
+  }, [contracts, vvgCache])
 
   const actionableItems = useMemo(() => {
     const today = new Date()
-    // Build VVG lookup
-    const vvgMap = new Map()
-    contracts.forEach(c => {
-      const dates = getVvgDates(c)
-      const next = dates.find(d => d >= today)
-      if (next) vvgMap.set(c.id, next)
-    })
-
     return contracts
       .filter(c => {
         if (!isContractActionable(c)) return false
@@ -472,9 +472,9 @@ export default function Vertragsablaeufe() {
       })
       .map(c => {
         const actions = analyzeContract(c)
-        const isVvg = vvgMap.has(c.id)
-        const vvgNextDate = vvgMap.get(c.id) || null
-        return { contract: c, actions, topAction: actions[0], isVvg, vvgNextDate }
+        const dates = vvgCache.get(c.id) || []
+        const next = dates.find(d => d >= today)
+        return { contract: c, actions, topAction: actions[0], isVvg: !!next, vvgNextDate: next || null }
       })
       .filter(item => item.actions.length > 0 && item.topAction?.severity !== 'review_required')
       .sort((a, b) => {
@@ -486,7 +486,7 @@ export default function Vertragsablaeufe() {
         const bDays = daysUntil(b.contract.end_date) ?? 999
         return aDays - bDays
       })
-  }, [contracts, filterProcessStatus])
+  }, [contracts, vvgCache, filterProcessStatus])
 
   const excludedCount = useMemo(() => actionableItems.filter(i => i.contract.exclude_from_renewal_statistics).length, [actionableItems])
 

@@ -54,7 +54,6 @@ import BrokerReporting from './pages/BrokerReporting'
 import EnterpriseAudit from './pages/EnterpriseAudit'
 import EnterpriseSystemCheck from './pages/EnterpriseSystemCheck'
 import InsuranceLearningCenter from './pages/InsuranceLearningCenter'
-import DocumentExtractor from './pages/DocumentExtractor'
 import Ausschreibungen from './pages/Ausschreibungen'
 import AusschreibungDetail from './pages/AusschreibungDetail'
 import VersichererDBPage from './pages/VersichererDBPage'
@@ -150,7 +149,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<ModuleDashboard />} />
         <Route path="/kunden" element={<ModuleCustomers />} />
         <Route path="/neukunden" element={<NewCustomers />} />
-        <Route path="/kunden/:customerId/detail" element={<ModuleCustomers />} />
+        <Route path="/kunden/:customerId/detail" element={<CustomerDetail />} />
 
         <Route path="/vertraege" element={<ModuleContracts />} />
         <Route path="/antraege" element={<ModuleApplications />} />
@@ -179,7 +178,6 @@ const AuthenticatedApp = () => {
         {/* AdvisoryDossierEngine — Phase 1 — Admin-Only */}
         <Route path="/beratungsdossier" element={<AdvisoryDossier />} />
         <Route path="/reporting" element={<BrokerReporting />} />
-        <Route path="/dokument-extraktor" element={<DocumentExtractor />} />
         <Route path="/ausschreibungen" element={<Ausschreibungen />} />
         <Route path="/ausschreibungen/:id" element={<AusschreibungDetail />} />
         <Route path="/ausschreibungen/versicherer" element={<VersichererDBPage />} />
@@ -232,10 +230,11 @@ function App() {
           <Router>
             <ScrollToTop />
             <Routes>
-              <Route path="/*" element={<AuthenticatedApp />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/portal/*" element={<AuthenticatedApp />} />
-            </Routes>
+<Routes>
+  <Route path="/login" element={<Login />} />
+  <Route path="/portal/*" element={<AuthenticatedApp />} />
+  <Route path="/*" element={<AuthenticatedApp />} />
+</Routes>
           </Router>
           <Toaster />
         </QueryClientProvider>

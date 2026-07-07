@@ -9,7 +9,7 @@ class UserService {
    * @returns {Promise<object>}
    */
   async getMe() {
-    return await avaai.auth.updateMe({})
+    return await avaai.auth.me()
   }
 
   /**

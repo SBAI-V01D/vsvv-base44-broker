@@ -171,8 +171,12 @@ export default function Contracts() {
     try {
       const formData = new FormData()
       formData.append('file', importFile)
-      const uploadRes = await fetch('https://api.avaai.com/upload', { method: 'POST', body: formData })
-      const { file_url } = await uploadRes.json()
+      const API_BASE = import.meta.env.VITE_API_URL ?? ''
+      const token = localStorage.getItem('accessToken')
+      const uploadRes = await fetch(`${API_BASE}/api/upload/file`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {}, body: formData })
+      const uploadJson = await uploadRes.json()
+      const file_url = uploadJson?.data?.url
+      if (!file_url) throw new Error('Upload failed — no file URL returned')
       const result = await avaai.functions.invoke('importEntityData', { entity_name: 'Contract', file_url })
       setImportProgress(`✓ ${result.data.successful} Verträge importiert`)
       if (result.data.failed > 0) setImportProgress(prev => `${prev} (${result.data.failed} Fehler)`)
