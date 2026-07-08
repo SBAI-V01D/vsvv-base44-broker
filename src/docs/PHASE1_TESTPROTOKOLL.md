@@ -1,4 +1,4 @@
-# avaai CRM - Phase 1 Testprotokoll
+# VSVV CRM - Phase 1 Testprotokoll
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -440,11 +440,11 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 **Test-Szenario:**
 
 ```
-Benutzer A (Advisor: advisor_a@avaai.ch):
+Benutzer A (Advisor: advisor_a@vsvv.ch):
 - Erstellt Kunde: "Test Kunde A"
 - Advisor_ID: [User A ID]
 
-Benutzer B (Advisor: advisor_b@avaai.ch):
+Benutzer B (Advisor: advisor_b@vsvv.ch):
 - Versucht Kunde A zu sehen
 - Erwartet: ❌ Kein Zugriff
 
@@ -670,9 +670,9 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 
 | Rolle | Name | Email | Telefon |
 |---|---|---|---|
-| **Tester** | Peter Adam | admin@avaai.ch | +41 XX XXX XX XX |
+| **Tester** | Peter Adam | admin@vsvv.ch | +41 XX XXX XX XX |
 | **Support** | Supabase | support@supabase.com | - |
-| **Support** | avaai | support@avaai.com | - |
+| **Support** | Base44 | support@base44.com | - |
 
 ### C. Versionierung
 

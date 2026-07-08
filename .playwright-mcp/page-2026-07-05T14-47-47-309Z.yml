@@ -1,0 +1,175 @@
+- generic [ref=f17e9]:
+  - complementary [ref=f17e11]:
+    - generic [ref=f17e12]:
+      - img [ref=f17e14]
+      - generic [ref=f17e17]:
+        - paragraph [ref=f17e18]: admin@vsvv.ch
+        - paragraph [ref=f17e19]: Administrator
+    - navigation [ref=f17e20]:
+      - generic [ref=f17e21]:
+        - paragraph [ref=f17e22]: Cockpit
+        - generic [ref=f17e23]:
+          - link "Dashboard" [ref=f17e24] [cursor=pointer]:
+            - /url: /
+            - img [ref=f17e25]
+            - generic [ref=f17e30]: Dashboard
+          - link "Vertragsabläufe 13" [ref=f17e31] [cursor=pointer]:
+            - /url: /vertragsablaeufe
+            - img [ref=f17e32]
+            - generic [ref=f17e37]: Vertragsabläufe
+            - generic [ref=f17e38]: "13"
+          - link "Aufgaben" [ref=f17e39] [cursor=pointer]:
+            - /url: /aufgaben
+            - img [ref=f17e40]
+            - generic [ref=f17e43]: Aufgaben
+      - generic [ref=f17e44]:
+        - paragraph [ref=f17e45]: Kunden
+        - generic [ref=f17e46]:
+          - link "Kundenübersicht" [ref=f17e47] [cursor=pointer]:
+            - /url: /kunden
+            - img [ref=f17e48]
+            - generic [ref=f17e53]: Kundenübersicht
+          - link "Verkaufschancen" [ref=f17e54] [cursor=pointer]:
+            - /url: /verkaufschancen
+            - img [ref=f17e55]
+            - generic [ref=f17e58]: Verkaufschancen
+          - link "Leads" [ref=f17e59] [cursor=pointer]:
+            - /url: /leads
+            - img [ref=f17e60]
+            - generic [ref=f17e63]: Leads
+          - link "Krankenkassenvergleich" [ref=f17e64] [cursor=pointer]:
+            - /url: /krankenkassen-vergleich
+            - img [ref=f17e65]
+            - generic [ref=f17e67]: Krankenkassenvergleich
+          - link "Beratungsdossiers" [ref=f17e68] [cursor=pointer]:
+            - /url: /beratungsdossier
+            - img [ref=f17e69]
+            - generic [ref=f17e71]: Beratungsdossiers
+          - link "Kundenportal" [ref=f17e72] [cursor=pointer]:
+            - /url: /portal
+            - img [ref=f17e73]
+            - generic [ref=f17e77]: Kundenportal
+      - generic [ref=f17e78]:
+        - paragraph [ref=f17e79]: Ausschreibungen
+        - generic [ref=f17e80]:
+          - link "Ausschreibungen" [ref=f17e81] [cursor=pointer]:
+            - /url: /ausschreibungen
+            - img [ref=f17e82]
+            - generic [ref=f17e83]: Ausschreibungen
+          - link "Versicherer DB" [ref=f17e84] [cursor=pointer]:
+            - /url: /ausschreibungen/versicherer
+            - img [ref=f17e85]
+            - generic [ref=f17e89]: Versicherer DB
+      - generic [ref=f17e90]:
+        - paragraph [ref=f17e91]: Verwaltung
+        - generic [ref=f17e92]:
+          - link "Verträge" [ref=f17e93] [cursor=pointer]:
+            - /url: /vertraege
+            - img [ref=f17e94]
+            - generic [ref=f17e97]: Verträge
+          - link "Anträge" [ref=f17e98] [cursor=pointer]:
+            - /url: /antraege
+            - img [ref=f17e99]
+            - generic [ref=f17e102]: Anträge
+          - link "Dokumente" [ref=f17e103] [cursor=pointer]:
+            - /url: /dokumente
+            - img [ref=f17e104]
+            - generic [ref=f17e106]: Dokumente
+          - link "Dok.-Extraktor" [ref=f17e107] [cursor=pointer]:
+            - /url: /dokument-extraktor
+            - img [ref=f17e108]
+            - generic [ref=f17e118]: Dok.-Extraktor
+      - generic [ref=f17e119]:
+        - paragraph [ref=f17e120]: Finanzen & Team
+        - generic [ref=f17e121]:
+          - link "Reporting" [ref=f17e122] [cursor=pointer]:
+            - /url: /reporting
+            - img [ref=f17e123]
+            - generic [ref=f17e124]: Reporting
+          - link "Provisionen" [ref=f17e125] [cursor=pointer]:
+            - /url: /provisionen-courtagen
+            - img [ref=f17e126]
+            - generic [ref=f17e129]: Provisionen
+          - link "Finanzdashboard" [ref=f17e130] [cursor=pointer]:
+            - /url: /finanz-dashboard
+            - img [ref=f17e131]
+            - generic [ref=f17e132]: Finanzdashboard
+      - generic [ref=f17e133]:
+        - paragraph [ref=f17e134]: Enterprise
+        - link "Berater & Partner" [ref=f17e136] [cursor=pointer]:
+          - /url: /berater-organisation
+          - img [ref=f17e137]
+          - generic [ref=f17e140]: Berater & Partner
+      - generic [ref=f17e141]:
+        - paragraph [ref=f17e142]: Administration
+        - generic [ref=f17e143]:
+          - link "Admin Hub" [ref=f17e144] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=f17e145]
+            - generic [ref=f17e147]: Admin Hub
+          - link "System-Health" [ref=f17e148] [cursor=pointer]:
+            - /url: /admin/control-center
+            - img [ref=f17e149]
+            - generic [ref=f17e151]: System-Health
+          - link "Team & Zugriffe" [ref=f17e152] [cursor=pointer]:
+            - /url: /admin/team
+            - img [ref=f17e153]
+            - generic [ref=f17e156]: Team & Zugriffe
+          - link "Audit" [ref=f17e157] [cursor=pointer]:
+            - /url: /admin/audit
+            - img [ref=f17e158]
+            - generic [ref=f17e159]: Audit
+          - link "Audit Logs" [ref=f17e160] [cursor=pointer]:
+            - /url: /admin/audit-logs
+            - img [ref=f17e161]
+            - generic [ref=f17e166]: Audit Logs
+          - link "System Check" [ref=f17e167] [cursor=pointer]:
+            - /url: /admin/system-check
+            - img [ref=f17e168]
+            - generic [ref=f17e171]: System Check
+          - link "System Logs" [ref=f17e172] [cursor=pointer]:
+            - /url: /admin/logs
+            - img [ref=f17e173]
+            - generic [ref=f17e176]: System Logs
+          - link "KI-Verbesserungen" [ref=f17e177] [cursor=pointer]:
+            - /url: /admin/improvements
+            - img [ref=f17e178]
+            - generic [ref=f17e188]: KI-Verbesserungen
+          - link "Sicherheit" [ref=f17e189] [cursor=pointer]:
+            - /url: /admin/security
+            - img [ref=f17e190]
+            - generic [ref=f17e192]: Sicherheit
+          - link "Backup" [ref=f17e193] [cursor=pointer]:
+            - /url: /admin/backup
+            - img [ref=f17e194]
+            - generic [ref=f17e196]: Backup
+          - link "Lernzentrum" [ref=f17e197] [cursor=pointer]:
+            - /url: /admin/insurance-learning
+            - img [ref=f17e198]
+            - generic [ref=f17e200]: Lernzentrum
+    - generic [ref=f17e201]:
+      - button "Abmelden" [ref=f17e202] [cursor=pointer]:
+        - img [ref=f17e203]
+        - generic [ref=f17e206]: Abmelden
+      - button "Einklappen" [ref=f17e207] [cursor=pointer]:
+        - img [ref=f17e208]
+  - generic [ref=f17e210]:
+    - generic [ref=f17e211]:
+      - button [ref=f17e212] [cursor=pointer]:
+        - img [ref=f17e213]
+      - generic [ref=f17e214]: Swiss Premium Broker
+    - main [ref=f17e215]:
+      - generic [ref=f17e219]:
+        - heading "404" [level=1] [ref=f17e221]
+        - generic [ref=f17e223]:
+          - heading "Page Not Found" [level=2] [ref=f17e224]
+          - paragraph [ref=f17e225]:
+            - text: The page
+            - generic [ref=f17e226]: "\"provisionen\""
+            - text: could not be found in this application.
+        - generic [ref=f17e235]:
+          - paragraph [ref=f17e236]: Admin Note
+          - paragraph [ref=f17e237]: This could mean that the AI hasn't implemented this page yet. Ask it to implement it in the chat.
+        - button "Go Home" [ref=f17e228] [cursor=pointer]:
+          - img [ref=f17e229]
+          - text: Go Home

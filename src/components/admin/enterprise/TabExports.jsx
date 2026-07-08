@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Hash, ExternalLink, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -13,14 +13,14 @@ export default function TabExports() {
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['enterprise_export_logs'],
-    queryFn: () => avaai.entities.PdfExportLog.list('-exported_at', 100),
+    queryFn: () => base44.entities.PdfExportLog.list('-exported_at', 100),
     staleTime: 30_000,
   });
 
   const openPdf = async (log) => {
     if (!log.file_uri) return;
     setSignedLoading(log.id);
-    const res = await avaai.integrations.Core.CreateFileSignedUrl({ file_uri: log.file_uri, expires_in: 300 });
+    const res = await base44.integrations.Core.CreateFileSignedUrl({ file_uri: log.file_uri, expires_in: 300 });
     setSignedLoading(null);
     if (res?.signed_url) window.open(res.signed_url, '_blank');
   };

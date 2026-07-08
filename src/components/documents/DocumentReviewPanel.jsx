@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Button } from '@/components/ui/button'
 import {
   AlertTriangle, CheckCircle2, Loader2, UserPlus, X,
@@ -210,7 +210,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
   // ── Customers Query: gleicher Key wie Hauptseite → nutzt Cache ───────────────
   const { data: customers = [], isSuccess: customersLoaded } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avaai.entities.Customer.list(null, 1000),
+    queryFn: () => base44.entities.Customer.list(null, 1000),
     staleTime: 60_000,
   })
 
@@ -240,7 +240,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
     setStep('extract', 'running')
     let res
     try {
-      res = await avaai.functions.invoke('extractApplicationData', {
+      res = await base44.functions.invoke('extractApplicationData', {
         file_url: document.file_url,
         file_name: document.name,
       })
@@ -377,7 +377,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
     } else {
       // Neuen Kunden anlegen
       try {
-        const syncResult = await avaai.functions.invoke('syncCustomerFromApplication', {
+        const syncResult = await base44.functions.invoke('syncCustomerFromApplication', {
           first_name: flat.first_name || 'Unbekannt',
           last_name:  flat.last_name || 'Unbekannt',
           email:      flat.email || '',
@@ -393,7 +393,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
           cid = syncResult.data.customer_id
         }
       } catch (_) {
-        const newC = await avaai.entities.Customer.create({
+        const newC = await base44.entities.Customer.create({
           first_name: flat.first_name || 'Unbekannt',
           last_name:  flat.last_name || 'Unbekannt',
           email:      flat.email || undefined,
@@ -422,7 +422,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
     try {
       const autoCustomer = customers.find(c => c.id === cid)
       const autoOrgId = autoCustomer?.organization_id || fallbackOrgId
-      newApp = await avaai.entities.Application.create({
+      newApp = await base44.entities.Application.create({
         customer_id: cid,
         customer_name: customerName,
         organization_id: autoOrgId,
@@ -464,7 +464,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
       const policyHolderName = extraction?.normalized?.role_classification?.policy_holder?.name
       const driverName = extraction?.normalized?.role_classification?.driver?.name
       
-      await avaai.entities.Document.update(document.id, {
+      await base44.entities.Document.update(document.id, {
         customer_id: cid,
         customer_name: customerName,
         policy_holder_name: policyHolderName,
@@ -508,7 +508,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
 
     if (!cid) {
       try {
-        const syncResult = await avaai.functions.invoke('syncCustomerFromApplication', {
+        const syncResult = await base44.functions.invoke('syncCustomerFromApplication', {
           first_name: flat.first_name || 'Unbekannt',
           last_name:  flat.last_name || 'Unbekannt',
           email:      flat.email || '',
@@ -528,7 +528,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
           queryClient.invalidateQueries({ queryKey: ['customers'] })
         }
       } catch (err) {
-        const newC = await avaai.entities.Customer.create({
+        const newC = await base44.entities.Customer.create({
           first_name: flat.first_name || 'Unbekannt',
           last_name:  flat.last_name || 'Unbekannt',
           birthdate:  flat.birthdate || undefined,
@@ -563,7 +563,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
 
     let newApp
     try {
-      newApp = await avaai.entities.Application.create({
+      newApp = await base44.entities.Application.create({
         customer_id: cid,
         customer_name: customerName,
         organization_id: reviewOrgId,
@@ -606,7 +606,7 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
       const policyHolderName = extraction?.normalized?.role_classification?.policy_holder?.name
       const driverName = extraction?.normalized?.role_classification?.driver?.name
       
-      await avaai.entities.Document.update(document.id, {
+      await base44.entities.Document.update(document.id, {
         customer_id: cid,       // ← einzige Wahrheit, kommt von lockedCustomer
         customer_name: customerName,
         policy_holder_name: policyHolderName,
@@ -971,14 +971,14 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
                         // ─── HARD PERSISTENCE FIX: document.customer_id = SINGLE SOURCE OF TRUTH ───
                           try {
                             // 1. WRITE to backend (lock customer immediately)
-                            await avaai.entities.Document.update(document.id, {
+                            await base44.entities.Document.update(document.id, {
                               customer_id: c.id,
                               customer_name: `${c.first_name} ${c.last_name}`,
                               customer_locked: true,
                             })
 
                             // 2. READ AFTER WRITE (CRITICAL: validate DB persisted)
-                            const reloadedDoc = await avaai.entities.Document.get(document.id)
+                            const reloadedDoc = await base44.entities.Document.get(document.id)
                             if (reloadedDoc.customer_id !== c.id) {
                               throw new Error(`PERSISTENCE ERROR: Document.customer_id=${reloadedDoc.customer_id}, expected ${c.id}`)
                             }

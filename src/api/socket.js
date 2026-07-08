@@ -1,5 +1,5 @@
 /**
- * avaai Socket.io Client — replaces avaai subscriptions.
+ * VSVV Socket.io Client — replaces Base44 subscriptions.
  *
  * Usage:
  *   import { socket } from '@/api/socket'
@@ -12,49 +12,15 @@ import { io } from 'socket.io-client'
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || ''
 
 let socket = null
-let reconnectTimer = null
-
-function getToken() {
-  return localStorage.getItem('avaai_access_token')
-}
 
 export function getSocket() {
-  const token = getToken()
+  const token = localStorage.getItem('vsvv_access_token')
 
   if (!socket || !socket.connected) {
-    if (socket) socket.removeAllListeners()
     socket = io(SOCKET_URL, {
       auth: { token },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       autoConnect: false,
-      reconnection: true,
-      reconnectionDelay: 2000,
-      reconnectionDelayMax: 10000,
-      reconnectionAttempts: 20,
-    })
-
-    socket.on('reconnect_attempt', () => {
-      socket.auth = { token: getToken() }
-    })
-
-    socket.on('reconnect_error', () => {
-      clearTimeout(reconnectTimer)
-      reconnectTimer = setTimeout(() => {
-        if (socket && !socket.connected) {
-          socket.auth = { token: getToken() }
-          socket.connect()
-        }
-      }, 5000)
-    })
-
-    socket.on('disconnect', (reason) => {
-      if (reason === 'io server disconnect') {
-        clearTimeout(reconnectTimer)
-        reconnectTimer = setTimeout(() => {
-          socket.auth = { token: getToken() }
-          socket.connect()
-        }, 3000)
-      }
     })
   }
 
@@ -64,27 +30,19 @@ export function getSocket() {
 export function connectSocket() {
   const s = getSocket()
   if (!s.connected) {
-    s.auth = { token: getToken() }
+    const token = localStorage.getItem('vsvv_access_token')
+    s.auth = { token }
     s.connect()
   }
   return s
 }
 
 export function disconnectSocket() {
-  if (reconnectTimer) clearTimeout(reconnectTimer)
   if (socket) {
-    socket.removeAllListeners()
     socket.disconnect()
     socket = null
   }
 }
 
-// Reconnect on auth change
-window.addEventListener('auth:token-refreshed', () => {
-  if (socket && !socket.connected) {
-    socket.auth = { token: getToken() }
-    socket.connect()
-  }
-})
-
+// Default export for convenience
 export default { getSocket, connectSocket, disconnectSocket }

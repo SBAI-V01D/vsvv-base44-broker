@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ApplicationKanban from '../components/applications/ApplicationKanban'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Plus, Search, Edit, Trash2, FileText, TrendingUp, Clock, CheckCircle, Calendar, Building2, Tag, Archive, Inbox, LayoutGrid, List } from 'lucide-react'
 import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
@@ -45,25 +45,25 @@ export default function Applications() {
 
   const { data: statusDefs = [] } = useQuery({
     queryKey: ['statusDefinitions'],
-    queryFn: () => avaai.entities.StatusDefinition.filter({ type: 'application' }),
+    queryFn: () => base44.entities.StatusDefinition.filter({ type: 'application' }),
     staleTime: 10 * 60 * 1000,
   })
 
   const { data: applications = [] } = useQuery({
     queryKey: ['applications'],
-    queryFn: () => avaai.entities.Application.list('-created_date', 500),
+    queryFn: () => base44.entities.Application.list('-created_date', 500),
     staleTime: 2 * 60 * 1000,
   })
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avaai.entities.Customer.list('-created_date', 500),
+    queryFn: () => base44.entities.Customer.list('-created_date', 500),
     staleTime: 5 * 60 * 1000,
   })
 
   const { data: brokers = [] } = useQuery({
     queryKey: ['brokers'],
-    queryFn: () => avaai.entities.Broker.filter({ is_active: true }, '-created_date', 100),
+    queryFn: () => base44.entities.Broker.filter({ is_active: true }, '-created_date', 100),
     staleTime: 10 * 60 * 1000,
   })
 
@@ -76,17 +76,17 @@ export default function Applications() {
   }
 
   const createMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Application.create(data),
+    mutationFn: (data) => base44.entities.Application.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['applications'] }); setShowForm(false); setEditing(null) },
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avaai.entities.Application.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Application.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['applications'] }); setShowForm(false); setEditing(null) },
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avaai.entities.Application.delete(id),
+    mutationFn: (id) => base44.entities.Application.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['applications'] }),
   })
 
@@ -161,7 +161,7 @@ export default function Applications() {
     if (isApproval) {
       setCreatingContract(true)
       try {
-        const result = await avaai.functions.invoke('acceptApplicationAndCreateContract', {
+        const result = await base44.functions.invoke('acceptApplicationAndCreateContract', {
           application_id: app.id,
         })
         if (result.data.success) {
@@ -172,7 +172,7 @@ export default function Applications() {
       } catch (e) {
         console.error('One-click acceptance failed:', e)
         // Fallback: normaler Status-Update
-        await avaai.entities.Application.update(app.id, {
+        await base44.entities.Application.update(app.id, {
           custom_status: status,
           status_changed_at: new Date().toISOString(),
         })
@@ -180,7 +180,7 @@ export default function Applications() {
       setCreatingContract(false)
     } else {
       // Normaler Status-Update (nicht Genehmigung)
-      await avaai.entities.Application.update(app.id, {
+      await base44.entities.Application.update(app.id, {
         custom_status: status,
         status_changed_at: new Date().toISOString(),
       })
@@ -478,7 +478,7 @@ export default function Applications() {
                           onClick={async () => {
                             setCreatingContract(true)
                             try {
-                              const result = await avaai.functions.invoke('acceptApplicationAndCreateContract', {
+                              const result = await base44.functions.invoke('acceptApplicationAndCreateContract', {
                                 application_id: app.id,
                               })
                               if (result.data.success) {

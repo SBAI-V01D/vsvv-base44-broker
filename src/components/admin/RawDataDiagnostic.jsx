@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, RefreshCw } from 'lucide-react'
@@ -17,7 +17,7 @@ export default function RawDataDiagnostic({ showOnly = false }) {
   const { data: customerCount = 0 } = useQuery({
     queryKey: ['raw-customers-count', refreshKey],
     queryFn: async () => {
-      const all = await avaai.entities.Customer.list('', 1000)
+      const all = await base44.entities.Customer.list('', 1000)
       return all?.length || 0
     },
   })
@@ -25,7 +25,7 @@ export default function RawDataDiagnostic({ showOnly = false }) {
   const { data: contractCount = 0 } = useQuery({
     queryKey: ['raw-contracts-count', refreshKey],
     queryFn: async () => {
-      const all = await avaai.entities.Contract.list('', 1000)
+      const all = await base44.entities.Contract.list('', 1000)
       return all?.length || 0
     },
   })
@@ -33,7 +33,7 @@ export default function RawDataDiagnostic({ showOnly = false }) {
   const { data: applicationCount = 0 } = useQuery({
     queryKey: ['raw-applications-count', refreshKey],
     queryFn: async () => {
-      const all = await avaai.entities.Application.list('', 1000)
+      const all = await base44.entities.Application.list('', 1000)
       return all?.length || 0
     },
   })
@@ -41,7 +41,7 @@ export default function RawDataDiagnostic({ showOnly = false }) {
   const { data: documentCount = 0 } = useQuery({
     queryKey: ['raw-documents-count', refreshKey],
     queryFn: async () => {
-      const all = await avaai.entities.Document.list('', 1000)
+      const all = await base44.entities.Document.list('', 1000)
       return all?.length || 0
     },
   })
@@ -50,7 +50,7 @@ export default function RawDataDiagnostic({ showOnly = false }) {
   const { data: customersWithoutOrg = 0 } = useQuery({
     queryKey: ['customers-no-org', refreshKey],
     queryFn: async () => {
-      const all = await avaai.entities.Customer.list('', 1000)
+      const all = await base44.entities.Customer.list('', 1000)
       return all?.filter(c => !c.organization_id)?.length || 0
     },
   })
@@ -59,7 +59,7 @@ export default function RawDataDiagnostic({ showOnly = false }) {
   const { data: archivedCount = 0 } = useQuery({
     queryKey: ['archived-customers', refreshKey],
     queryFn: async () => {
-      const all = await avaai.entities.Customer.list('', 1000)
+      const all = await base44.entities.Customer.list('', 1000)
       return all?.filter(c => c.archived)?.length || 0
     },
   })

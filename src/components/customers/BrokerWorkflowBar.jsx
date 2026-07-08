@@ -3,7 +3,7 @@
  * Context-aware quick action strip. No navigation required.
  */
 import React, { useState } from 'react'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -28,7 +28,7 @@ export default function BrokerWorkflowBar({
   const [taskDue, setTaskDue] = useState(format(addDays(new Date(), 3), 'yyyy-MM-dd'))
 
   const createTask = useMutation({
-    mutationFn: (data) => avaai.entities.Task.create(data),
+    mutationFn: (data) => base44.entities.Task.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', customerId] })
       setTaskTitle('')

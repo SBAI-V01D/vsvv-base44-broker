@@ -1,0 +1,52 @@
+- generic [ref=f12e3]:
+  - img "avaai Portal" [ref=f12e5]
+  - generic [ref=f12e6]:
+    - generic [ref=f12e7]:
+      - generic [ref=f12e8]:
+        - heading "Willkommen bei avaai" [level=1] [ref=f12e9]
+        - paragraph [ref=f12e10]: Ihr persönliches Kundenportal für strukturierte und transparente Versicherungslösungen.
+        - paragraph [ref=f12e11]: Greifen Sie jederzeit sicher auf Ihre Verträge und Dokumente zu – zentral und übersichtlich.
+      - generic [ref=f12e13]:
+        - generic [ref=f12e14]:
+          - generic [ref=f12e15]: E-Mail-Adresse
+          - textbox "ihre@email.ch" [active] [ref=f12e16]
+        - generic [ref=f12e17]:
+          - generic [ref=f12e18]:
+            - generic [ref=f12e19]: Passwort
+            - button "Vergessen?" [ref=f12e20] [cursor=pointer]
+          - generic [ref=f12e21]:
+            - textbox "••••••••" [ref=f12e22]
+            - button [ref=f12e23] [cursor=pointer]:
+              - img [ref=f12e24]
+        - generic [ref=f12e29] [cursor=pointer]: Angemeldet bleiben
+        - button "Anmelden" [ref=f12e30] [cursor=pointer]
+      - generic [ref=f12e31]:
+        - paragraph [ref=f12e32]: "🔒 Passwort-Richtlinie:"
+        - list [ref=f12e33]:
+          - listitem [ref=f12e34]: "Beim ersten Login: Passwort ändern erforderlich"
+          - listitem [ref=f12e35]: Mindestens 8 Zeichen + 1 Zahl + 1 Sonderzeichen
+          - listitem [ref=f12e36]: Alle 28 Tage Passwort-Wechsel erforderlich
+      - generic [ref=f12e37]:
+        - generic [ref=f12e38]:
+          - img [ref=f12e40]
+          - generic [ref=f12e42]:
+            - paragraph [ref=f12e43]: Unabhängige Beratung
+            - paragraph [ref=f12e44]: Ohne Interessenskonflikte – nur Ihre Ziele zählen
+        - generic [ref=f12e45]:
+          - img [ref=f12e47]
+          - generic [ref=f12e48]:
+            - paragraph [ref=f12e49]: Volle Transparenz
+            - paragraph [ref=f12e50]: Jederzeit vollständiger Überblick über Ihre Policen
+        - generic [ref=f12e51]:
+          - img [ref=f12e53]
+          - generic [ref=f12e57]:
+            - paragraph [ref=f12e58]: Schweizer Datenschutz
+            - paragraph [ref=f12e59]: Ihre Daten sind sicher und vertraulich geschützt
+    - generic [ref=f12e60]:
+      - generic [ref=f12e61]: © 2025 avaai – Ihre Versicherungsplattform
+      - generic [ref=f12e62]:
+        - button "AGB" [ref=f12e63] [cursor=pointer]
+        - generic [ref=f12e64]: "|"
+        - button "Impressum" [ref=f12e65] [cursor=pointer]
+        - generic [ref=f12e66]: "|"
+        - button "Datenschutz" [ref=f12e67] [cursor=pointer]

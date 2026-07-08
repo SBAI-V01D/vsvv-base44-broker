@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Upload, FileText, Trash2, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -33,7 +33,7 @@ export default function CustomerFormulare({ customerId, customerName }) {
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ['documents', 'formulare', customerId],
-    queryFn: () => avaai.entities.Document.filter(
+    queryFn: () => base44.entities.Document.filter(
       { customer_id: customerId, category: 'korrespondenz' },
       '-created_date'
     ),
@@ -44,7 +44,7 @@ export default function CustomerFormulare({ customerId, customerName }) {
   const forms = documents.filter(d => d.notes?.startsWith('formular:'));
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avaai.entities.Document.delete(id),
+    mutationFn: (id) => base44.entities.Document.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents', 'formulare', customerId] });
       queryClient.invalidateQueries({ queryKey: ['documents', customerId] });
@@ -55,9 +55,9 @@ export default function CustomerFormulare({ customerId, customerName }) {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await avaai.integrations.Core.UploadFile({ file });
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
     const ft = FORM_TYPES.find(f => f.value === selectedType);
-    await avaai.entities.Document.create({
+    await base44.entities.Document.create({
       customer_id: customerId,
       customer_name: customerName,
       name: ft ? ft.label : file.name.replace(/\.[^.]+$/, ''),

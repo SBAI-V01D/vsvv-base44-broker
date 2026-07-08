@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,7 +42,7 @@ export default function NewOfferDialog({ open, onOpenChange, customer }) {
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }))
 
   const createMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Application.create(data),
+    mutationFn: (data) => base44.entities.Application.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications-all'] })
       queryClient.invalidateQueries({ queryKey: ['applications'] })

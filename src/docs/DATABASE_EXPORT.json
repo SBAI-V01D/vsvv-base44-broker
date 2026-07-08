@@ -1,7 +1,7 @@
 {
   "export_meta": {
     "app": "KrankenkassenVergleich CRM",
-    "platform": "avaai",
+    "platform": "Base44",
     "exported_at": "2026-06-08",
     "version": "1.0",
     "total_entities": 37
@@ -36,7 +36,7 @@
         "customer_type": { "type": "string", "enum": ["private","business"], "default": "private" },
         "status": { "type": "string", "enum": ["active","inactive","prospect"], "default": "active" },
         "mandate_status": { "type": "string", "enum": ["valid","invalid","pending","expired"], "default": "pending" },
-        "association_membership": { "type": "string", "enum": ["avaai","skv","reka","vfs","pro_life","none"] },
+        "association_membership": { "type": "string", "enum": ["vsvv","skv","reka","vfs","pro_life","none"] },
         "permit_type": { "type": "string", "enum": ["b_permit","l_permit","c_permit","ec_permit","ci_permit","g_permit","none"] },
         "is_family_member": { "type": "boolean", "default": false },
         "primary_customer_id": { "type": "string" },

@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Phone, Mail, Calendar, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -63,13 +63,13 @@ function isBirthdayNext30Days(birthdate) {
 export default function BirthdayIntelligence() {
   const { data: customers = [] } = useQuery({
     queryKey: ['customers_birthdays'],
-    queryFn: () => avaai.entities.Customer.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => base44.entities.Customer.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors_list'],
-    queryFn: () => avaai.entities.Advisor.list('-created_date', 100),
+    queryFn: () => base44.entities.Advisor.list('-created_date', 100),
     staleTime: 10 * 60 * 1000,
   });
 

@@ -7,7 +7,7 @@
  */
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -172,7 +172,7 @@ function KiAnalyseContent() {
 
   const { data: improvements = [], refetch: refetchImprovements } = useQuery({
     queryKey: ['enterprise_improvements'],
-    queryFn: async () => avaai.entities.EnterpriseImprovement.list('-proposed_at', 200),
+    queryFn: async () => base44.entities.EnterpriseImprovement.list('-proposed_at', 200),
   });
 
   const activeImprovements = improvements.filter(i => !ARCHIVED_STATUSES.includes(i.status));
@@ -183,7 +183,7 @@ function KiAnalyseContent() {
   const runReview = async () => {
     setReviewLoading(true);
     try {
-      const res = await avaai.functions.invoke('aiSystemReview', { level: selectedLevel });
+      const res = await base44.functions.invoke('aiSystemReview', { level: selectedLevel });
       setReviewResult(res.data);
     } catch (e) {
       toast.error('Review fehlgeschlagen: ' + e.message);
@@ -193,7 +193,7 @@ function KiAnalyseContent() {
 
   const generateMutation = useMutation({
     mutationFn: async (auditResult) => {
-      const res = await avaai.functions.invoke('generateEnterpriseImprovements', { audit_result: auditResult });
+      const res = await base44.functions.invoke('generateEnterpriseImprovements', { audit_result: auditResult });
       return res.data;
     },
     onSuccess: (data) => {
@@ -204,7 +204,7 @@ function KiAnalyseContent() {
 
   const learnMutation = useMutation({
     mutationFn: async () => {
-      const res = await avaai.functions.invoke('learnAndGenerateImprovements', { mode: 'all', limit: 5 });
+      const res = await base44.functions.invoke('learnAndGenerateImprovements', { mode: 'all', limit: 5 });
       return res.data;
     },
     onSuccess: (data) => {
@@ -215,10 +215,10 @@ function KiAnalyseContent() {
 
   const approveMutation = useMutation({
     mutationFn: async (imp) => {
-      const me = await avaai.auth.me();
-      await avaai.entities.EnterpriseImprovement.update(imp.id, { status: 'approved', approved_by: me?.email, approved_at: new Date().toISOString() });
+      const me = await base44.auth.me();
+      await base44.entities.EnterpriseImprovement.update(imp.id, { status: 'approved', approved_by: me?.email, approved_at: new Date().toISOString() });
       if (['performance', 'design', 'ai_quality'].includes(imp.area)) {
-        await avaai.entities.EnterpriseImprovement.update(imp.id, { status: 'implemented', implemented_at: new Date().toISOString() });
+        await base44.entities.EnterpriseImprovement.update(imp.id, { status: 'implemented', implemented_at: new Date().toISOString() });
         return { autoImplemented: true };
       }
       return { autoImplemented: false };
@@ -230,17 +230,17 @@ function KiAnalyseContent() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async ({ id, reason }) => avaai.entities.EnterpriseImprovement.update(id, { status: 'rejected', rejection_reason: reason }),
+    mutationFn: async ({ id, reason }) => base44.entities.EnterpriseImprovement.update(id, { status: 'rejected', rejection_reason: reason }),
     onSuccess: () => { refetchImprovements(); setShowRejectDialog(false); setRejectionReason(''); toast.success('Abgelehnt — KI lernt aus dieser Entscheidung', { icon: '📚' }); },
   });
 
   const implementMutation = useMutation({
-    mutationFn: async (id) => avaai.entities.EnterpriseImprovement.update(id, { status: 'implemented', implemented_at: new Date().toISOString() }),
+    mutationFn: async (id) => base44.entities.EnterpriseImprovement.update(id, { status: 'implemented', implemented_at: new Date().toISOString() }),
     onSuccess: () => refetchImprovements(),
   });
 
   const verifyMutation = useMutation({
-    mutationFn: async (id) => avaai.entities.EnterpriseImprovement.update(id, { status: 'verified', verified_at: new Date().toISOString() }),
+    mutationFn: async (id) => base44.entities.EnterpriseImprovement.update(id, { status: 'verified', verified_at: new Date().toISOString() }),
     onSuccess: () => { refetchImprovements(); toast.success('Verifiziert!', { icon: '✅' }); },
   });
 

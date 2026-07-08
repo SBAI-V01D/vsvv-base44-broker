@@ -6,7 +6,7 @@
 import React, { useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { ChevronRight, Home } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -73,7 +73,7 @@ export default function BreadcrumbBar() {
 
   const { data: customer } = useQuery({
     queryKey: ['breadcrumb_customer', customerId],
-    queryFn: () => avaai.entities.Customer.filter({ id: customerId }),
+    queryFn: () => base44.entities.Customer.filter({ id: customerId }),
     select: d => d?.[0],
     enabled: !!customerId,
     staleTime: 10 * 60 * 1000,
@@ -82,7 +82,7 @@ export default function BreadcrumbBar() {
 
   const { data: partner } = useQuery({
     queryKey: ['breadcrumb_partner', partnerId],
-    queryFn: () => avaai.entities.Partner.filter({ id: partnerId }),
+    queryFn: () => base44.entities.Partner.filter({ id: partnerId }),
     select: d => d?.[0],
     enabled: !!partnerId,
     staleTime: 10 * 60 * 1000,

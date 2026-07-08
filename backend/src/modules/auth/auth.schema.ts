@@ -1,5 +1,5 @@
 // ============================================================================
-// avaai Backend — Auth Validation Schemas (Zod)
+// VSVV Backend — Auth Validation Schemas (Zod)
 // All request bodies for the auth module are validated here.
 // ============================================================================
 
@@ -54,7 +54,7 @@ export const registerSchema = z.object({
     .default('broker'),
   organization_id: z
     .string()
-    .min(1, 'Organization ID is required')
+    .uuid('Organization ID must be a valid UUID')
     .optional(),
 });
 

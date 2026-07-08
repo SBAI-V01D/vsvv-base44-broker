@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Clock, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 
 const REVIEW_STATUS_LABEL = {
@@ -19,7 +19,7 @@ function fmtDate(iso) {
 export default function TabReviews() {
   const { data: dossiers = [], isLoading } = useQuery({
     queryKey: ['enterprise_review_queue'],
-    queryFn: () => avaai.entities.AdvisoryDossier.filter({ archived: false }, '-updated_date', 100),
+    queryFn: () => base44.entities.AdvisoryDossier.filter({ archived: false }, '-updated_date', 100),
     staleTime: 30_000,
   });
 

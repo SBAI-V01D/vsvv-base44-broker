@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Upload, FileText, Trash2, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,12 +30,12 @@ export default function ApplicationDocumentsPanel({ application }) {
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ['documents', 'application', application.id],
-    queryFn: () => avaai.entities.Document.filter({ linked_application_id: application.id }, '-created_date'),
+    queryFn: () => base44.entities.Document.filter({ linked_application_id: application.id }, '-created_date'),
     enabled: !!application.id,
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avaai.entities.Document.delete(id),
+    mutationFn: (id) => base44.entities.Document.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents', 'application', application.id] }),
   })
 
@@ -56,8 +56,8 @@ export default function ApplicationDocumentsPanel({ application }) {
     e.preventDefault()
     if (!file) return
     setUploading(true)
-    const { file_url } = await avaai.integrations.Core.UploadFile({ file })
-    await avaai.entities.Document.create({
+    const { file_url } = await base44.integrations.Core.UploadFile({ file })
+    await base44.entities.Document.create({
       customer_id: application.customer_id,
       customer_name: application.customer_name,
       primary_customer_id: application.primary_customer_id,

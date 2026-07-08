@@ -9,7 +9,7 @@
  */
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { AlertTriangle, RefreshCw, Clock, CheckCircle2, AlertCircle, Shield, Filter } from 'lucide-react';
 import ConfidenceBadge from '@/components/dossier/ConfidenceBadge';
 
@@ -52,7 +52,7 @@ export default function DossierReviewQueue({ onOpen }) {
 
   const { data: dossiers = [], isLoading } = useQuery({
     queryKey: ['advisory_dossiers_queue'],
-    queryFn: () => avaai.entities.AdvisoryDossier.list('-updated_date', 200),
+    queryFn: () => base44.entities.AdvisoryDossier.list('-updated_date', 200),
     staleTime: 30_000,
   });
 

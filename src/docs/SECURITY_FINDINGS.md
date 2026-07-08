@@ -26,9 +26,9 @@ Die Plattform verfügt über eine mehrschichtige Sicherheitsarchitektur:
 |-----------------------------------|-----------|----------------------------------------------|
 | Role-based Access Control (RBAC)  | ✅ Aktiv   | User.role: admin/broker/assistenz/reviewer   |
 | Row-Level Security                | ✅ Aktiv   | RLS auf Contract, Application, Customer      |
-| Serverseitige Rollenprüfung       | ✅ Aktiv   | `avaai.auth.me()` + role check in functions |
+| Serverseitige Rollenprüfung       | ✅ Aktiv   | `base44.auth.me()` + role check in functions |
 | Admin-only Functions              | ✅ Aktiv   | guardRoleAccess, guardDataAccess             |
-| Session-Verwaltung                | ✅ Aktiv   | Plattform-Standard (avaai)                  |
+| Session-Verwaltung                | ✅ Aktiv   | Plattform-Standard (Base44)                  |
 
 ### 1.2 Datenzugriffskontrolle
 | Massnahme                         | Status    | Implementierung                              |
@@ -51,7 +51,7 @@ Die Plattform verfügt über eine mehrschichtige Sicherheitsarchitektur:
 ### 1.4 File Storage Security
 | Massnahme                         | Status    | Implementierung                              |
 |-----------------------------------|-----------|----------------------------------------------|
-| Private File Storage              | ✅ Aktiv   | UploadPrivateFile (avaai Private Storage)   |
+| Private File Storage              | ✅ Aktiv   | UploadPrivateFile (Base44 Private Storage)   |
 | Signed URLs (zeitlimitiert)       | ✅ Aktiv   | CreateFileSignedUrl, expires_in=300s         |
 | Keine direkten öffentlichen URLs  | ✅ Ziel    | Migration alter Dokumente ausstehend         |
 
@@ -81,7 +81,7 @@ Die Plattform verfügt über eine mehrschichtige Sicherheitsarchitektur:
 | Signed URLs ohne IP-Bindung               | MEDIUM   | Teilweise | Zeitlimit 300s als Kompensation       |
 | Frontend-seitige Rollentrennung           | LOW      | Ja        | Serverseitige Guards als Hauptschutz  |
 | Audit-Logs löschbar (aktuell kein Lock)   | MEDIUM   | Teilweise | RLS-Regel "delete=admin-only" nötig   |
-| Keine 2FA / MFA                           | MEDIUM   | Nein      | Plattform-Feature (avaai)            |
+| Keine 2FA / MFA                           | MEDIUM   | Nein      | Plattform-Feature (Base44)            |
 
 ### 2.3 LOW — Monitoring & Observability
 | Risiko                              | Severity | Mitigiert | Hinweis                         |
@@ -131,7 +131,7 @@ Für externen Penetration Test vorbereiten:
 - API-Rate-Limiting
 
 ### Out-of-Scope
-- avaai Plattform-Infrastruktur (Verantwortung avaai)
+- Base44 Plattform-Infrastruktur (Verantwortung Base44)
 - DNS/DDoS
 - Social Engineering
 

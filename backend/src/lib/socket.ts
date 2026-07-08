@@ -1,5 +1,5 @@
 // ============================================================================
-// avaai Backend — Socket.io Server
+// VSVV Backend — Socket.io Server
 //
 // Provides real-time event broadcasting for entity CRUD operations.
 // Integrates with Fastify's underlying Node.js HTTP server.
@@ -179,19 +179,6 @@ export function emitEntityEvent(
   };
 
   io.to(room).emit(eventName, payload);
-}
-
-/**
- * Emit a custom event to all users in an organization.
- * Used for extraction status updates, notifications, etc.
- */
-export function emitToOrganization(
-  eventName: string,
-  data: Record<string, unknown>,
-  orgId: string,
-): void {
-  if (!io) return;
-  io.to(`org:${orgId}`).emit(eventName, data);
 }
 
 /**

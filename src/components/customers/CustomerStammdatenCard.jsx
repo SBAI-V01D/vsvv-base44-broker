@@ -26,7 +26,7 @@ const PERMIT_LABELS = {
 }
 
 const ASSOCIATION_LABELS = {
-  avaai: 'avaai',
+  vsvv: 'VSVV',
   skv: 'SKV',
   reka: 'REKA',
   vfs: 'VFS',

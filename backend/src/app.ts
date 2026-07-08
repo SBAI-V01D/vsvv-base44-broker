@@ -14,8 +14,6 @@ import { initSocketServer, closeSocketServer } from './lib/socket.js';
 // Middleware
 import { PUBLIC_ROUTES, requireAuth } from './middleware/auth.js';
 import { requireRole } from './middleware/rbac.js';
-import { requireServiceRole } from './middleware/service-role.js';
-import { createAuditHook } from './middleware/audit.js';
 import type { Role } from './middleware/rbac.js';
 
 // Auth routes
@@ -26,27 +24,9 @@ import healthRoutes from './modules/health/health.routes.js';
 import uploadRoutes from './modules/upload/upload.routes.js';
 // Functions routes
 import functionsRoutes from './modules/functions/functions.routes.js';
-// Document extraction routes
-import documentRoutes from './modules/document/document.routes.js';
-
-// Phase 1 Module Routes
-import applicationsRoutes from './modules/applications/applications.routes.js';
-import contractsRoutes from './modules/contracts/contracts.routes.js';
-import commissionsRoutes from './modules/commissions/commissions.routes.js';
-import leadsRoutes from './modules/leads/leads.routes.js';
-import auditRoutes from './modules/audit/audit.routes.js';
-import tasksRoutes from './modules/tasks/tasks.routes.js';
-import portalRoutes from './modules/portal/portal.routes.js';
-import krankenkassenRoutes from './modules/krankenkassen/krankenkassen.routes.js';
-import enterpriseRoutes from './modules/enterprise/enterprise.routes.js';
-import backupRoutes from './modules/backup/backup.routes.js';
-import adminRoutes from './modules/admin/admin.routes.js';
-
-// Document worker
-import { startDocumentWorker, stopDocumentWorker } from './workers/document.worker.js';
 
 // ---------------------------------------------------------------------------
-// avaai Backend — Fastify Application Bootstrap
+// VSVV Backend — Fastify Application Bootstrap
 // ---------------------------------------------------------------------------
 
 // Augment @fastify/jwt's FastifyJWT interface so UserType resolves to our shape
@@ -81,16 +61,6 @@ declare module 'fastify' {
     requireRole: (
       roles: Role[],
     ) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
-
-    /**
-     * Service-Role access control guard.
-     * Validates the X-Service-Role header — only admin users may use it.
-     * Must be used *after* `requireAuth` and `requireTenant`.
-     */
-    requireServiceRole: (
-      request: FastifyRequest,
-      reply: FastifyReply,
-    ) => Promise<void>;
   }
 }
 
@@ -134,19 +104,12 @@ export async function buildApp(): Promise<FastifyInstance> {
    */
   app.decorate('requireAuth', requireAuth);
 
-    /**
-     * Role-based access control guard — must be used *after* `requireAuth`.
-     * Factory function that returns a preHandler checking the user's role
-     * against a list of allowed roles. Returns 403 if not authorized.
-     */
-    app.decorate('requireRole', requireRole);
-
-    /**
-     * Service-Role guard — validates the X-Service-Role header.
-     * Only admin users may use this header to bypass normal RBAC.
-     * Must be used *after* `requireAuth`.
-     */
-    app.decorate('requireServiceRole', requireServiceRole);
+  /**
+   * Role-based access control guard — must be used *after* `requireAuth`.
+   * Factory function that returns a preHandler checking the user's role
+   * against a list of allowed roles. Returns 403 if not authorized.
+   */
+  app.decorate('requireRole', requireRole);
 
   // ----- Global Auth Hook --------------------------------------------------
 
@@ -155,8 +118,6 @@ export async function buildApp(): Promise<FastifyInstance> {
    * Public routes (from the PUBLIC_ROUTES whitelist) are skipped inside
    * the requireAuth middleware. Individual routes can still opt in via
    * per-route preHandler for explicit documentation.
-   *
-   * Also runs requireServiceRole to prevent X-Service-Role privilege escalation.
    */
   app.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
     const urlPath = request.url.split('?')[0];
@@ -171,23 +132,8 @@ export async function buildApp(): Promise<FastifyInstance> {
         error: 'Unauthorized',
         message: 'Invalid or expired token',
       });
-      return;
     }
-
-    // Enforce service-role access control AFTER successful auth
-    // Only checks requests with X-Service-Role header, no-op otherwise
-    await requireServiceRole(request, reply);
   });
-
-  // ----- Audit Hook (DSGVO-compliant access logging) ------------------------
-
-  /**
-   * Global onResponse hook: logs read/write access to sensitive personal data.
-   * Required for DSGVO Art. 5(1)(f) + Art. 30 and FINMA compliance.
-   * Only fires for authenticated requests to sensitive entity routes.
-   * Fire-and-forget — does not block responses.
-   */
-  app.addHook('onResponse', createAuditHook());
 
   // ----- Entity CRUD Routes -------------------------------------------------
 
@@ -202,27 +148,11 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '' });
   await app.register(uploadRoutes);
   await app.register(functionsRoutes);
-  await app.register(documentRoutes);
-
-  // ----- Phase 1 Custom Modules ---------------------------------------------
-
-  await app.register(applicationsRoutes);
-  await app.register(contractsRoutes);
-  await app.register(commissionsRoutes);
-  await app.register(leadsRoutes);
-  await app.register(auditRoutes);
-  await app.register(tasksRoutes);
-  await app.register(portalRoutes);
-  await app.register(krankenkassenRoutes);
-  await app.register(enterpriseRoutes);
-  await app.register(backupRoutes);
-  await app.register(adminRoutes);
 
   // ----- Graceful Shutdown -------------------------------------------------
 
   const shutdown = async (signal: string) => {
     app.log.info(`Received ${signal} — shutting down gracefully`);
-    await stopDocumentWorker();
     await closeSocketServer();
     await prisma.$disconnect();
     await app.close();
@@ -249,11 +179,6 @@ async function start(): Promise<void> {
 
     // Initialize Socket.io on top of Fastify's HTTP server
     initSocketServer(app);
-
-    // Start background workers
-    if (env.NODE_ENV !== 'test') {
-      startDocumentWorker();
-    }
   } catch (err) {
     app.log.fatal(err);
     process.exit(1);

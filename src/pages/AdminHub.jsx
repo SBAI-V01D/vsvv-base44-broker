@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { cn } from '@/lib/utils'
 import { getScoreColor, getScoreBg } from '@/lib/CentralAnalysisContext'
 import {
@@ -120,20 +120,20 @@ export default function AdminHub() {
   // Current user
   const { data: currentUser } = useQuery({
     queryKey: ['admin_hub_me'],
-    queryFn: () => avaai.auth.me(),
+    queryFn: () => base44.auth.me(),
   })
 
   // Audit logs
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['admin_hub_audit'],
-    queryFn: () => avaai.entities.AuditLog.list('-created_date', 10),
+    queryFn: () => base44.entities.AuditLog.list('-created_date', 10),
     refetchInterval: 30_000,
   })
 
   // Offene Verbesserungen
   const { data: improvements = [] } = useQuery({
     queryKey: ['admin_hub_improvements'],
-    queryFn: () => avaai.entities.EnterpriseImprovement.list('-proposed_at', 100),
+    queryFn: () => base44.entities.EnterpriseImprovement.list('-proposed_at', 100),
   })
   const openImprovements = improvements.filter(i => !['verified', 'rejected'].includes(i.status))
   const verifiedCount = improvements.filter(i => i.status === 'verified').length
@@ -146,7 +146,7 @@ export default function AdminHub() {
   const runAnalysis = async () => {
     setAnalysisLoading(true)
     try {
-      const res = await avaai.functions.invoke('centralAnalysisEngine', {})
+      const res = await base44.functions.invoke('centralAnalysisEngine', {})
       setAnalysisData(res.data)
     } catch { /* silent */ }
     setAnalysisLoading(false)

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Trash2, Edit3, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -34,7 +34,7 @@ export default function PartnerActivitiesPanel({ partnerId }) {
     queryKey: ['partner-activities', partnerId],
     queryFn: async () => {
       try {
-        return await avaai.entities.PartnerActivity.filter({ partner_id: partnerId }, '-created_date', 100)
+        return await base44.entities.PartnerActivity.filter({ partner_id: partnerId }, '-created_date', 100)
       } catch {
         return []
       }

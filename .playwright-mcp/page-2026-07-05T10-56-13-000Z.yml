@@ -1,0 +1,18 @@
+- generic [ref=f14e2]:
+  - generic [ref=f14e3]:
+    - img [ref=f14e5]
+    - heading "avaai Premium Broker" [level=1] [ref=f14e7]
+    - paragraph [ref=f14e8]: Bitte melden Sie sich an
+  - generic [ref=f14e9]:
+    - generic [ref=f14e10]:
+      - generic [ref=f14e11]: Email
+      - textbox "Email" [active] [ref=f14e12]:
+        - /placeholder: ihre@email.ch
+    - generic [ref=f14e13]:
+      - generic [ref=f14e14]: Passwort
+      - generic [ref=f14e15]:
+        - textbox "Passwort" [ref=f14e16]:
+          - /placeholder: ••••••••
+        - button [ref=f14e17] [cursor=pointer]:
+          - img [ref=f14e18]
+    - button "Anmelden" [ref=f14e21] [cursor=pointer]

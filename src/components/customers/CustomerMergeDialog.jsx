@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
 } from '@/components/ui/dialog'
@@ -70,13 +70,13 @@ export default function CustomerMergeDialog({ open, onOpenChange, preselectedDup
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers-for-merge'],
-    queryFn: () => avaai.entities.Customer.list('-created_date', 200),
+    queryFn: () => base44.entities.Customer.list('-created_date', 200),
     enabled: open,
   })
 
   const mergeMutation = useMutation({
     mutationFn: async () => {
-      const res = await avaai.functions.invoke('mergeCustomers', { masterId, duplicateId, reason })
+      const res = await base44.functions.invoke('mergeCustomers', { masterId, duplicateId, reason })
       return res.data
     },
     onSuccess: (data) => {

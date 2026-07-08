@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -42,7 +42,7 @@ export default function EmailTemplateSender({ customerId, customer, contracts = 
 
   const { data: templates = [] } = useQuery({
     queryKey: ['emailTemplates'],
-    queryFn: () => avaai.entities.EmailTemplate.list(),
+    queryFn: () => base44.entities.EmailTemplate.list(),
   });
 
   const currentTemplate = useMemo(() => 
@@ -72,7 +72,7 @@ export default function EmailTemplateSender({ customerId, customer, contracts = 
 
     setSending(true);
     try {
-      await avaai.integrations.Core.SendEmail({
+      await base44.integrations.Core.SendEmail({
         to: recipientEmail,
         subject: subject.replace(/{{\s*\w+\s*}}/g, (match) => {
           const key = match.replace(/{{\s*|\s*}}/g, '');
@@ -110,7 +110,7 @@ export default function EmailTemplateSender({ customerId, customer, contracts = 
       });
 
       // Log notification
-      await avaai.entities.Notification.create({
+      await base44.entities.Notification.create({
         type: 'manual',
         recipient_email: recipientEmail,
         recipient_name: customer?.first_name || 'Kunde',

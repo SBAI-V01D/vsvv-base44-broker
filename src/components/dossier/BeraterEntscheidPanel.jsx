@@ -11,7 +11,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Award, CheckCircle2, AlertCircle, Lock, ShieldOff } from 'lucide-react';
 import { toast } from 'sonner';
@@ -75,7 +75,7 @@ export default function BeraterEntscheidPanel({ dossier, entries = [] }) {
       // Benutzer laden für Audit-Trail
       let userInfo = {};
       try {
-        const me = await avaai.auth.me();
+        const me = await base44.auth.me();
         userInfo = { user_id: me.id, user_name: me.full_name || me.email };
       } catch {}
 
@@ -136,7 +136,7 @@ export default function BeraterEntscheidPanel({ dossier, entries = [] }) {
           };
         }
       }
-      return avaai.entities.AdvisoryDossier.update(dossier.id, data);
+      return base44.entities.AdvisoryDossier.update(dossier.id, data);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['advisory_dossier'] });

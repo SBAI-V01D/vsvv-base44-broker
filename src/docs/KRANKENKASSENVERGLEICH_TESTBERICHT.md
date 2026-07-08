@@ -124,5 +124,5 @@
 ---
 
 **Testdatum:** 2026-06-08  
-**Tester:** avaai AI  
+**Tester:** Base44 AI  
 **Status:** ✅ BESTANDEN

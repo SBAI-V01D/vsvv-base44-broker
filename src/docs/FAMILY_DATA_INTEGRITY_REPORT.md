@@ -235,5 +235,5 @@ FINMA-konform: Jede Änderung ist nachvollziehbar und dokumentiert.
 ---
 
 *Erstellt: 2026-06-04*
-*Autor: avaai AI Engineering*
+*Autor: Base44 AI Engineering*
 *Version: 1.0*

@@ -1,0 +1,213 @@
+- generic [ref=f25e3]:
+  - complementary [ref=f25e5]:
+    - generic [ref=f25e6]:
+      - img [ref=f25e8]
+      - generic [ref=f25e11]:
+        - paragraph [ref=f25e12]: admin@avaai.ch
+        - paragraph [ref=f25e13]: Administrator
+    - navigation [ref=f25e14]:
+      - generic [ref=f25e15]:
+        - paragraph [ref=f25e16]: Cockpit
+        - generic [ref=f25e17]:
+          - link "Dashboard" [ref=f25e18] [cursor=pointer]:
+            - /url: /
+            - img [ref=f25e20]
+            - generic [ref=f25e25]: Dashboard
+          - link "Vertragsabläufe" [ref=f25e26] [cursor=pointer]:
+            - /url: /vertragsablaeufe
+            - img [ref=f25e27]
+            - generic [ref=f25e32]: Vertragsabläufe
+          - link "Aufgaben" [ref=f25e33] [cursor=pointer]:
+            - /url: /aufgaben
+            - img [ref=f25e34]
+            - generic [ref=f25e37]: Aufgaben
+      - generic [ref=f25e38]:
+        - paragraph [ref=f25e39]: Kunden
+        - generic [ref=f25e40]:
+          - link "Kundenübersicht" [ref=f25e41] [cursor=pointer]:
+            - /url: /kunden
+            - img [ref=f25e42]
+            - generic [ref=f25e47]: Kundenübersicht
+          - link "Verkaufschancen" [ref=f25e48] [cursor=pointer]:
+            - /url: /verkaufschancen
+            - img [ref=f25e49]
+            - generic [ref=f25e52]: Verkaufschancen
+          - link "Leads" [ref=f25e53] [cursor=pointer]:
+            - /url: /leads
+            - img [ref=f25e54]
+            - generic [ref=f25e57]: Leads
+          - link "Krankenkassenvergleich" [ref=f25e58] [cursor=pointer]:
+            - /url: /krankenkassen-vergleich
+            - img [ref=f25e59]
+            - generic [ref=f25e61]: Krankenkassenvergleich
+          - link "Beratungsdossiers" [ref=f25e62] [cursor=pointer]:
+            - /url: /beratungsdossier
+            - img [ref=f25e63]
+            - generic [ref=f25e65]: Beratungsdossiers
+          - link "Kundenportal" [ref=f25e66] [cursor=pointer]:
+            - /url: /portal
+            - img [ref=f25e67]
+            - generic [ref=f25e71]: Kundenportal
+      - generic [ref=f25e72]:
+        - paragraph [ref=f25e73]: Ausschreibungen
+        - generic [ref=f25e74]:
+          - link "Ausschreibungen" [ref=f25e75] [cursor=pointer]:
+            - /url: /ausschreibungen
+            - img [ref=f25e76]
+            - generic [ref=f25e77]: Ausschreibungen
+          - link "Versicherer DB" [ref=f25e78] [cursor=pointer]:
+            - /url: /ausschreibungen/versicherer
+            - img [ref=f25e79]
+            - generic [ref=f25e83]: Versicherer DB
+      - generic [ref=f25e84]:
+        - paragraph [ref=f25e85]: Verwaltung
+        - generic [ref=f25e86]:
+          - link "Verträge" [ref=f25e87] [cursor=pointer]:
+            - /url: /vertraege
+            - img [ref=f25e88]
+            - generic [ref=f25e91]: Verträge
+          - link "Anträge" [ref=f25e92] [cursor=pointer]:
+            - /url: /antraege
+            - img [ref=f25e93]
+            - generic [ref=f25e96]: Anträge
+          - link "Dokumente" [ref=f25e97] [cursor=pointer]:
+            - /url: /dokumente
+            - img [ref=f25e98]
+            - generic [ref=f25e100]: Dokumente
+          - link "Dok.-Extraktor" [ref=f25e101] [cursor=pointer]:
+            - /url: /dokument-extraktor
+            - img [ref=f25e102]
+            - generic [ref=f25e112]: Dok.-Extraktor
+      - generic [ref=f25e113]:
+        - paragraph [ref=f25e114]: Finanzen & Team
+        - generic [ref=f25e115]:
+          - link "Reporting" [ref=f25e116] [cursor=pointer]:
+            - /url: /reporting
+            - img [ref=f25e117]
+            - generic [ref=f25e118]: Reporting
+          - link "Provisionen" [ref=f25e119] [cursor=pointer]:
+            - /url: /provisionen-courtagen
+            - img [ref=f25e120]
+            - generic [ref=f25e123]: Provisionen
+          - link "Finanzdashboard" [ref=f25e124] [cursor=pointer]:
+            - /url: /finanz-dashboard
+            - img [ref=f25e125]
+            - generic [ref=f25e126]: Finanzdashboard
+      - generic [ref=f25e127]:
+        - paragraph [ref=f25e128]: Enterprise
+        - link "Berater & Partner" [ref=f25e130] [cursor=pointer]:
+          - /url: /berater-organisation
+          - img [ref=f25e131]
+          - generic [ref=f25e134]: Berater & Partner
+      - generic [ref=f25e135]:
+        - paragraph [ref=f25e136]: Administration
+        - generic [ref=f25e137]:
+          - link "Admin Hub" [ref=f25e138] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=f25e139]
+            - generic [ref=f25e141]: Admin Hub
+          - link "System-Health" [ref=f25e142] [cursor=pointer]:
+            - /url: /admin/control-center
+            - img [ref=f25e143]
+            - generic [ref=f25e145]: System-Health
+          - link "Team & Zugriffe" [ref=f25e146] [cursor=pointer]:
+            - /url: /admin/team
+            - img [ref=f25e147]
+            - generic [ref=f25e150]: Team & Zugriffe
+          - link "Audit" [ref=f25e151] [cursor=pointer]:
+            - /url: /admin/audit
+            - img [ref=f25e152]
+            - generic [ref=f25e153]: Audit
+          - link "Audit Logs" [ref=f25e154] [cursor=pointer]:
+            - /url: /admin/audit-logs
+            - img [ref=f25e155]
+            - generic [ref=f25e160]: Audit Logs
+          - link "System Check" [ref=f25e161] [cursor=pointer]:
+            - /url: /admin/system-check
+            - img [ref=f25e162]
+            - generic [ref=f25e165]: System Check
+          - link "System Logs" [ref=f25e166] [cursor=pointer]:
+            - /url: /admin/logs
+            - img [ref=f25e167]
+            - generic [ref=f25e170]: System Logs
+          - link "KI-Verbesserungen" [ref=f25e171] [cursor=pointer]:
+            - /url: /admin/improvements
+            - img [ref=f25e172]
+            - generic [ref=f25e182]: KI-Verbesserungen
+          - link "Sicherheit" [ref=f25e183] [cursor=pointer]:
+            - /url: /admin/security
+            - img [ref=f25e184]
+            - generic [ref=f25e186]: Sicherheit
+          - link "Backup" [ref=f25e187] [cursor=pointer]:
+            - /url: /admin/backup
+            - img [ref=f25e188]
+            - generic [ref=f25e190]: Backup
+          - link "Lernzentrum" [ref=f25e191] [cursor=pointer]:
+            - /url: /admin/insurance-learning
+            - img [ref=f25e192]
+            - generic [ref=f25e194]: Lernzentrum
+    - generic [ref=f25e195]:
+      - button "Abmelden" [ref=f25e196] [cursor=pointer]:
+        - img [ref=f25e197]
+        - generic [ref=f25e200]: Abmelden
+      - button "Einklappen" [ref=f25e201] [cursor=pointer]:
+        - img [ref=f25e202]
+  - main [ref=f25e205]:
+    - generic [ref=f25e207]:
+      - generic [ref=f25e209]:
+        - generic [ref=f25e210]:
+          - img [ref=f25e212]
+          - generic [ref=f25e213]:
+            - heading "Cockpit" [level=1] [ref=f25e214]
+            - paragraph [ref=f25e215]: 0 offene Aufgaben · 0 heiße Leads
+        - generic [ref=f25e219]:
+          - img [ref=f25e220]
+          - textbox "Kunde suchen… (z.B. 'Adam')" [ref=f25e223]
+        - button "Neuer Kunde" [ref=f25e225] [cursor=pointer]:
+          - img [ref=f25e226]
+          - text: Neuer Kunde
+      - generic [ref=f25e230]:
+        - generic [ref=f25e231]:
+          - button "Berateransicht Tagesgeschäft · Leads · Aufgaben · Renewals 0 Aufgaben 0 Hot Leads" [ref=f25e232] [cursor=pointer]:
+            - img [ref=f25e234]
+            - generic [ref=f25e239]:
+              - paragraph [ref=f25e240]: Berateransicht
+              - paragraph [ref=f25e241]: Tagesgeschäft · Leads · Aufgaben · Renewals
+            - generic [ref=f25e242]:
+              - generic [ref=f25e243]: 0 Aufgaben
+              - generic [ref=f25e244]: 0 Hot Leads
+          - button "Manageransicht KPIs · Portfolio · Finanzen · Reporting 0 Verträge CHF 0k" [ref=f25e245] [cursor=pointer]:
+            - img [ref=f25e247]
+            - generic [ref=f25e248]:
+              - paragraph [ref=f25e249]: Manageransicht
+              - paragraph [ref=f25e250]: KPIs · Portfolio · Finanzen · Reporting
+            - generic [ref=f25e251]:
+              - generic [ref=f25e252]: 0 Verträge
+              - generic [ref=f25e253]: CHF 0k
+          - button "Adminansicht Governance · System · KI · Audit 0 Incidents" [ref=f25e254] [cursor=pointer]:
+            - img [ref=f25e256]
+            - generic [ref=f25e258]:
+              - paragraph [ref=f25e259]: Adminansicht
+              - paragraph [ref=f25e260]: Governance · System · KI · Audit
+            - generic [ref=f25e262]: 0 Incidents
+        - generic [ref=f25e263]:
+          - button "Kunden CRM & Portfolio" [ref=f25e264] [cursor=pointer]:
+            - img [ref=f25e266]
+            - generic [ref=f25e271]:
+              - paragraph [ref=f25e272]: Kunden
+              - paragraph [ref=f25e273]: CRM & Portfolio
+          - button "Verwaltung Dokumente & Anträge" [ref=f25e274] [cursor=pointer]:
+            - img [ref=f25e276]
+            - generic [ref=f25e278]:
+              - paragraph [ref=f25e279]: Verwaltung
+              - paragraph [ref=f25e280]: Dokumente & Anträge
+          - button "Finanzen Provisionen & Reporting" [ref=f25e281] [cursor=pointer]:
+            - img [ref=f25e283]
+            - generic [ref=f25e286]:
+              - paragraph [ref=f25e287]: Finanzen
+              - paragraph [ref=f25e288]: Provisionen & Reporting
+          - button "Enterprise Team & Organisation" [ref=f25e289] [cursor=pointer]:
+            - img [ref=f25e291]
+            - generic [ref=f25e293]:
+              - paragraph [ref=f25e294]: Enterprise
+              - paragraph [ref=f25e295]: Team & Organisation

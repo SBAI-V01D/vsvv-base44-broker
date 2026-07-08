@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { getSparteLabel } from '@/lib/insuranceSparten'
 import { daysUntil, analyzeContract, isContractActionable } from '@/lib/contractRelevance'
 import { cn } from '@/lib/utils'
@@ -53,15 +53,13 @@ function getVvgDates(contract) {
   if (contract.end_date.startsWith('9999')) return []
   const start = new Date(contract.start_date + 'T00:00:00')
   const end   = new Date(contract.end_date   + 'T00:00:00')
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) return []
   const durationYears = (end - start) / (365.25 * 24 * 3600 * 1000)
   if (durationYears <= 3) return []
   const dates = []
-  const MAX_ITER = 50
-  for (let n = 3; n < MAX_ITER; n++) {
+  for (let n = 3; ; n++) {
     const d = new Date(start)
     d.setFullYear(d.getFullYear() + n)
-    d.setDate(d.getDate() - 1)
+    d.setDate(d.getDate() - 1) // letzter Tag des n-ten Versicherungsjahres
     if (d >= end) break
     dates.push(d)
   }
@@ -400,29 +398,29 @@ export default function Vertragsablaeufe() {
 
   const { data: contracts = [], isLoading } = useQuery({
     queryKey: ['contracts', 'ablaeufe'],
-    queryFn: () => avaai.entities.Contract.filter({ archived: false }, '-updated_date', 1000),
+    queryFn: () => base44.entities.Contract.filter({ archived: false }, '-updated_date', 1000),
     staleTime: 2 * 60 * 1000,
   })
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['verkaufschancen'],
-    queryFn: () => avaai.entities.Verkaufschance.filter({ status: ['neu', 'in_ausschreibung', 'offerten_erhalten', 'beratung_erfolgt', 'kunde_entscheidet'] }, null, 200),
+    queryFn: () => base44.entities.Verkaufschance.filter({ status: ['neu', 'in_ausschreibung', 'offerten_erhalten', 'beratung_erfolgt', 'kunde_entscheidet'] }, null, 200),
     staleTime: 2 * 60 * 1000,
   })
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks', 'open'],
-    queryFn: () => avaai.entities.Task.filter({ status: ['open', 'in_progress'] }, null, 200),
+    queryFn: () => base44.entities.Task.filter({ status: ['open', 'in_progress'] }, null, 200),
     staleTime: 2 * 60 * 1000,
   })
 
   const createVsMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Verkaufschance.create(data),
+    mutationFn: (data) => base44.entities.Verkaufschance.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] }); navigate('/verkaufschancen') },
   })
   const [followupPendingId, setFollowupPendingId] = useState(null)
   const createFollowupMutation = useMutation({
-    mutationFn: (contract) => avaai.entities.Task.create({
+    mutationFn: (contract) => base44.entities.Task.create({
       title: `Follow-up Verlängerung: ${contract.customer_name} – ${contract.insurer}`,
       customer_id: contract.customer_id,
       customer_name: contract.customer_name,
@@ -439,31 +437,33 @@ export default function Vertragsablaeufe() {
     onError: () => setFollowupPendingId(null),
   })
   const updateContractMutation = useMutation({
-    mutationFn: ({ id, data }) => avaai.entities.Contract.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Contract.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
   })
-
-  const vvgCache = useMemo(() => {
-    const map = new Map()
-    contracts.forEach(c => { map.set(c.id, getVvgDates(c)) })
-    return map
-  }, [contracts])
 
   const vvgItems = useMemo(() => {
     const today = new Date()
     return contracts
       .filter(c => ['active', 'pending'].includes(c.status) && !c.archived)
-      .map(c => ({ contract: c, vvgDates: vvgCache.get(c.id) || [] }))
+      .map(c => ({ contract: c, vvgDates: getVvgDates(c) }))
       .filter(({ vvgDates }) => vvgDates.length > 0 && vvgDates.some(d => d >= today))
       .sort((a, b) => {
         const nextA = a.vvgDates.find(d => d >= new Date()) || new Date(9999, 0, 1)
         const nextB = b.vvgDates.find(d => d >= new Date()) || new Date(9999, 0, 1)
         return nextA - nextB
       })
-  }, [contracts, vvgCache])
+  }, [contracts])
 
   const actionableItems = useMemo(() => {
     const today = new Date()
+    // Build VVG lookup
+    const vvgMap = new Map()
+    contracts.forEach(c => {
+      const dates = getVvgDates(c)
+      const next = dates.find(d => d >= today)
+      if (next) vvgMap.set(c.id, next)
+    })
+
     return contracts
       .filter(c => {
         if (!isContractActionable(c)) return false
@@ -472,9 +472,9 @@ export default function Vertragsablaeufe() {
       })
       .map(c => {
         const actions = analyzeContract(c)
-        const dates = vvgCache.get(c.id) || []
-        const next = dates.find(d => d >= today)
-        return { contract: c, actions, topAction: actions[0], isVvg: !!next, vvgNextDate: next || null }
+        const isVvg = vvgMap.has(c.id)
+        const vvgNextDate = vvgMap.get(c.id) || null
+        return { contract: c, actions, topAction: actions[0], isVvg, vvgNextDate }
       })
       .filter(item => item.actions.length > 0 && item.topAction?.severity !== 'review_required')
       .sort((a, b) => {
@@ -486,7 +486,7 @@ export default function Vertragsablaeufe() {
         const bDays = daysUntil(b.contract.end_date) ?? 999
         return aDays - bDays
       })
-  }, [contracts, vvgCache, filterProcessStatus])
+  }, [contracts, filterProcessStatus])
 
   const excludedCount = useMemo(() => actionableItems.filter(i => i.contract.exclude_from_renewal_statistics).length, [actionableItems])
 

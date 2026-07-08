@@ -12,7 +12,7 @@ import DailyActionsPanel from '@/components/dashboard/DailyActionsPanel'
 import PipelineSection from '@/components/dashboard/PipelineSection'
 import RenewalsActionPanel from '@/components/dashboard/RenewalsActionPanel'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 
 export default function AdvancedDashboard() {
   const [filterAdvisor, setFilterAdvisor] = useState('all')
@@ -20,12 +20,12 @@ export default function AdvancedDashboard() {
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avaai.entities.Advisor.list(),
+    queryFn: () => base44.entities.Advisor.list(),
   })
 
   const { data: organizations = [] } = useQuery({
     queryKey: ['organizations'],
-    queryFn: () => avaai.entities.Organization.list(),
+    queryFn: () => base44.entities.Organization.list(),
   })
 
   const metrics = useDashboardMetrics({

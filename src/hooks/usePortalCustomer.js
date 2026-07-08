@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { usePortalData, yearlyPremium as _yearlyPremium } from './usePortalData'
 
 // Legacy hook — now delegates to usePortalData for unified data loading
@@ -26,24 +26,24 @@ function mergeById(a, b) {
 
 export async function fetchPortalContracts(customerId) {
   const [d, p] = await Promise.all([
-    avaai.entities.Contract.filter({ customer_id: customerId }),
-    avaai.entities.Contract.filter({ primary_customer_id: customerId }),
+    base44.entities.Contract.filter({ customer_id: customerId }),
+    base44.entities.Contract.filter({ primary_customer_id: customerId }),
   ])
   return mergeById(d, p)
 }
 
 export async function fetchPortalApplications(customerId) {
   const [d, p] = await Promise.all([
-    avaai.entities.Application.filter({ customer_id: customerId }),
-    avaai.entities.Application.filter({ primary_customer_id: customerId }),
+    base44.entities.Application.filter({ customer_id: customerId }),
+    base44.entities.Application.filter({ primary_customer_id: customerId }),
   ])
   return mergeById(d, p)
 }
 
 export async function fetchPortalDocuments(customerId) {
   const [d, p] = await Promise.all([
-    avaai.entities.Document.filter({ customer_id: customerId }),
-    avaai.entities.Document.filter({ primary_customer_id: customerId }),
+    base44.entities.Document.filter({ customer_id: customerId }),
+    base44.entities.Document.filter({ primary_customer_id: customerId }),
   ])
   return mergeById(d, p).filter(doc => doc.visible_in_portal !== false)
 }

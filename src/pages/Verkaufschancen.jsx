@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,21 +39,21 @@ export default function Verkaufschancen() {
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['verkaufschancen'],
-    queryFn: () => avaai.entities.Verkaufschance.list('-created_date'),
+    queryFn: () => base44.entities.Verkaufschance.list('-created_date'),
   })
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avaai.entities.Customer.list(),
+    queryFn: () => base44.entities.Customer.list(),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avaai.entities.Verkaufschance.delete(id),
+    mutationFn: (id) => base44.entities.Verkaufschance.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] }),
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Verkaufschance.create(data),
+    mutationFn: (data) => base44.entities.Verkaufschance.create(data),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['verkaufschancen'] })
       setShowNewForm(false)

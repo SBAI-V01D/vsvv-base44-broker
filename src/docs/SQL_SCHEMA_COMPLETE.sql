@@ -1,4 +1,4 @@
-# avaai CRM - SQL-Schema für Supabase
+# VSVV CRM - SQL-Schema für Supabase
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  

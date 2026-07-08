@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Clock, User, CheckCircle2, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 
 function fmtDt(iso) {
@@ -17,13 +17,13 @@ const ACTION_ICON = {
 export default function TabAudit() {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['enterprise_system_logs'],
-    queryFn: () => avaai.entities.SystemLog.list('-created_date', 100),
+    queryFn: () => base44.entities.SystemLog.list('-created_date', 100),
     staleTime: 30_000,
   });
 
   const { data: dossiers = [] } = useQuery({
     queryKey: ['enterprise_audit_dossiers'],
-    queryFn: () => avaai.entities.AdvisoryDossier.list('-updated_date', 50),
+    queryFn: () => base44.entities.AdvisoryDossier.list('-updated_date', 50),
     staleTime: 60_000,
   });
 

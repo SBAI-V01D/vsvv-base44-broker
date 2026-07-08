@@ -3,7 +3,7 @@
  * Führt validateEnterpriseIntegrity aus und zeigt Ergebnisse strukturiert an.
  */
 import { useState } from 'react';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { CheckCircle2, AlertTriangle, XCircle, Loader2, Shield, RefreshCw } from 'lucide-react';
 
 const STATUS_CFG = {
@@ -21,7 +21,7 @@ export default function EnterpriseIntegrityPanel() {
     setLoading(true);
     setError(null);
     try {
-      const res = await avaai.functions.invoke('validateEnterpriseIntegrity', {});
+      const res = await base44.functions.invoke('validateEnterpriseIntegrity', {});
       setResult(res.data);
     } catch (e) {
       setError(e.message);

@@ -16,7 +16,7 @@
  *   → Das ist eine echte Korrektur
  */
 
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 
 /**
  * Vergleicht original KI-Extraktion mit final bestätigten Werten.
@@ -78,7 +78,7 @@ export function logCorrections(corrections, sourceDocument, productCount) {
   };
 
   // Async, fire-and-forget
-  avaai.entities.SystemLog.create({
+  base44.entities.SystemLog.create({
     level:               'info',
     source:              'ki_extraktion_korrektur',
     message:             `KI-Korrektur: ${corrections.length} Feld(er) geändert (${productCount} Produkte)`,

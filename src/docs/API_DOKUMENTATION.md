@@ -1,4 +1,4 @@
-# avaai CRM - API-Dokumentation
+# VSVV CRM - API-Dokumentation
 
 **Version:** 1.0  
 **Datum:** 2026-06-09  
@@ -12,7 +12,7 @@ Diese Dokumentation beschreibt alle Backend-Endpunkte für die Supabase-Integrat
 
 ---
 
-## Backend-Functions (avaai)
+## Backend-Functions (Base44)
 
 ### 1. importBAGDatenToSupabase
 
@@ -429,7 +429,7 @@ const queryClient = new QueryClient({
 **1. BAG-Import Test:**
 ```javascript
 const testImport = async () => {
-  const response = await avaai.functions.invoke('importBAGDatenToSupabase', {
+  const response = await base44.functions.invoke('importBAGDatenToSupabase', {
     records: testRecords,
     jahr: 2026,
     importModus: 'auswahl',
@@ -445,7 +445,7 @@ const testImport = async () => {
 ```javascript
 const testQueryPerformance = async () => {
   const start = Date.now();
-  const response = await avaai.functions.invoke('queryBAGPraemien', {
+  const response = await base44.functions.invoke('queryBAGPraemien', {
     kanton: 'ZH',
     jahr: 2026
   });

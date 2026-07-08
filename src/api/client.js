@@ -1,14 +1,14 @@
 /**
- * avaai API Client — Drop-in replacement for @avaai/sdk
+ * VSVV API Client — Drop-in replacement for @base44/sdk
  *
- * Usage: import { avaai } from '@/api/avaaiClient'
+ * Usage: import { base44 } from '@/api/base44Client'
  *
- * This module creates a `avaai`-compatible interface that talks to our
- * self-hosted Fastify backend.
+ * This module creates a `base44`-compatible interface that talks to our
+ * self-hosted Fastify backend instead of Base44's cloud API.
  *
  * ALL existing frontend code continues to work without changes.
  *
- * Supported calling patterns (matching @avaai/sdk exactly):
+ * Supported calling patterns (matching @base44/sdk exactly):
  *   list()                    → GET /api/{entities}
  *   list(sort, pageSize)      → GET /api/{entities}?sortBy=...&limit=...
  *   list(sort, pageSize, offset) → GET /api/{entities}?sortBy=...&limit=...&page=...
@@ -17,42 +17,29 @@
  *   subscribe(callback)       → bridges to Socket.io for realtime
  */
 
-const API_BASE = import.meta.env.VITE_API_URL ?? ''
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
-// ─── Token Management (SessionStorage — XSS Seal) ──────────────────────────────
-// All tokens exclusively use SessionStorage → browser-sealed, XSS-safe.
-// localStorage is repurposed for non-token keys like 'theme' or 'lang'.
-// This replaces the old window-event-listener storage pattern entirely.
+// ─── Token Management ───────────────────────────────────────────────────────
 
-const ACCESS_KEY = 'avaai_access_token'
-const REFRESH_KEY = 'avaai_refresh_token'
-
-let accessToken = sessionStorage.getItem(ACCESS_KEY) || null
-let refreshToken = sessionStorage.getItem(REFRESH_KEY) || null
+let accessToken = localStorage.getItem('vsvv_access_token') || null
+let refreshToken = localStorage.getItem('vsvv_refresh_token') || null
 let refreshPromise = null
 
 export function setTokens(access, refresh) {
   accessToken = access
   refreshToken = refresh
-  if (access !== null) sessionStorage.setItem(ACCESS_KEY, access)
-  else sessionStorage.removeItem(ACCESS_KEY)
-  if (refresh !== null) sessionStorage.setItem(REFRESH_KEY, refresh)
-  else sessionStorage.removeItem(REFRESH_KEY)
+  if (access) localStorage.setItem('vsvv_access_token', access)
+  else localStorage.removeItem('vsvv_access_token')
+  if (refresh) localStorage.setItem('vsvv_refresh_token', refresh)
+  else localStorage.removeItem('vsvv_refresh_token')
 }
 
 export function clearTokens() {
-  accessToken = null
-  refreshToken = null
-  sessionStorage.removeItem(ACCESS_KEY)
-  sessionStorage.removeItem(REFRESH_KEY)
+  setTokens(null, null)
 }
 
 export function getAccessToken() {
   return accessToken
-}
-
-export function getTokens() {
-  return { accessToken, refreshToken }
 }
 
 // ─── Core Request Engine ────────────────────────────────────────────────────
@@ -102,7 +89,7 @@ async function request(method, path, options = {}) {
     if (!refreshPromise) {
       refreshPromise = (async () => {
         try {
-          const res = await fetch(`${API_BASE}/auth/refresh`, {
+          const res = await fetch(`${API_BASE}/api/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken }),
@@ -157,16 +144,16 @@ async function request(method, path, options = {}) {
 
 // ─── Service-Role Proxy ─────────────────────────────────────────────────────
 // Bypasses RLS for admin use. Mirrors the entity proxy but adds a service-role header.
-// Used via avaai.asServiceRole.entities.X.list() in hooks like useAccessControl.js
+// Used via base44.asServiceRole.entities.X.list() in hooks like useAccessControl.js
 
 function createServiceRoleEntityProxy() {
   return new Proxy({}, {
     get(target, entityName) {
-      const route = ROUTE_OVERRIDES[entityName] || (entityName
+      const route = entityName
         .replace(/([A-Z])/g, '-$1')
         .toLowerCase()
         .replace(/^-/, '')
-        + 's')
+        + 's'
 
       const methods = {
         list: (...args) => {
@@ -238,7 +225,7 @@ async function getSocketIo() {
     const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || ''
     socketIoInstance = io(SOCKET_URL, {
       auth: { token: accessToken },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       autoConnect: false,
     })
     // Auto-connect if we have a token
@@ -256,29 +243,21 @@ async function getSocketIo() {
 // Track active subscriptions for cleanup
 const subscriptionHandlers = new Map()
 
-// ─── Entity Route Overrides ─────────────────────────────────────────────
-// Entities whose pluralized route doesn't follow the default kebab+s pattern
-const ROUTE_OVERRIDES = {
-  Verkaufschance: 'verkaufschancen',
-  Verkaufschances: 'verkaufschancen', // English alias
-}
-
 // ─── Entity Proxy ───────────────────────────────────────────────────────────
 
 function createEntityProxy() {
   return new Proxy({}, {
     get(target, entityName) {
       // Convert PascalCase to kebab-case: Customer → customers
-      // Use ROUTE_OVERRIDES for entities whose route deviates from the pattern
-      const route = ROUTE_OVERRIDES[entityName] || (entityName
+      const route = entityName
         .replace(/([A-Z])/g, '-$1')
         .toLowerCase()
         .replace(/^-/, '')
-        + 's') // default pluralization
+        + 's' // simple pluralization
 
       const entityMethods = {
         /**
-         * list() — supports MULTIPLE calling patterns matching @avaai/sdk:
+         * list() — supports MULTIPLE calling patterns matching @base44/sdk:
          *
          *   list()                                    → all records, default sort
          *   list(sort, pageSize)                      → e.g. list('-created_date', 500)
@@ -332,7 +311,7 @@ function createEntityProxy() {
             ...filters,
           }
 
-          // Handle string-based sort: '-field' → desc, 'field' → asc
+          // Handle Base44's string-based sort: '-field' → desc, 'field' → asc
           if (typeof sort === 'string') {
             if (sort.startsWith('-')) {
               params.sortBy = sort.substring(1)
@@ -461,16 +440,12 @@ const auth = {
     socketIoInitialized = false
     socketIoInstance = null
 
-    window.location.href = redirectUrl || '/login'
+    if (redirectUrl) {
+      window.location.href = redirectUrl
+    }
   },
 
   redirectToLogin: (returnUrl) => {
-    const target = returnUrl ? `/login?redirect=${encodeURIComponent(returnUrl)}` : '/login'
-    window.location.href = target
-  },
-
-  // Alias for internal use
-  navigateToLogin: (returnUrl) => {
     const target = returnUrl ? `/login?redirect=${encodeURIComponent(returnUrl)}` : '/login'
     window.location.href = target
   },
@@ -516,7 +491,7 @@ const integrations = {
     },
 
     /**
-     * SendEmail — matches avaai.integrations.Core.SendEmail({ to, subject, body })
+     * SendEmail — matches base44.integrations.Core.SendEmail({ to, subject, body })
      * Used in src/lib/notifications.js
      */
     SendEmail: async ({ to, subject, body, ...rest }) => {
@@ -530,16 +505,15 @@ const integrations = {
 // ─── Main Export ────────────────────────────────────────────────────────────
 
 /**
- * The main avaai API client export.
+ * The main base44-compatible export.
  *
- * Usage: import { avaai } from '@/api/avaaiClient'
+ * Usage: import { base44 } from '@/api/base44Client'
+ *
+ * Every method matches @base44/sdk's interface so all 213+ existing
+ * component files work without changes.
  */
-export const avaai = {
+export const base44 = {
   entities: createEntityProxy(),
-
-  /** Generic HTTP request helper — used for custom endpoints not covered by entities */
-  request: (method, path, body) => request(method, path, { body }),
-
   asServiceRole: {
     entities: createServiceRoleEntityProxy(),
   },
@@ -550,9 +524,7 @@ export const avaai = {
 
 // Listen for forced logout events (e.g., from token refresh failure)
 window.addEventListener('auth:logout', () => {
-  window.dispatchEvent(new CustomEvent('avaai:logout'))
-  // Redirect to login
-  window.location.href = '/login'
+  window.dispatchEvent(new CustomEvent('vsvv:logout'))
 })
 
-export default avaai
+export default base44

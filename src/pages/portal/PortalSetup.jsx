@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Eye, EyeOff, Shield, BarChart2, UserCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const BG_URL = 'https://media.avaai.com/images/public/69f07890d7d9106eb68a2c98/cebd2b2f0_VSVV2.png'
+const BG_URL = 'https://media.base44.com/images/public/69f07890d7d9106eb68a2c98/cebd2b2f0_VSVV2.png'
 
 export default function PortalSetup() {
   const navigate = useNavigate()
@@ -25,11 +25,11 @@ export default function PortalSetup() {
     setError('')
     setLoading(true)
     try {
-      const lookupResult = await avaai.functions.invoke('managePortalPassword', { action: 'lookup_customer', email })
+      const lookupResult = await base44.functions.invoke('managePortalPassword', { action: 'lookup_customer', email })
       if (!lookupResult.data?.found) { setError('Bitte überprüfen Sie Ihre Eingaben.'); setLoading(false); return }
       const { customer_id, portal_access_enabled, portal_password_must_change } = lookupResult.data
       if (!portal_access_enabled) { setError('Portal-Zugriff nicht aktiviert. Kontaktieren Sie Ihren Broker.'); setLoading(false); return }
-      const verifyResult = await avaai.functions.invoke('managePortalPassword', { action: 'verify', customer_id, password })
+      const verifyResult = await base44.functions.invoke('managePortalPassword', { action: 'verify', customer_id, password })
       if (!verifyResult.data?.valid) { setError('Bitte überprüfen Sie Ihre Eingaben.'); setLoading(false); return }
       if (portal_password_must_change) { setMustChangePassword(true); setLoading(false); return }
       localStorage.setItem('portal_customer_id', customer_id)
@@ -49,10 +49,10 @@ export default function PortalSetup() {
     if (newPassword.length < 8) { setError('Das Passwort muss mindestens 8 Zeichen lang sein.'); return }
     setLoading(true); setError('')
     try {
-      const lookupResult = await avaai.functions.invoke('managePortalPassword', { action: 'lookup_customer', email })
+      const lookupResult = await base44.functions.invoke('managePortalPassword', { action: 'lookup_customer', email })
       const { customer_id } = lookupResult.data
       // Use change_password which requires the original login password as old_password
-      const changeResult = await avaai.functions.invoke('managePortalPassword', { action: 'change_password', customer_id, old_password: password, new_password: newPassword })
+      const changeResult = await base44.functions.invoke('managePortalPassword', { action: 'change_password', customer_id, old_password: password, new_password: newPassword })
       localStorage.setItem('portal_customer_id', customer_id)
       localStorage.setItem('portal_email', email)
       localStorage.setItem('portal_session_token', changeResult.data?.session_token || '')
@@ -114,7 +114,7 @@ export default function PortalSetup() {
       }}>
         <img
           src={BG_URL}
-          alt="avaai Portal"
+          alt="VSVV Portal"
           style={{
             width: '100%',
             height: '100vh',
@@ -156,7 +156,7 @@ export default function PortalSetup() {
                   lineHeight: 1.2,
                   letterSpacing: '-0.5px',
                 }}>
-                  Willkommen bei avaai
+                  Willkommen bei VSVV
                 </h1>
                 <p style={{
                   color: '#5B9FE6',
@@ -610,7 +610,7 @@ export default function PortalSetup() {
           color: 'rgba(255,255,255,0.55)',
           borderTop: '1px solid rgba(255,255,255,0.06)',
         }}>
-          <span>© 2025 avaai – Ihre Versicherungsplattform</span>
+          <span>© 2025 VSVV – Ihre Versicherungsplattform</span>
           <div style={{ display: 'flex', gap: 18 }}>
             {['AGB', 'Impressum', 'Datenschutz'].map((item, i, arr) => (
               <React.Fragment key={item}>

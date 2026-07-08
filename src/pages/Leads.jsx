@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -34,17 +34,17 @@ export default function Leads() {
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads'],
-    queryFn: () => avaai.entities.Lead.list('-created_date'),
+    queryFn: () => base44.entities.Lead.list('-created_date'),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avaai.entities.Contract.list(),
+    queryFn: () => base44.entities.Contract.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avaai.entities.Advisor.list(),
+    queryFn: () => base44.entities.Advisor.list(),
   })
 
   const activeContractCustomerIds = useMemo(() => {
@@ -91,12 +91,12 @@ export default function Leads() {
   const excludedCount = leads.length - trueLeads.length
 
   const createMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Lead.create(data),
+    mutationFn: (data) => base44.entities.Lead.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['leads'] }); setShowForm(false); setEditingLead(null) },
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avaai.entities.Lead.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Lead.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['leads'] }); setShowForm(false); setEditingLead(null) },
   })
 

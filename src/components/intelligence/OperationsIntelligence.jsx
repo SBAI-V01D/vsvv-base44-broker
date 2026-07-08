@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { AlertTriangle, UserX, FileX, CheckCircle, Clock, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,25 +28,25 @@ function daysSince(dateStr) {
 export default function OperationsIntelligence() {
   const { data: customers = [] } = useQuery({
     queryKey: ['ops_customers'],
-    queryFn: () => avaai.entities.Customer.filter({ archived: false }, '-created_date', 500),
+    queryFn: () => base44.entities.Customer.filter({ archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['ops_contracts'],
-    queryFn: () => avaai.entities.Contract.filter({ status: 'active', archived: false }, '-created_date', 500),
+    queryFn: () => base44.entities.Contract.filter({ status: 'active', archived: false }, '-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['ops_tasks'],
-    queryFn: () => avaai.entities.Task.filter({ status: 'open' }, '-due_date', 200),
+    queryFn: () => base44.entities.Task.filter({ status: 'open' }, '-due_date', 200),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['ops_opportunities'],
-    queryFn: () => avaai.entities.Verkaufschance.filter({}),
+    queryFn: () => base44.entities.Verkaufschance.filter({}),
     staleTime: 5 * 60 * 1000,
   });
 

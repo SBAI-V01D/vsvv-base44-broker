@@ -1,5 +1,5 @@
 // ============================================================================
-// avaai Backend — JWT Authentication Middleware
+// VSVV Backend — JWT Authentication Middleware
 // Provides requireAuth preHandler and extractUser helper.
 // Public routes are whitelisted to bypass authentication.
 // ============================================================================
@@ -16,7 +16,6 @@ export const PUBLIC_ROUTES = [
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/health',
-  '/api/uploads/',
 ];
 
 // ---------------------------------------------------------------------------

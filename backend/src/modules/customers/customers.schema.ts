@@ -1,5 +1,5 @@
 // ============================================================================
-// avaai Backend — Customer Validation Schemas (Zod)
+// VSVV Backend — Customer Validation Schemas (Zod)
 //
 // Swiss-specific validations including AHV number format, Swiss cantons,
 // phone numbers, and civil status according to Swiss civil law.

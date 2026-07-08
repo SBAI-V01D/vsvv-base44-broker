@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { TrendingUp, Users, FileText, Zap } from 'lucide-react'
@@ -8,7 +8,7 @@ import { TrendingUp, Users, FileText, Zap } from 'lucide-react'
 export default function CEODashboard() {
   const { data: dashboard } = useQuery({
     queryKey: ['ceo_dashboard'],
-    queryFn: () => avaai.functions.invoke('createCEODashboard', {}),
+    queryFn: () => base44.functions.invoke('createCEODashboard', {}),
   })
 
   const d = dashboard?.data || {}

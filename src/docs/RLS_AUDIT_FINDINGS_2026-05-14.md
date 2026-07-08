@@ -115,18 +115,18 @@ For each Entity, we need to verify:
 
 ```javascript
 // TEST 1: Can Advisor A list Advisor B's Customers?
-const advisorA_customers = await avaai.entities.Customer.list()
+const advisorA_customers = await base44.entities.Customer.list()
 const advisorB_customer_id = 'cust-999' // known to belong to Advisor B
 const isVisible = advisorA_customers.find(c => c.id === advisorB_customer_id)
 EXPECT: isVisible === undefined ✓
 
 // TEST 2: Can Admin list all Customers?
 const adminUser = { role: 'admin', ... }
-const allCustomers = await avaai.entities.Customer.list()
+const allCustomers = await base44.entities.Customer.list()
 EXPECT: allCustomers.length > 100 ✓
 
 // TEST 3: Can Advisor A update Advisor B's Customer?
-TRY: await avaai.entities.Customer.update('cust-999', { notes: 'hacked' })
+TRY: await base44.entities.Customer.update('cust-999', { notes: 'hacked' })
 EXPECT: 403 Forbidden ✓
 
 // TEST 4: Does system enforce access_level?
@@ -159,16 +159,16 @@ EXPECT: publicCustomer NOT in advisorData ✓
 
 ```javascript
 // TEST 1: Does Lead auto-assign to current advisor?
-const createdLead = await avaai.entities.Lead.create({ ... })
+const createdLead = await base44.entities.Lead.create({ ... })
 EXPECT: createdLead.assigned_to === currentAdvisor.id ✓
 
 // TEST 2: Can Advisor A see Advisor B's Leads?
-const advisorA_leads = await avaai.entities.Lead.list()
+const advisorA_leads = await base44.entities.Lead.list()
 const advisorB_lead_id = 'lead-999'
 EXPECT: advisorA_leads.find(l => l.id === advisorB_lead_id) === undefined ✓
 
 // TEST 3: Can Advisor reassign Lead to another Advisor?
-TRY: await avaai.entities.Lead.update('lead-999', { assigned_to: anotherAdvisor })
+TRY: await base44.entities.Lead.update('lead-999', { assigned_to: anotherAdvisor })
 EXPECT: Either 403 Forbidden OR only own leads ✓
 ```
 
@@ -215,11 +215,11 @@ EXPECT: Either 403 Forbidden OR only own leads ✓
 
 ```javascript
 // TEST 1: Advisor A filters own Contracts
-const myContracts = await avaai.entities.Contract.filter({ primary_broker_id: advisorA.id })
+const myContracts = await base44.entities.Contract.filter({ primary_broker_id: advisorA.id })
 EXPECT: Only advisorA's contracts ✓
 
 // TEST 2: Advisor A tries to get Advisor B's Contract
-TRY: const contract = await avaai.entities.Contract.get('contract-999') // belongs to Advisor B
+TRY: const contract = await base44.entities.Contract.get('contract-999') // belongs to Advisor B
 EXPECT: 403 Forbidden ✓
 ```
 
@@ -241,7 +241,7 @@ EXPECT: 403 Forbidden ✓
 
 ```javascript
 // Exists in CommissionsAndCourtage.jsx line 113-120:
-const accessCheck = await avaai.functions.invoke('guardCommissionAccess', {
+const accessCheck = await base44.functions.invoke('guardCommissionAccess', {
   action: 'create',
   advisor_id: data.advisor_id,
 })
@@ -305,12 +305,12 @@ Create guard functions for P1 entities that:
 // pages/CommissionsAndCourtage.jsx line 68-69:
 const { data: entries = [] } = useQuery({
   queryKey: ['commissionEntries'],
-  queryFn: () => avaai.entities.CommissionEntry.list('-entry_date', 5000),
+  queryFn: () => base44.entities.CommissionEntry.list('-entry_date', 5000),
 })
 ```
 
 **Questions:**
-- Does `avaai.entities.CommissionEntry.list()` automatically filter by RLS?
+- Does `base44.entities.CommissionEntry.list()` automatically filter by RLS?
 - Or does backend need to implement filtering?
 - Can Advisor A see all CommissionEntries from all Advisors?
 
@@ -325,7 +325,7 @@ const { data: entries = [] } = useQuery({
 **Risk:**
 ```javascript
 // If someone makes BI query like:
-const allEntries = await avaai.entities.CommissionEntry.list()
+const allEntries = await base44.entities.CommissionEntry.list()
 const kpi = calcKPIs(allEntries)
 // This calculates KPI for ALL advisors (security breach!)
 ```
@@ -354,8 +354,8 @@ Create these backend functions:
 Each function:
 ```javascript
 export async function guardCustomerAccess(req) {
-  const avaai = createClientFromRequest(req)
-  const user = await avaai.auth.me()
+  const base44 = createClientFromRequest(req)
+  const user = await base44.auth.me()
   
   if (!user) return { allowed: false, reason: 'Not authenticated' }
   
@@ -366,7 +366,7 @@ export async function guardCustomerAccess(req) {
   // - Advisor can only access own customers (primary_advisor_id === user.id)
   // - Team Lead can access team members' customers
   
-  const customer = await avaai.asServiceRole.entities.Customer.get(entity_id)
+  const customer = await base44.asServiceRole.entities.Customer.get(entity_id)
   const isOwner = customer.primary_advisor_id === user.id
   const isTeamMember = customer.assigned_advisors?.includes(user.id)
   const isAdmin = user.role === 'admin'

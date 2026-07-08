@@ -1,25 +1,17 @@
 // ============================================================================
-// avaai Backend — File Upload Routes
+// VSVV Backend — File Upload Routes
 //
-// POST   /api/upload/file      — Upload a single file
-// POST   /api/upload/files     — Upload multiple files
-// GET    /api/upload/:key      — Get a fresh presigned download URL
-// DELETE /api/upload/:key      — Delete a file
-//
-// IMPORTANT: Presigned URLs expire (default 1h). Always use the download
-// endpoint to get a fresh URL before accessing file content.
-// Do NOT store presigned URLs long-term — store `file_key` instead.
+// POST /api/upload/file   — Upload a single file
+// POST /api/upload/files  — Upload multiple files
+// DELETE /api/upload/:key — Delete a file
 // ============================================================================
 
 import type { FastifyPluginAsync } from 'fastify';
 import multipart from '@fastify/multipart';
-import { uploadFile, uploadFiles, deleteFile, getFileUrl } from '../../services/file-storage.js';
+import { uploadFile, uploadFiles, deleteFile } from '../../services/file-storage.js';
 import { requireTenant } from '../../middleware/tenant.js';
 import { prisma } from '../../lib/prisma.js';
 import { emitEntityEvent } from '../../lib/socket.js';
-import { env } from '../../config/env.js';
-import { createReadStream, existsSync } from 'node:fs';
-import path from 'node:path';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -152,59 +144,15 @@ const uploadRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // ---------------------------------------------------------------------------
-  // GET /api/upload/:orgId/:fileId — Get a fresh presigned download URL
-  //
-  // The key is split into orgId/fileId to avoid slash issues in route params.
-  // Presigned URLs expire after 1 hour by default. This endpoint generates
-  // a new one on-the-fly so stored document references never go stale.
-  // ---------------------------------------------------------------------------
-  app.get(
-    '/api/upload/:orgId/:fileId',
-    {
-      preHandler: [app.requireAuth, requireTenant],
-    },
-    async (request, reply) => {
-      const { orgId, fileId } = request.params as { orgId: string; fileId: string };
-      const key = `${orgId}/${fileId}`;
-
-      // Verify the file belongs to this tenant
-      const document = await prisma.document.findFirst({
-        where: {
-          file_key: key,
-          organization_id: request.orgId!,
-          archived: false,
-        },
-      });
-
-      if (!document) {
-        return reply.code(404).send({ error: 'not_found', message: 'File not found' });
-      }
-
-      // Generate a fresh presigned URL
-      const freshUrl = await getFileUrl(key, 3600);
-
-      return {
-        url: freshUrl,
-        key: document.file_key,
-        name: document.name,
-        mime_type: document.mime_type,
-        size: document.file_size,
-        expires_in_seconds: 3600,
-      };
-    },
-  );
-
-  // ---------------------------------------------------------------------------
-  // DELETE /api/upload/:orgId/:fileId — Delete a file
+  // DELETE /api/upload/:key — Delete a file
   // ---------------------------------------------------------------------------
   app.delete(
-    '/api/upload/:orgId/:fileId',
+    '/api/upload/:key',
     {
       preHandler: [app.requireAuth, requireTenant],
     },
     async (request, reply) => {
-      const { orgId, fileId } = request.params as { orgId: string; fileId: string };
-      const key = `${orgId}/${fileId}`;
+      const { key } = request.params as { key: string };
 
       // Verify the file belongs to this tenant
       const document = await prisma.document.findFirst({
@@ -240,56 +188,6 @@ const uploadRoutes: FastifyPluginAsync = async (app) => {
       );
 
       return { message: 'File deleted', documentId: document.id };
-    },
-  );
-  // ---------------------------------------------------------------------------
-  // GET /api/uploads/:filename — Serve imported PDFs from CUSTOMER_DOCS/
-  //
-  // This is a compatibility route for documents imported during CRM migration.
-  // Their file_url is /uploads/<filename> but the files live in CUSTOMER_DOCS/.
-  // Tries env.CUSTOMER_DOCS_DIR first, then falls back to common locations.
-  // ---------------------------------------------------------------------------
-  app.get(
-    '/api/uploads/:filename',
-    async (request, reply) => {
-      const { filename } = request.params as { filename: string };
-      const decoded = decodeURIComponent(filename);
-
-      // Resolve CUSTOMER_DOCS directory
-      const candidates = [
-        path.resolve(process.cwd(), env.CUSTOMER_DOCS_DIR),
-        path.resolve(process.cwd(), '..', 'CUSTOMER_DOCS'),
-        path.resolve(process.cwd(), 'CUSTOMER_DOCS'),
-      ];
-      const docsDir = candidates.find((d) => existsSync(d));
-      if (!docsDir) {
-        return reply.code(500).send({ error: 'CUSTOMER_DOCS directory not found' });
-      }
-
-      const filePath = path.resolve(docsDir, decoded);
-
-      // Prevent directory traversal
-      if (!filePath.startsWith(docsDir)) {
-        return reply.code(403).send({ error: 'forbidden' });
-      }
-
-      if (!existsSync(filePath)) {
-        return reply.code(404).send({ error: 'not_found', message: 'File not found' });
-      }
-
-      const ext = path.extname(decoded).toLowerCase();
-      const mimeTypes: Record<string, string> = {
-        '.pdf': 'application/pdf',
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.json': 'application/json',
-        '.csv': 'text/csv',
-        '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      };
-
-      reply.type(mimeTypes[ext] || 'application/octet-stream');
-      return reply.send(createReadStream(filePath));
     },
   );
 };

@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
-// avaai Backend — Prisma Client Singleton
+// VSVV Backend — Prisma Client Singleton
 // Prevents multiple instances during hot-reload in development.
 // ---------------------------------------------------------------------------
 

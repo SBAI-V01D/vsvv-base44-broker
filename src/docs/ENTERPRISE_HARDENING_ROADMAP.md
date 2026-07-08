@@ -25,7 +25,7 @@ Das System hat bereits **hohen Reifegrad**. Dieses Projekt bedeutet **NICHT Feat
 
 **Status:** Starting  
 **Tasks:**
-- [ ] Sämtliche avaai API-Aufrufe überprüfen (commissionEngine, mutations, queries)
+- [ ] Sämtliche base44 API-Aufrufe überprüfen (commissionEngine, mutations, queries)
 - [ ] Validieren: Admin-only Endpoints schützen
 - [ ] Commission-Entities: advisor_id filter on all mutations
 - [ ] Export-Funktionen: Role-basierte Zugriffslogik
@@ -48,7 +48,7 @@ Das System hat bereits **hohen Reifegrad**. Dieses Projekt bedeutet **NICHT Feat
 - [ ] Verhindern: Query-Manipulation, offene Referenzen
 
 **Implementation:**
-- Server-seitige Filter in avaai.entities Queries
+- Server-seitige Filter in base44.entities Queries
 - Commission-Entities immer mit `advisor_id` Filter laden
 - Exported data ROW-LEVEL validieren
 

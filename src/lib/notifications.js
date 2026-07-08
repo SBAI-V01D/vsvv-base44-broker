@@ -1,16 +1,16 @@
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 
 /**
  * Send an email notification and log it to the Notification entity.
  */
 export async function sendNotification({ type, recipientEmail, recipientName, subject, body, referenceId, referenceType, sentBy }) {
-  await avaai.integrations.Core.SendEmail({
+  await base44.integrations.Core.SendEmail({
     to: recipientEmail,
     subject,
     body,
   });
 
-  await avaai.entities.Notification.create({
+  await base44.entities.Notification.create({
     type,
     recipient_email: recipientEmail,
     recipient_name: recipientName || '',

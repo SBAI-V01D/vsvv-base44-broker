@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { avaai, setTokens, getAccessToken, clearTokens } from '@/api/avaaiClient';
+import { base44, setTokens, getAccessToken, clearTokens } from '@/api/base44Client';
 
 const AuthContext = createContext();
 
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = async () => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await avaai.auth.me();
+      const currentUser = await base44.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -90,14 +90,14 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
 
     if (shouldRedirect) {
-      avaai.auth.logout('/login');
+      base44.auth.logout(window.location.href);
     } else {
-      avaai.auth.logout();
+      base44.auth.logout();
     }
   };
 
   const navigateToLogin = () => {
-    avaai.auth.redirectToLogin('/login');
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   return (

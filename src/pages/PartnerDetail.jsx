@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { ArrowLeft, Edit, Globe, Mail, Phone, MapPin, FileText } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,7 @@ export default function PartnerDetail() {
 
   const { data: allPartners = [] } = useQuery({
     queryKey: ['partners'],
-    queryFn: () => avaai.entities.Partner.list(),
+    queryFn: () => base44.entities.Partner.list(),
   })
 
   const partner = allPartners.find(p => p.id === id)

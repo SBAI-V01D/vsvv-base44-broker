@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import BreadcrumbBar from './BreadcrumbBar'
 import CommandPalette from './CommandPalette'
@@ -7,7 +7,7 @@ import { Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 
-export default function AppLayout({ children }) {
+export default function AppLayout() {
   useRealtimeSync()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [cmdOpen, setCmdOpen] = useState(false)
@@ -63,7 +63,7 @@ export default function AppLayout({ children }) {
         <main className="flex-1 overflow-auto flex flex-col">
           <BreadcrumbBar />
           <div className="mx-auto px-5 sm:px-6 lg:px-8 py-6 lg:py-8 pb-14 w-full max-w-[1600px]">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

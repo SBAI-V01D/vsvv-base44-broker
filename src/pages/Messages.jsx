@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { User, Search, MessageSquare, Shield, Inbox } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,17 +26,17 @@ export default function Messages() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avaai.entities.Customer.list(),
+    queryFn: () => base44.entities.Customer.list(),
   });
 
   const { data: messages = [] } = useQuery({
     queryKey: ['messages'],
-    queryFn: () => avaai.entities.Message.list('-created_date'),
+    queryFn: () => base44.entities.Message.list('-created_date'),
     refetchInterval: 10000,
   });
 
   const sendMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Message.create(data),
+    mutationFn: (data) => base44.entities.Message.create(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['messages'] }),
   });
 

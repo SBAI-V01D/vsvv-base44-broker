@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import PageHeader from '@/components/shared/PageHeader';
 import FilterBar from '@/components/shared/FilterBar';
@@ -61,13 +61,13 @@ export default function Tasks() {
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => avaai.entities.Task.list('-created_date', 200),
+    queryFn: () => base44.entities.Task.list('-created_date', 200),
   });
 
   // Manuelle Datumsprüfung — Verträge mit Platzhalter-Datum
   const { data: reviewContracts = [] } = useQuery({
     queryKey: ['tasks_date_review'],
-    queryFn: () => avaai.entities.Contract.filter({ archived: false }, '-updated_date', 500),
+    queryFn: () => base44.entities.Contract.filter({ archived: false }, '-updated_date', 500),
     staleTime: 5 * 60 * 1000,
   });
   const dateReviewItems = reviewContracts.filter(c =>
@@ -77,7 +77,7 @@ export default function Tasks() {
   const DATE_REVIEW_LIMIT = 5;
 
   const createMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Task.create(data),
+    mutationFn: (data) => base44.entities.Task.create(data),
     onSuccess: (newTask) => {
       queryClient.setQueryData(['tasks'], (old = []) => [newTask, ...old]);
       closeForm();
@@ -85,7 +85,7 @@ export default function Tasks() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avaai.entities.Task.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
     onSuccess: (updated) => {
       queryClient.setQueryData(['tasks'], (old = []) =>
         old.map(t => t.id === updated.id ? updated : t)
@@ -96,7 +96,7 @@ export default function Tasks() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avaai.entities.Task.delete(id),
+    mutationFn: (id) => base44.entities.Task.delete(id),
     onSuccess: (_, id) => {
       queryClient.setQueryData(['tasks'], (old = []) => old.filter(t => t.id !== id));
     },
@@ -122,7 +122,7 @@ export default function Tasks() {
 
   // Real-time subscription
   useEffect(() => {
-    const unsubscribe = avaai.entities.Task.subscribe((event) => {
+    const unsubscribe = base44.entities.Task.subscribe((event) => {
       queryClient.setQueryData(['tasks'], (old = []) => {
         if (event.type === 'create') return [event.data, ...old];
         if (event.type === 'update') return old.map(t => t.id === event.id ? event.data : t);

@@ -1,0 +1,21 @@
+- generic [ref=f9e24]:
+  - generic [ref=f9e25]:
+    - img [ref=f9e27]
+    - heading "avaai Premium Broker" [level=1] [ref=f9e29]
+    - paragraph [ref=f9e30]: Bitte melden Sie sich an
+  - generic [ref=f9e31]:
+    - generic [ref=f9e32]: Login failed (HTTP 502)
+    - generic [ref=f9e33]:
+      - generic [ref=f9e34]: Email
+      - textbox "Email" [active] [ref=f9e35]:
+        - /placeholder: ihre@email.ch
+        - text: admin@avaai.ch
+    - generic [ref=f9e36]:
+      - generic [ref=f9e37]: Passwort
+      - generic [ref=f9e38]:
+        - textbox "Passwort" [ref=f9e39]:
+          - /placeholder: ••••••••
+          - text: Test1234!
+        - button [ref=f9e40] [cursor=pointer]:
+          - img [ref=f9e41]
+    - button "Anmelden" [ref=f9e44] [cursor=pointer]

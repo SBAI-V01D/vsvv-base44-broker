@@ -21,9 +21,9 @@ const COMPLIANCE_LETTER = `# Sicherheits- und Compliance-Anfrage für Versicheru
 
 ---
 
-Sehr geehrtes avaai-Team
+Sehr geehrtes Base44-Team
 
-Wir beabsichtigen, über avaai ein CRM-System für die Verwaltung von Kundendaten im Versicherungsbereich zu betreiben.
+Wir beabsichtigen, über Base44 ein CRM-System für die Verwaltung von Kundendaten im Versicherungsbereich zu betreiben.
 
 Da wir **Personendaten** und **besonders schützenswerte Daten** verarbeiten (Gesundheitsdaten, Versicherungsdeckungen, Policen, Schadendaten, Krankenkassen-Daten), benötigen wir eine schriftliche Bestätigung zu folgenden Punkten:
 
@@ -39,12 +39,12 @@ Da wir **Personendaten** und **besonders schützenswerte Daten** verarbeiten (Ge
 ## 2. Datenzugriff und Zugriffskontrolle
 
 * Wer hat Zugriff auf unsere Kundendaten?
-* Haben avaai-Mitarbeiter Zugriff auf Kundendaten?
+* Haben Base44-Mitarbeiter Zugriff auf Kundendaten?
 * Falls ja, unter welchen Voraussetzungen? (Support, Wartung, etc.)
 * Werden sämtliche Zugriffe protokolliert (Audit Log)?
 * Können wir auf diese Audit-Logs zugreifen?
 * Wie lange werden Audit-Logs aufbewahrt?
-* Unterstützt avaai **Row-Level Security** für mandantenfähige Datentrennung?
+* Unterstützt Base44 **Row-Level Security** für mandantenfähige Datentrennung?
 * Können Benutzerrechte granular gesteuert werden (RBAC)?
 
 ## 3. Verschlüsselung
@@ -95,10 +95,10 @@ Bitte bestätigen Sie **schriftlich** und stellen Sie aktuelle Dokumente zur Ver
 
 Bitte bestätigen Sie **schriftlich**:
 
-* Ob avaai für **FINMA-regulierte Unternehmen** eingesetzt werden kann.
-* Welche Kunden aus dem **Finanz- oder Versicherungssektor** avaai bereits nutzen. (Referenzen)
+* Ob Base44 für **FINMA-regulierte Unternehmen** eingesetzt werden kann.
+* Welche Kunden aus dem **Finanz- oder Versicherungssektor** Base44 bereits nutzen. (Referenzen)
 * Welche organisatorischen und technischen Massnahmen zur Erfüllung der Anforderungen gemäss **FINMA-Rundschreiben** und **Schweizer Datenschutzgesetz** vorhanden sind.
-* Ob avaai die Anforderungen an **Auslagerung von Geschäftstätigkeiten** (FINMA RS 2018/3) erfüllt.
+* Ob Base44 die Anforderungen an **Auslagerung von Geschäftstätigkeiten** (FINMA RS 2018/3) erfüllt.
 * Ob ein **Notfallplan** und **Business Continuity Plan** vorhanden sind.
 * Wie die **Datenverfügbarkeit** gewährleistet wird (SLA, Uptime-Garantien).
 * Ob **regelmässige Penetrationstests** durchgeführt werden und Ergebnisse verfügbar sind.
@@ -122,7 +122,7 @@ Bitte bestätigen Sie **schriftlich**:
 
 ## 10. Vertragliche und rechtliche Aspekte
 
-* Wo ist avaai rechtlich domiziliert? (USA, Schweiz, anderes Land?)
+* Wo ist Base44 rechtlich domiziliert? (USA, Schweiz, anderes Land?)
 * Welches Recht findet Anwendung?
 * Gibt es eine **Haftungsbeschränkung** bei Datenpannen?
 * Ist eine **Cyber-Versicherung** vorhanden?
@@ -194,7 +194,7 @@ export default function ComplianceSchreiben() {
   const handleEmail = () => {
     const subject = encodeURIComponent('Compliance-Anfrage für CRM-System im Versicherungsbereich (FINMA-relevant)');
     const body = encodeURIComponent(COMPLIANCE_LETTER);
-    window.open(`mailto:support@avaai.com?subject=${subject}&body=${body}`);
+    window.open(`mailto:support@base44.com?subject=${subject}&body=${body}`);
   };
 
   return (
@@ -233,7 +233,7 @@ export default function ComplianceSchreiben() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-primary" />
-            Schreiben an avaai
+            Schreiben an Base44
           </CardTitle>
           <CardDescription>
             Vollständige Compliance-Anfrage mit allen kritischen Punkten
@@ -258,8 +258,8 @@ export default function ComplianceSchreiben() {
         <CardContent className="space-y-3">
           <ol className="list-decimal list-inside space-y-2 text-sm">
             <li>Schreiben kopieren oder herunterladen</li>
-            <li>Per E-Mail senden an: <strong>support@avaai.com</strong></li>
-            <li>Alternativ: Über avaai Security Trust Center einreichen</li>
+            <li>Per E-Mail senden an: <strong>support@base44.com</strong></li>
+            <li>Alternativ: Über Base44 Security Trust Center einreichen</li>
             <li>Auf schriftliche Antwort warten (10 Werktage)</li>
             <li>Erst nach positiver Bestätigung Kundendaten importieren</li>
           </ol>
@@ -275,12 +275,12 @@ export default function ComplianceSchreiben() {
       <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
         <ExternalLink className="w-4 h-4" />
         <a 
-          href="https://avaai.com/security" 
+          href="https://base44.com/security" 
           target="_blank" 
           rel="noopener noreferrer"
           className="underline hover:text-primary"
         >
-          avaai Security Trust Center
+          Base44 Security Trust Center
         </a>
       </div>
     </div>

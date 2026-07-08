@@ -1,17 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Shield, Users, Lock, CheckCircle2, User } from 'lucide-react';
 
 export default function TabSecurity() {
   const { data: users = [], isLoading: loadingUsers } = useQuery({
     queryKey: ['enterprise_users_security'],
-    queryFn: () => avaai.entities.User.list('-created_date', 200),
+    queryFn: () => base44.entities.User.list('-created_date', 200),
     staleTime: 120_000,
   });
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['enterprise_security_logs'],
-    queryFn: () => avaai.entities.SystemLog.filter({ source: 'audit_action' }, '-created_date', 50),
+    queryFn: () => base44.entities.SystemLog.filter({ source: 'audit_action' }, '-created_date', 50),
     staleTime: 30_000,
   });
 
@@ -33,7 +33,7 @@ export default function TabSecurity() {
       <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
         <Shield className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
         <div className="text-xs text-blue-800">
-          <p className="font-semibold mb-1">Plattform-Security (avaai)</p>
+          <p className="font-semibold mb-1">Plattform-Security (Base44)</p>
           <p>TLS/HTTPS, Auth-Sessions, API-Gateway, Rate-Limiting und Private-Storage-Zugriffsschutz laufen auf Infrastrukturebene und sind nicht direkt im App-Code sichtbar. Das ist normal und korrekt.</p>
         </div>
       </div>

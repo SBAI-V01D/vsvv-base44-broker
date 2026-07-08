@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 function fmtDt(iso) {
@@ -10,13 +10,13 @@ function fmtDt(iso) {
 export default function TabPerformance() {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['enterprise_perf_logs'],
-    queryFn: () => avaai.entities.SystemLog.filter({ source: 'enterprise_monitoring' }, '-created_date', 100),
+    queryFn: () => base44.entities.SystemLog.filter({ source: 'enterprise_monitoring' }, '-created_date', 100),
     staleTime: 30_000,
   });
 
   const { data: errorLogs = [] } = useQuery({
     queryKey: ['enterprise_error_logs'],
-    queryFn: () => avaai.entities.SystemLog.filter({ source: 'query_client' }, '-created_date', 50),
+    queryFn: () => base44.entities.SystemLog.filter({ source: 'query_client' }, '-created_date', 50),
     staleTime: 30_000,
   });
 

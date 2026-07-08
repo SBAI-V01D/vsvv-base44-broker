@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Search, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -32,7 +32,7 @@ export default function CommandPalette({ open, onClose }) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['cmd_customers'],
-    queryFn: () => avaai.entities.Customer.filter({ archived: false }, '-updated_date', 150),
+    queryFn: () => base44.entities.Customer.filter({ archived: false }, '-updated_date', 150),
     enabled: open,
     staleTime: 2 * 60 * 1000,
   })

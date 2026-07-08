@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   Search, Plus, MoreHorizontal, FileText, ExternalLink,
-  Zap, Paperclip, Tag, Trash2, Eye, RefreshCw, Clock, Download, CheckCircle2, Sparkles, Loader2
+  Zap, Paperclip, Tag, Trash2, Eye, RefreshCw, Clock, Download, AlertCircle, CheckCircle2, Sparkles, Loader2
 } from 'lucide-react'
 import DocumentTypeBadge from '@/components/documents/DocumentTypeBadge'
 import DocumentTagBadge from '@/components/documents/DocumentTagBadge'
@@ -53,18 +53,18 @@ export default function Documents() {
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => avaai.entities.Document.list('-created_date'),
+    queryFn: () => base44.entities.Document.list('-created_date'),
   })
 
 
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avaai.entities.Document.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Document.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents'] }),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avaai.entities.Document.delete(id),
+    mutationFn: (id) => base44.entities.Document.delete(id),
     onSuccess: (_, deletedId) => {
       queryClient.setQueryData(['documents'], (old) =>
         old ? old.filter(doc => doc.id !== deletedId) : old
@@ -76,7 +76,7 @@ export default function Documents() {
     mutationFn: async () => {
       const toDelete = documents.filter(d => d.doc_type === 'unbekannt')
       for (const doc of toDelete) {
-        await avaai.entities.Document.delete(doc.id)
+        await base44.entities.Document.delete(doc.id)
       }
       return toDelete.length
     },
@@ -95,7 +95,14 @@ export default function Documents() {
   }
 
   const handleRequeue = async (doc) => {
-    await avaai.request('POST', '/api/document/extract', { documentId: doc.id })
+    await base44.entities.AutomationQueue.create({
+      job_type: 'ki_extraction',
+      status: 'pending',
+      related_document_id: doc.id,
+      related_entity_type: 'Document',
+      related_entity_id: doc.id,
+      payload: JSON.stringify({ file_url: doc.file_url, file_name: doc.name, document_id: doc.id }),
+    })
     updateMutation.mutate({ id: doc.id, data: { classification_status: 'ausstehend' } })
   }
 
@@ -103,14 +110,14 @@ export default function Documents() {
     setSmartAnalyzingId(doc.id)
     setSmartAnalyzing(true)
     try {
-      const res = await avaai.functions.invoke('smartDocumentAnalysis', {
+      const res = await base44.functions.invoke('smartDocumentAnalysis', {
         file_url: doc.file_url,
         document_type: doc.category || doc.doc_type || 'police',
       })
       if (res.data?.success) {
         // KI hat doc_type erkannt → Dokument direkt aktualisieren
         if (res.data.detected_doc_type && res.data.detected_doc_type !== doc.doc_type) {
-          avaai.entities.Document.update(doc.id, {
+          base44.entities.Document.update(doc.id, {
             doc_type: res.data.detected_doc_type,
             category: res.data.detected_category || doc.category,
             classification_status: 'klassifiziert',
@@ -143,7 +150,7 @@ export default function Documents() {
       ) : old
     )
     for (const doc of docsToFix) {
-      avaai.entities.Document.update(doc.id, { classification_status: 'klassifiziert' }).catch(() => {
+      base44.entities.Document.update(doc.id, { classification_status: 'klassifiziert' }).catch(() => {
         queryClient.invalidateQueries({ queryKey: ['documents'] })
       })
     }

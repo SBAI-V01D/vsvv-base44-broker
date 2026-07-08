@@ -61,7 +61,7 @@ Checksum: [Prüfsumme]
 Die Funktion `validateEnterpriseChange` führt automatisch alle Checks durch und gibt detaillierten Bericht:
 
 ```javascript
-const validation = await avaai.functions.invoke('validateEnterpriseChange', {
+const validation = await base44.functions.invoke('validateEnterpriseChange', {
   change_type: 'entity_schema',
   affected_entities: ['Customer', 'Contract'],
   description: 'Neues Feld mandate_status hinzugefügt'
@@ -139,7 +139,7 @@ Die Funktion `enforceGovernanceCheck` blockiert JEDE Änderung automatisch wenn:
 
 **API-Beispiel:**
 ```javascript
-const result = await avaai.functions.invoke('enforceGovernanceCheck', {
+const result = await base44.functions.invoke('enforceGovernanceCheck', {
   action_type: 'entity_write',
   affected_entities: ['Customer', 'Contract'],
   change_summary: 'Neues Feld hinzugefügt...',
@@ -165,7 +165,7 @@ if (result.data.blocked) {
 
 ## 5. KEINE STILLEN ÄNDERUNGEN
 
-**avaai / KI / Automationen dürfen NIEMALS:**
+**Base44 / KI / Automationen dürfen NIEMALS:**
 
 - ❌ automatisch refactoren
 - ❌ Prozesse ändern
@@ -296,7 +296,7 @@ if (result.data.blocked) {
 ## ZUSAMMENFASSUNG — DER ADMIN IST DIE EINZIGE AUTORITÄT
 
 **Nicht:**
-- avaai
+- Base44
 - KI
 - Automationen
 - Hintergrundprozesse

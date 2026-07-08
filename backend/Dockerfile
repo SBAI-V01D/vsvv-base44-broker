@@ -1,5 +1,5 @@
 # =============================================================================
-# avaai Premium Broker — Backend Dockerfile
+# VSVV Premium Broker — Backend Dockerfile
 # Two-stage build: npm ci → prisma generate → tsc → dist/app.js
 # =============================================================================
 
@@ -32,7 +32,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apk add --no-cache openssl curl postgresql-client poppler-utils
+RUN apk add --no-cache openssl curl postgresql-client
 
 # Copy built assets
 COPY --from=builder /app/dist ./dist

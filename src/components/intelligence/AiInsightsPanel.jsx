@@ -6,7 +6,7 @@
 import React, { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Brain, ChevronRight, AlertTriangle, RefreshCw, Users, TrendingUp, CheckSquare, X, ChevronDown, ChevronUp, Plus, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -35,7 +35,7 @@ function CreateTaskDialog({ insight, open, onClose, onSuccess }) {
   }, [open, insight])
 
   const createMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Task.create(data),
+    mutationFn: (data) => base44.entities.Task.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.invalidateQueries({ queryKey: ['ai_tasks'] })
@@ -218,22 +218,22 @@ export default function AiInsightsPanel() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['ai_customers'],
-    queryFn: () => avaai.entities.Customer.filter({ archived: false }, '-updated_date', 300),
+    queryFn: () => base44.entities.Customer.filter({ archived: false }, '-updated_date', 300),
     staleTime: 5 * 60 * 1000,
   })
   const { data: contracts = [] } = useQuery({
     queryKey: ['ai_contracts'],
-    queryFn: () => avaai.entities.Contract.filter({ archived: false }, '-end_date', 300),
+    queryFn: () => base44.entities.Contract.filter({ archived: false }, '-end_date', 300),
     staleTime: 5 * 60 * 1000,
   })
   const { data: tasks = [] } = useQuery({
     queryKey: ['ai_tasks'],
-    queryFn: () => avaai.entities.Task.filter({ status: ['open', 'in_progress'] }, '-due_date', 200),
+    queryFn: () => base44.entities.Task.filter({ status: ['open', 'in_progress'] }, '-due_date', 200),
     staleTime: 5 * 60 * 1000,
   })
   const { data: verkaufschancen = [] } = useQuery({
     queryKey: ['ai_verkaufschancen'],
-    queryFn: () => avaai.entities.Verkaufschance.list('-updated_date', 100),
+    queryFn: () => base44.entities.Verkaufschance.list('-updated_date', 100),
     staleTime: 5 * 60 * 1000,
   })
 

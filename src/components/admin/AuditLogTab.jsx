@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,7 @@ export default function AuditLogTab() {
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['auditLogs'],
     queryFn: async () => {
-      const result = await avaai.entities.AuditLog.list(null, 200);
+      const result = await base44.entities.AuditLog.list(null, 200);
       return result.sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at))
     },
   })

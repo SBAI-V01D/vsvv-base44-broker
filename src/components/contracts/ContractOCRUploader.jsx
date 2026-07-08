@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Upload, Loader, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,10 +42,10 @@ export default function ContractOCRUploader({ customerId, onExtractedData, onClo
 
     try {
       // Upload PDF
-      const { file_url } = await avaai.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       // Extract data
-      const response = await avaai.functions.invoke('extractContractDataFromPDF', {
+      const response = await base44.functions.invoke('extractContractDataFromPDF', {
         file_url,
         customer_id: customerId
       });

@@ -8,14 +8,14 @@
  *   - Logging via SystemLog (fire-and-forget)
  */
 import { useEffect, useRef, useCallback } from 'react';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 
 const RENDER_WARN_MS = 300;
 const QUERY_WARN_MS  = 1000;
 
 // Hilfsfunktion: loggt ohne await (fire & forget)
 function logWarning(message, details = {}) {
-  avaai.entities.SystemLog.create({
+  base44.entities.SystemLog.create({
     level:   'warn',
     source:  'enterprise_monitoring',
     message,
@@ -106,8 +106,8 @@ export function useDossierIntegrityCheck(dossier) {
 export function useAuditAction() {
   const logAction = useCallback(async (action, entityId, entityType, meta = {}) => {
     try {
-      const user = await avaai.auth.me();
-      await avaai.entities.SystemLog.create({
+      const user = await base44.auth.me();
+      await base44.entities.SystemLog.create({
         level:               'info',
         source:              'audit_action',
         message:             `${action}: ${entityType}/${entityId}`,

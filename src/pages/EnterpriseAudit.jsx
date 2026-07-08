@@ -15,7 +15,7 @@
 
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -52,7 +52,7 @@ export default function EnterpriseAudit() {
 
   const runAuditMutation = useMutation({
     mutationFn: async () => {
-      const res = await avaai.functions.invoke('runEnterpriseAudit', {});
+      const res = await base44.functions.invoke('runEnterpriseAudit', {});
       return res.data;
     },
     onSuccess: (data) => {

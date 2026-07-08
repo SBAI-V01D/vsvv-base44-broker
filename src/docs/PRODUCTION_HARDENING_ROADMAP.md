@@ -279,8 +279,8 @@ DOCUMENT:
 // PATTERN: Alle Backend-Funktionen müssen validieren
 
 export async function myFunction(req) {
-  const avaai = createClientFromRequest(req)
-  const user = await avaai.auth.me()
+  const base44 = createClientFromRequest(req)
+  const user = await base44.auth.me()
   
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -298,7 +298,7 @@ export async function myFunction(req) {
   }
 
   // 3. Führe Operation durch
-  const result = await avaai.entities.Entity.update(id, data)
+  const result = await base44.entities.Entity.update(id, data)
 
   // 4. Audit Log
   await auditLogWrite(user.email, 'update', 'Entity', id, result)

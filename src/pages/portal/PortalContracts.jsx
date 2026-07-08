@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FileText, AlertCircle, Shield, Upload, Loader2, Edit2 } from 'lucide-react'
 import { format } from 'date-fns'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { usePortalData, yearlyPremium } from '@/hooks/usePortalData'
 import { useQueryClient } from '@tanstack/react-query'
 import MutationRequestDialog from '@/components/portal/MutationRequestDialog'
@@ -47,8 +47,8 @@ export default function PortalContracts() {
     setUploading(true)
     try {
       for (const file of Array.from(files)) {
-        const { file_url } = await avaai.integrations.Core.UploadFile({ file })
-        await avaai.entities.Document.create({
+        const { file_url } = await base44.integrations.Core.UploadFile({ file })
+        await base44.entities.Document.create({
           customer_id: customerId,
           customer_name: customer ? `${customer.first_name} ${customer.last_name}` : '',
           name: file.name,

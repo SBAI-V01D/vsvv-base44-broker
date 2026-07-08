@@ -1,0 +1,7 @@
+- generic [ref=f17e4]:
+  - generic [ref=f17e6]: Passwort zurücksetzen
+  - generic [ref=f17e8]:
+    - generic [ref=f17e9]:
+      - text: E-Mail-Adresse
+      - textbox [ref=f17e10]
+    - button "Passwort-Reset anfordern" [ref=f17e11] [cursor=pointer]

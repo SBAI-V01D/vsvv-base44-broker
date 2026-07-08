@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -26,13 +26,13 @@ export default function RenewalsSection() {
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avaai.entities.Contract.list('-end_date'),
+    queryFn: () => base44.entities.Contract.list('-end_date'),
   })
 
   const { data: offers = [] } = useQuery({
     queryKey: ['renewal-offers'],
     queryFn: async () => {
-      const all = await avaai.entities.Contract.list('-end_date')
+      const all = await base44.entities.Contract.list('-end_date')
       return all.filter(c => c.renewal_offer_created)
     },
   })
@@ -73,7 +73,7 @@ export default function RenewalsSection() {
   // ─── MUTATIONS ───
   const prepareOfferMutation = useMutation({
     mutationFn: (contractId) =>
-      avaai.functions.invoke('prepareRenewalOffer', { contract_id: contractId }),
+      base44.functions.invoke('prepareRenewalOffer', { contract_id: contractId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts', 'renewal-offers'] })
       setSelectedPolicy(null)
@@ -82,7 +82,7 @@ export default function RenewalsSection() {
 
   const sendOfferMutation = useMutation({
     mutationFn: (contractId) =>
-      avaai.functions.invoke('sendRenewalOffer', { contract_id: contractId }),
+      base44.functions.invoke('sendRenewalOffer', { contract_id: contractId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts', 'renewal-offers'] })
       setShowOfferDialog(false)
@@ -92,7 +92,7 @@ export default function RenewalsSection() {
 
   const acceptOfferMutation = useMutation({
     mutationFn: (contractId) =>
-      avaai.functions.invoke('acceptRenewalOffer', { contract_id: contractId }),
+      base44.functions.invoke('acceptRenewalOffer', { contract_id: contractId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts', 'renewal-offers'] })
       setSelectedPolicy(null)

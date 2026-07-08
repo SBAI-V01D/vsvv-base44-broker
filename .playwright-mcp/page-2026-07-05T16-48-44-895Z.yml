@@ -1,0 +1,275 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - complementary:
+          - generic:
+            - generic:
+              - img
+            - generic:
+              - paragraph: admin@vsvv.ch
+              - paragraph: Administrator
+          - navigation:
+            - generic:
+              - paragraph: Cockpit
+              - generic:
+                - link:
+                  - /url: /
+                  - img
+                  - generic: Dashboard
+                - link:
+                  - /url: /vertragsablaeufe
+                  - img
+                  - generic: Vertragsabläufe
+                  - generic: "13"
+                - link:
+                  - /url: /aufgaben
+                  - img
+                  - generic: Aufgaben
+            - generic:
+              - paragraph: Kunden
+              - generic:
+                - link:
+                  - /url: /kunden
+                  - img
+                  - generic: Kundenübersicht
+                - link:
+                  - /url: /verkaufschancen
+                  - img
+                  - generic: Verkaufschancen
+                - link:
+                  - /url: /leads
+                  - img
+                  - generic: Leads
+                - link:
+                  - /url: /krankenkassen-vergleich
+                  - img
+                  - generic: Krankenkassenvergleich
+                - link:
+                  - /url: /beratungsdossier
+                  - img
+                  - generic: Beratungsdossiers
+                - link:
+                  - /url: /portal
+                  - img
+                  - generic: Kundenportal
+            - generic:
+              - paragraph: Ausschreibungen
+              - generic:
+                - link:
+                  - /url: /ausschreibungen
+                  - img
+                  - generic: Ausschreibungen
+                - link:
+                  - /url: /ausschreibungen/versicherer
+                  - img
+                  - generic: Versicherer DB
+            - generic:
+              - paragraph: Verwaltung
+              - generic:
+                - link:
+                  - /url: /vertraege
+                  - img
+                  - generic: Verträge
+                - link:
+                  - /url: /antraege
+                  - img
+                  - generic: Anträge
+                - link:
+                  - /url: /dokumente
+                  - img
+                  - generic: Dokumente
+                - link:
+                  - /url: /dokument-extraktor
+                  - img
+                  - generic: Dok.-Extraktor
+            - generic:
+              - paragraph: Finanzen & Team
+              - generic:
+                - link:
+                  - /url: /reporting
+                  - img
+                  - generic: Reporting
+                - link:
+                  - /url: /provisionen-courtagen
+                  - img
+                  - generic: Provisionen
+                - link:
+                  - /url: /finanz-dashboard
+                  - img
+                  - generic: Finanzdashboard
+            - generic:
+              - paragraph: Enterprise
+              - generic:
+                - link:
+                  - /url: /berater-organisation
+                  - img
+                  - generic: Berater & Partner
+            - generic:
+              - paragraph: Administration
+              - generic:
+                - link:
+                  - /url: /admin
+                  - img
+                  - generic: Admin Hub
+                - link:
+                  - /url: /admin/control-center
+                  - img
+                  - generic: System-Health
+                - link:
+                  - /url: /admin/team
+                  - img
+                  - generic: Team & Zugriffe
+                - link:
+                  - /url: /admin/audit
+                  - img
+                  - generic: Audit
+                - link:
+                  - /url: /admin/audit-logs
+                  - img
+                  - generic: Audit Logs
+                - link:
+                  - /url: /admin/system-check
+                  - img
+                  - generic: System Check
+                - link:
+                  - /url: /admin/logs
+                  - img
+                  - generic: System Logs
+                - link:
+                  - /url: /admin/improvements
+                  - img
+                  - generic: KI-Verbesserungen
+                - link:
+                  - /url: /admin/security
+                  - img
+                  - generic: Sicherheit
+                - link:
+                  - /url: /admin/backup
+                  - img
+                  - generic: Backup
+                - link:
+                  - /url: /admin/insurance-learning
+                  - img
+                  - generic: Lernzentrum
+          - generic:
+            - button:
+              - img
+              - generic: Abmelden
+            - button:
+              - img
+      - generic:
+        - generic:
+          - button:
+            - img
+          - generic: Swiss Premium Broker
+        - main:
+          - navigation:
+            - link:
+              - /url: /
+              - img
+              - generic: Dashboard
+            - img
+            - generic: Dokumente
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                    - generic:
+                      - heading [level=1]: Dokumente (0)
+                      - paragraph: Intelligente Klassifizierung & automatische Antragserfassung
+                  - generic:
+                    - button:
+                      - img
+                      - text: Dokument hochladen
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                    - generic:
+                      - paragraph: "0"
+                      - paragraph: Total
+                  - generic:
+                    - generic:
+                      - img
+                    - generic:
+                      - paragraph: "0"
+                      - paragraph: Anträge
+                  - generic:
+                    - generic:
+                      - img
+                    - generic:
+                      - paragraph: "0"
+                      - paragraph: Anlagen
+                  - generic:
+                    - generic:
+                      - img
+                    - generic:
+                      - paragraph: "0"
+                      - paragraph: Prüfung erforderlich
+                - generic:
+                  - generic:
+                    - button:
+                      - text: Alle
+                      - generic: "0"
+                    - button:
+                      - text: Anträge
+                      - generic: "0"
+                    - button:
+                      - text: Anlagen
+                      - generic: "0"
+                    - button:
+                      - text: Prüfung nötig
+                      - generic: "0"
+                  - generic:
+                    - img
+                    - textbox:
+                      - /placeholder: Suche nach Name, Kunde...
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: Dokument
+                      - generic: Kunde
+                      - generic: Typ
+                      - generic: Kategorie
+                      - generic: Hochgeladen
+                    - generic:
+                      - generic:
+                        - img
+                      - heading [level=3]: Keine Dokumente
+                      - paragraph: Laden Sie Ihr erstes Dokument hoch, um zu starten.
+  - dialog "Intelligenter Dokumenten-Upload" [ref=f28e305]:
+    - heading "Intelligenter Dokumenten-Upload" [level=2] [ref=f28e307]:
+      - img [ref=f28e308]
+      - text: Intelligenter Dokumenten-Upload
+    - generic [ref=f28e311]:
+      - paragraph [ref=f28e312]: Wählen Sie den Dokumenttyp, damit die KI gezielter analysieren kann.
+      - generic [ref=f28e313]:
+        - button "Neuantrag Neuer Versicherungsantrag – KI extrahiert Daten automatisch" [active] [ref=f28e314] [cursor=pointer]:
+          - img [ref=f28e315]
+          - generic [ref=f28e318]:
+            - paragraph [ref=f28e319]: Neuantrag
+            - paragraph [ref=f28e320]: Neuer Versicherungsantrag – KI extrahiert Daten automatisch
+        - button "Änderungsantrag Mutation / Anpassung bestehender Vertrag – KI extrahiert Daten" [ref=f28e321] [cursor=pointer]:
+          - img [ref=f28e322]
+          - generic [ref=f28e326]:
+            - paragraph [ref=f28e327]: Änderungsantrag
+            - paragraph [ref=f28e328]: Mutation / Anpassung bestehender Vertrag – KI extrahiert Daten
+        - button "Erneuerungsantrag Verlängerung / Erneuerung – KI extrahiert Daten" [ref=f28e329] [cursor=pointer]:
+          - img [ref=f28e330]
+          - generic [ref=f28e335]:
+            - paragraph [ref=f28e336]: Erneuerungsantrag
+            - paragraph [ref=f28e337]: Verlängerung / Erneuerung – KI extrahiert Daten
+        - button "Anlage / Zusatzdokument Police-Kopie, Korrespondenz, Rechnung – direkt einem Kunden/Vertrag zuweisen" [ref=f28e338] [cursor=pointer]:
+          - img [ref=f28e339]
+          - generic [ref=f28e342]:
+            - paragraph [ref=f28e343]: Anlage / Zusatzdokument
+            - paragraph [ref=f28e344]: Police-Kopie, Korrespondenz, Rechnung – direkt einem Kunden/Vertrag zuweisen
+      - button "Abbrechen" [ref=f28e345] [cursor=pointer]
+    - button "Close" [ref=f28e346] [cursor=pointer]:
+      - img [ref=f28e347]
+      - generic [ref=f28e350]: Close

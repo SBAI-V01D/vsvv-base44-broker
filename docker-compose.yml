@@ -1,16 +1,16 @@
-name: avaai
+name: vsvv
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: avaai-postgres
+    container_name: vsvv-postgres
     restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: vsvv
       POSTGRES_USER: vsvv
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password is required. Set DB_PASSWORD in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vsvv_dev_2026}
     ports:
       - "5432:5432"
     healthcheck:
@@ -19,27 +19,27 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - avaai-network
+      - vsvv-network
 
   # Redis is OPTIONAL — only needed for queues/sessions.
   # Uncomment if Redis is available on this host.
-  redis:
-    image: redis:7-alpine
-    container_name: avaai-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - avaai-network
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: vsvv-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - vsvv-network
 
   minio:
     image: minio/minio:latest
-    container_name: avaai-minio
+    container_name: vsvv-minio
     restart: unless-stopped
     volumes:
       - miniodata:/data
@@ -47,8 +47,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MinIO root user is required}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MinIO root password is required. Set MINIO_ROOT_PASSWORD in .env}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -56,73 +56,61 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - avaai-network
+      - vsvv-network
 
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: avaai-mailhog
+    container_name: vsvv-mailhog
     restart: unless-stopped
     ports:
       - "1025:1025"  # SMTP
       - "8025:8025"  # Web UI
     networks:
-      - avaai-network
+      - vsvv-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: avaai-backend
+    container_name: vsvv-backend
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
       minio:
         condition: service_started
-      redis:
-        condition: service_healthy
     ports:
       - "3003:3003"
     environment:
       NODE_ENV: development
       PORT: 3003
       HOST: 0.0.0.0
-      DATABASE_URL: postgresql://vsvv:${DB_PASSWORD:?}@postgres:5432/vsvv
-      JWT_SECRET: "${JWT_SECRET:?JWT secret is required. Generate with: openssl rand -hex 64}"
+      DATABASE_URL: postgresql://vsvv:${DB_PASSWORD:-vsvv_dev_2026}@postgres:5432/vsvv
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-vsvv-dev-jwt-secret-min-32-chars-long!!}
       JWT_ACCESS_EXPIRY: 15m
       JWT_REFRESH_EXPIRY: 7d
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_USE_SSL: "false"
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
-      MINIO_BUCKET: avaai-documents
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_BUCKET: vsvv-documents
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
-      SMTP_FROM: noreply@avaai.ch
-      # SECURITY: In production, set this to the explicit frontend URL
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3004}
-      REDIS_URL: redis://redis:6379
-      AI_BASE_URL: https://aipi.coredy.ai/ollama/v1/
-      AI_API_KEY: ${AI_API_KEY:-sk-sbai-aipi-v1-7f9e2b4a8c1d0e3f5b6a9d8c7f2e1a0b}
-      AI_MODEL: ava-nucl3us
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      CUSTOMER_DOCS_DIR: /app/CUSTOMER_DOCS
+      SMTP_FROM: noreply@vsvv.ch
+      CORS_ORIGIN: "*"
+      LOG_LEVEL: debug
     volumes:
       - ./backend/src:/app/src
-      - ./CUSTOMER_DOCS:/app/CUSTOMER_DOCS
     networks:
-      - avaai-network
+      - vsvv-network
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-      args:
-        VITE_CODY_API_URL: /api
-        VITE_BASE_PATH: /
-        VITE_ROUTER_BASENAME: /
-    container_name: avaai-frontend
+    container_name: vsvv-frontend
     restart: unless-stopped
     depends_on:
       - backend
@@ -130,23 +118,17 @@ services:
       - "3004:80"
     environment:
       VITE_API_URL: /api
-      VITE_SOCKET_URL: /api
-      VITE_CODY_API_URL: /api
-      VITE_BASE_PATH: /
-      VITE_ROUTER_BASENAME: /
-      VITE_AVASYS_APP_ID: avaai
-      VITE_AVASYS_FUNCTIONS_VERSION: v1
-      VITE_AVASYS_APP_BASE_URL: /
     networks:
-      - avaai-network
+      - vsvv-network
 
 volumes:
   pgdata:
-    external: true
-    name: vsvv_pgdata
+    driver: local
+  redisdata:
+    driver: local
   miniodata:
     driver: local
 
 networks:
-  avaai-network:
+  vsvv-network:
     driver: bridge

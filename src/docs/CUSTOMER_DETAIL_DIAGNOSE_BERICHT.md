@@ -74,7 +74,7 @@ PROBLEME:
 ```javascript
 const { data: customerDirect } = useQuery({
   queryKey: ['customer', id],
-  queryFn: () => avaai.entities.Customer.filter({ id }, null, 1).then(r => r?.[0]),
+  queryFn: () => base44.entities.Customer.filter({ id }, null, 1).then(r => r?.[0]),
   enabled: !!id,
   staleTime: 2 * 60 * 1000, // 2 Minuten Cache
 })
@@ -264,7 +264,7 @@ Erwartet:
 ## 8. Offene Fragen
 
 1. **Warum lädt die Seite langsamer als heute Mittag?**
-   - Mögliche Ursache: avaai Platform Latenz erhöht?
+   - Mögliche Ursache: Base44 Platform Latenz erhöht?
    - Mögliche Ursache: Grössere Datensätze (mehr Kunden/Verträge)?
    - Mögliche Ursache: staleTime führt zu Cache-Miss?
 
@@ -303,7 +303,7 @@ useEffect(() => {
 ### Network Tab prüfen:
 
 1. Öffne Chrome DevTools → Network
-2. Filter: `api/avaai` oder `entities`
+2. Filter: `api/base44` oder `entities`
 3. Öffne einen Kunden
 4. Zähle die API-Calls
 5. Miss die Dauer jedes Calls

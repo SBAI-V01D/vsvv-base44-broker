@@ -1,17 +1,17 @@
 // ============================================================================
-// avaai Backend — File Storage Service (S3 kompatibel — Exoscale / MinIO)
+// VSVV Backend — File Storage Service (MinIO)
 //
-// Provides file upload, download, and management via S3-compatible object storage.
+// Provides file upload, download, and management via MinIO (S3-compatible).
 // Uses presigned URLs for secure direct access.
 // ============================================================================
 
 import { Client as MinioClient } from 'minio';
-import { s3Config } from '../config/env.js';
+import { env } from '../config/env.js';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 
 // ---------------------------------------------------------------------------
-// S3 Client Singleton
+// MinIO Client Singleton
 // ---------------------------------------------------------------------------
 
 let _client: MinioClient | null = null;
@@ -19,51 +19,32 @@ let _client: MinioClient | null = null;
 function getClient(): MinioClient {
   if (!_client) {
     _client = new MinioClient({
-      endPoint: s3Config.endpoint,
-      port: s3Config.port,
-      useSSL: s3Config.useSSL,
-      accessKey: s3Config.accessKey,
-      secretKey: s3Config.secretKey,
-      region: s3Config.region,
+      endPoint: env.MINIO_ENDPOINT,
+      port: env.MINIO_PORT,
+      useSSL: env.MINIO_USE_SSL,
+      accessKey: env.MINIO_ACCESS_KEY,
+      secretKey: env.MINIO_SECRET_KEY,
     });
   }
   return _client;
 }
 
-const BUCKET_NAME = s3Config.bucket;
+const BUCKET_NAME = env.MINIO_BUCKET;
+const REGION = 'eu-central-1';
 
 // ---------------------------------------------------------------------------
 // Ensure bucket exists on first use
-// Silently handles cases where the API key has no create-bucket permission
-// (e.g. Exoscale SOS with restricted IAM keys) — if creation fails, we
-// assume the bucket was pre-created manually.
 // ---------------------------------------------------------------------------
-
-let _bucketEnsured = false;
 
 async function ensureBucket(): Promise<void> {
   const client = getClient();
-
-  try {
-    const exists = await client.bucketExists(BUCKET_NAME);
-    if (exists) return; // already there
-  } catch {
-    // bucketExists failed (e.g. no permission) — try makeBucket as fallback
-  }
-
-  try {
-    await client.makeBucket(BUCKET_NAME, s3Config.region);
-  } catch (err: unknown) {
-    // If creation fails with AccessDenied/BucketAlreadyOwnedByYou, that's OK —
-    // the bucket either exists or was pre-created. Just proceed.
-    if (err instanceof Error) {
-      const code = (err as { code?: string }).code;
-      if (code !== 'AccessDenied' && code !== 'BucketAlreadyOwnedByYou' && code !== 'BucketAlreadyExists') {
-        throw err;
-      }
-    }
+  const exists = await client.bucketExists(BUCKET_NAME);
+  if (!exists) {
+    await client.makeBucket(BUCKET_NAME, REGION);
   }
 }
+
+let bucketEnsured = false;
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -85,9 +66,7 @@ export interface UploadResult {
  * @param originalName - Original file name
  * @param mimeType - MIME type of the file
  * @param organizationId - Tenant organization ID (for folder prefix)
- * @returns UploadResult with key, URL, and metadata.
- *          NOTE: `url` is a short-lived presigned URL (1h) for immediate use.
- *          For persistent access, store `key` and call `getFileUrl()` at access time.
+ * @returns UploadResult with key, URL, and metadata
  */
 export async function uploadFile(
   buffer: Buffer,
@@ -95,9 +74,9 @@ export async function uploadFile(
   mimeType: string,
   organizationId?: string,
 ): Promise<UploadResult> {
-  if (!_bucketEnsured) {
+  if (!bucketEnsured) {
     await ensureBucket();
-    _bucketEnsured = true;
+    bucketEnsured = true;
   }
 
   const client = getClient();
@@ -111,7 +90,7 @@ export async function uploadFile(
     'X-Amz-Meta-Original-Name': encodeURIComponent(originalName),
   });
 
-  // Generate a presigned URL valid for 1 hour for immediate use
+  // Generate a presigned URL valid for 1 hour
   const url = await client.presignedGetObject(BUCKET_NAME, key, 60 * 60);
 
   return {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -122,7 +122,7 @@ export default function SmartDocumentReview({ document, documentType, analysisRe
 
   const createMutation = useMutation({
     mutationFn: async (payload) => {
-      const res = await avaai.functions.invoke('createApplicationFromDocument', payload)
+      const res = await base44.functions.invoke('createApplicationFromDocument', payload)
       return res.data
     },
     onSuccess: () => {

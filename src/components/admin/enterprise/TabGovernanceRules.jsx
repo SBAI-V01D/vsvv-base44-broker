@@ -6,7 +6,7 @@
  */
 import { useState, useMemo, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import {
   Shield, Plus, Edit2, ToggleLeft, ToggleRight,
   AlertTriangle, CheckCircle2, Clock, Zap,
@@ -367,13 +367,13 @@ export default function TabGovernanceRules() {
 
   const { data: rules = [], isLoading } = useQuery({
     queryKey: ['governance_rules'],
-    queryFn: () => avaai.entities.GovernanceRule.list('-effective_from', 100),
+    queryFn: () => base44.entities.GovernanceRule.list('-effective_from', 100),
     staleTime: 60_000,
   });
 
   const saveMutation = useMutation({
     mutationFn: async (form) => {
-      const me = await avaai.auth.me();
+      const me = await base44.auth.me();
       const payload = {
         ...form,
         condition_json: form.custom_validator_function_name?.trim()
@@ -382,15 +382,15 @@ export default function TabGovernanceRules() {
         custom_validator_function_name: form.custom_validator_function_name?.trim() || undefined,
       };
       if (form.id) {
-        return avaai.entities.GovernanceRule.update(form.id, { ...payload, updated_by: me.id, updated_by_email: me.email });
+        return base44.entities.GovernanceRule.update(form.id, { ...payload, updated_by: me.id, updated_by_email: me.email });
       }
-      return avaai.entities.GovernanceRule.create({ ...payload, created_by: me.id, created_by_email: me.email });
+      return base44.entities.GovernanceRule.create({ ...payload, created_by: me.id, created_by_email: me.email });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['governance_rules'] }); setShowForm(false); setEditRule(null); },
   });
 
   const statusMutation = useMutation({
-    mutationFn: ({ id, status }) => avaai.entities.GovernanceRule.update(id, { rule_status: status }),
+    mutationFn: ({ id, status }) => base44.entities.GovernanceRule.update(id, { rule_status: status }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['governance_rules'] }),
   });
 

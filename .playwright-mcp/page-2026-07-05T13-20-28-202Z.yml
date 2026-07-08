@@ -1,0 +1,4 @@
+- generic [ref=f4e25]:
+  - heading "Rendering Error" [level=1] [ref=f4e26]
+  - paragraph
+  - button "Reload App" [ref=f4e27] [cursor=pointer]

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,13 +32,13 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avaai.entities.Customer.list(),
+    queryFn: () => base44.entities.Customer.list(),
     enabled: open,
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avaai.entities.Contract.list(null, 1000),
+    queryFn: () => base44.entities.Contract.list(null, 1000),
     enabled: open,
   })
 
@@ -137,14 +137,14 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
     try {
       // Step 1: Upload file
       setUploadProgress(30)
-      const { file_url } = await avaai.integrations.Core.UploadFile({ file })
+      const { file_url } = await base44.integrations.Core.UploadFile({ file })
       setUploadProgress(60)
 
       if (uploadMode === 'antrag') {
         // Schnell-Klassifizierung per Dateiname: wenn "police" im Namen → als anlage/contract vormerken
         const lowerName = (form.name || '').toLowerCase()
         const looksLikePolice = lowerName.includes('police') || lowerName.includes('vertrag') || lowerName.includes('polic')
-        const doc = await avaai.entities.Document.create({
+        const doc = await base44.entities.Document.create({
           name: form.name,
           file_url,
           category: looksLikePolice ? 'contract' : 'application',
@@ -154,7 +154,14 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
           uploaded_by: 'broker',
         })
         setUploadProgress(85)
-        avaai.request('POST', '/api/document/extract', { documentId: doc.id }).catch(err => console.error('Extraction trigger failed:', err))
+        base44.entities.AutomationQueue.create({
+          job_type: 'ki_extraction',
+          status: 'pending',
+          related_document_id: doc.id,
+          related_entity_type: 'Document',
+          related_entity_id: doc.id,
+          payload: JSON.stringify({ file_url, file_name: form.name, document_id: doc.id }),
+        }).catch(err => console.error('Queue creation failed:', err))
       } else {
         // Kategorie je nach Modus
         const docCategory =
@@ -164,7 +171,7 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
           uploadMode === 'antrag_dok'? 'application' :
           form.category || 'other'
         const docType = 'anlage'
-        await avaai.entities.Document.create({
+        await base44.entities.Document.create({
           name: form.name,
           file_url,
           category: docCategory,
@@ -193,7 +200,7 @@ export default function DocumentUploadDialog({ open, onOpenChange, onSuccess, pr
             if (form.statsNote) updates.renewal_statistics_note = form.statsNote
           }
           if (Object.keys(updates).length > 0) {
-            avaai.entities.Contract.update(form.contract_id, updates).catch(() => {})
+            base44.entities.Contract.update(form.contract_id, updates).catch(() => {})
           }
         }
       }

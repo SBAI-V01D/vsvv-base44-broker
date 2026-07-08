@@ -22,7 +22,7 @@
 
 ```bash
 # Im Browser-Konsole oder via API-Client:
-const result = await avaai.functions.invoke('migrateCustomerNumbers', {});
+const result = await base44.functions.invoke('migrateCustomerNumbers', {});
 console.log(result);
 ```
 

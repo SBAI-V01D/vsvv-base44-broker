@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import {
   Clock, AlertTriangle, CalendarClock, Send, Loader2,
   CheckCircle, RefreshCw, Filter, ChevronDown, Mail, Shield
@@ -74,17 +74,17 @@ export default function Wiedervorlage() {
 
   const { data: contracts = [], isLoading } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avaai.entities.Contract.list(),
+    queryFn: () => base44.entities.Contract.list(),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avaai.entities.Customer.list(),
+    queryFn: () => base44.entities.Customer.list(),
   });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => avaai.entities.Notification.list('-created_date', 200),
+    queryFn: () => base44.entities.Notification.list('-created_date', 200),
   });
 
   const today = new Date();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,12 +20,12 @@ export default function ContractAdvisorAssignment({ contractId, contractName }) 
 
   const { data: assignments = [] } = useQuery({
     queryKey: ['contractAdvisors', contractId],
-    queryFn: () => avaai.entities.ContractAdvisor.filter({ contract_id: contractId }),
+    queryFn: () => base44.entities.ContractAdvisor.filter({ contract_id: contractId }),
   });
 
   const { data: allAdvisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avaai.entities.Advisor.list(),
+    queryFn: () => base44.entities.Advisor.list(),
   });
 
   const availableAdvisors = allAdvisors.filter(
@@ -38,7 +38,7 @@ export default function ContractAdvisorAssignment({ contractId, contractName }) 
 
   const addMutation = useMutation({
     mutationFn: (advisorId) =>
-      avaai.entities.ContractAdvisor.create({
+      base44.entities.ContractAdvisor.create({
         contract_id: contractId,
         contract_policy_number: contractName,
         advisor_id: advisorId,
@@ -55,7 +55,7 @@ export default function ContractAdvisorAssignment({ contractId, contractName }) 
   });
 
   const removeMutation = useMutation({
-    mutationFn: (id) => avaai.entities.ContractAdvisor.delete(id),
+    mutationFn: (id) => base44.entities.ContractAdvisor.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contractAdvisors', contractId] });
     },

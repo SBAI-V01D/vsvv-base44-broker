@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -154,7 +154,7 @@ export default function ImportWizard({ open, onOpenChange, onSuccess }) {
       console.log(`[CSV Parser] Checking for duplicates...`)
       let existingCustomers = []
       try {
-        existingCustomers = await avaai.entities.Customer.list('', 1000) || []
+        existingCustomers = await base44.entities.Customer.list('', 1000) || []
       } catch (err) {
         console.warn('[CSV Parser] Could not fetch existing customers:', err.message)
       }
@@ -273,7 +273,7 @@ export default function ImportWizard({ open, onOpenChange, onSuccess }) {
       console.log('[ImportWizard] Starting file upload...');
 
       // Upload file
-      const uploadRes = await avaai.integrations.Core.UploadFile({ file });
+      const uploadRes = await base44.integrations.Core.UploadFile({ file });
       const file_url = uploadRes.file_url;
       console.log('[ImportWizard] Upload complete, file_url:', file_url);
 
@@ -281,7 +281,7 @@ export default function ImportWizard({ open, onOpenChange, onSuccess }) {
 
       // Import data with timeout protection
       console.log('[ImportWizard] Starting import function...');
-      const importPromise = avaai.functions.invoke('importEntityData', {
+      const importPromise = base44.functions.invoke('importEntityData', {
         entity_name: 'Customer',
         file_url
       });

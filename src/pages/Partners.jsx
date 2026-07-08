@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -149,21 +149,21 @@ export default function Partners() {
 
   const { data: partners = [] } = useQuery({
     queryKey: ['partners'],
-    queryFn: () => avaai.entities.Partner.list(),
+    queryFn: () => base44.entities.Partner.list(),
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => avaai.entities.Partner.create(data),
+    mutationFn: (data) => base44.entities.Partner.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['partners'] }); setShowForm(false); setEditing(null) }
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => avaai.entities.Partner.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Partner.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['partners'] }); setShowForm(false); setEditing(null) }
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => avaai.entities.Partner.delete(id),
+    mutationFn: (id) => base44.entities.Partner.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['partners'] })
   })
 

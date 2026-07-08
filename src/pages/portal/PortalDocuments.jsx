@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { FolderOpen, Upload, ExternalLink, FileText, Loader2, AlertCircle } from 'lucide-react'
 import { usePortalData } from '@/hooks/usePortalData'
 
@@ -26,8 +26,8 @@ export default function PortalDocuments() {
     setUploading(true)
     let count = 0
     for (const file of Array.from(files)) {
-      const { file_url } = await avaai.integrations.Core.UploadFile({ file })
-      await avaai.entities.Document.create({
+      const { file_url } = await base44.integrations.Core.UploadFile({ file })
+      await base44.entities.Document.create({
         customer_id: customerId,
         customer_name: customer ? `${customer.first_name} ${customer.last_name}` : '',
         name: file.name,

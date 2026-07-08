@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { useMemo } from 'react'
 
 /**
@@ -11,42 +11,42 @@ export function useDashboardMetrics(filters = {}) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => avaai.entities.Customer.list(),
+    queryFn: () => base44.entities.Customer.list(),
   })
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['contracts'],
-    queryFn: () => avaai.entities.Contract.list(),
+    queryFn: () => base44.entities.Contract.list(),
   })
 
   const { data: applications = [] } = useQuery({
     queryKey: ['applications'],
-    queryFn: () => avaai.entities.Application.list(),
+    queryFn: () => base44.entities.Application.list(),
   })
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => avaai.entities.Task.list(),
+    queryFn: () => base44.entities.Task.list(),
   })
 
   const { data: leads = [] } = useQuery({
     queryKey: ['leads'],
-    queryFn: () => avaai.entities.Lead.list(),
+    queryFn: () => base44.entities.Lead.list(),
   })
 
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissionEntries'],
-    queryFn: () => avaai.entities.CommissionEntry.list(),
+    queryFn: () => base44.entities.CommissionEntry.list(),
   })
 
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
-    queryFn: () => avaai.entities.Document.list(),
+    queryFn: () => base44.entities.Document.list(),
   })
 
   const { data: advisors = [] } = useQuery({
     queryKey: ['advisors'],
-    queryFn: () => avaai.entities.Advisor.list(),
+    queryFn: () => base44.entities.Advisor.list(),
   })
 
   // ─── AGGREGATION ───

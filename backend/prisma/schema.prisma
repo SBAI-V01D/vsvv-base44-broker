@@ -1,6 +1,6 @@
 // ============================================================================
-// avaai Premium Broker — Prisma Schema (59 Entities)
-// Multi-Tenant PostgreSQL
+// VSVV Premium Broker — Prisma Schema (59 Entities)
+// Generated from base44/entities/*.jsonc — Multi-Tenant PostgreSQL
 // ============================================================================
 
 generator client {
@@ -203,8 +203,6 @@ enum DocumentProcessingStage {
 
 enum DocumentDocType {
   antrag
-  police
-  abrechnung
   anlage
   unbekannt
 
@@ -1427,8 +1425,6 @@ model User {
   refresh_tokens         RefreshToken[]
 
   @@index([organization_id])
-  @@index([organization_id, email])
-  @@index([organization_id, role])
   @@map("user")
 }
 
@@ -1522,10 +1518,10 @@ model Customer {
   street                    String?
   zip_code                  String?
   city                      String?
-  canton                    SwissCanton?   @default(ZH)
+  canton                    SwissCanton?
   birthdate                 DateTime?
   ahv_number                String?
-  civil_status              CivilStatus?   @default(single)
+  civil_status              CivilStatus?
   profession                String?
   nationality               String?
   drivers_license_date      DateTime?
@@ -1600,9 +1596,6 @@ model Customer {
   @@index([organization_id, advisor_id])
   @@index([organization_id, archived])
   @@index([organization_id, primary_advisor_id])
-  @@index([organization_id, last_name])
-  @@index([organization_id, email])
-  @@index([organization_id, first_name, last_name])
   @@map("customer")
 }
 
@@ -1621,7 +1614,7 @@ model Contract {
   policy_number                   String?
   version_number                  Float           @default(1)
   parent_policy_id                String?
-  insurance_type            InsuranceType    @default(other)
+  insurance_type                  InsuranceType
   product                         String?
   premium_monthly                 Float?
   premium_yearly                  Float?
@@ -1727,8 +1720,6 @@ model Contract {
   @@index([organization_id, customer_id])
   @@index([organization_id, advisor_id])
   @@index([organization_id, renewal_status])
-  @@index([organization_id, renewal_date])
-  @@index([organization_id, policy_number])
   @@map("contract")
 }
 
@@ -1778,8 +1769,6 @@ model Application {
 
   @@index([organization_id, status])
   @@index([organization_id, advisor_id])
-  @@index([organization_id, insurer])
-  @@index([organization_id, policy_number])
   @@map("application")
 }
 
@@ -1793,7 +1782,7 @@ model Commission {
   customer_name     String?
   broker_email      String?
   broker_name       String?
-  type              CommissionType @default(einmalig)
+  type              CommissionType
   amount            Float
   insurance_type    String?
   provider          String?
@@ -1907,8 +1896,6 @@ model CommissionEntry {
 
   @@index([organization_id, advisor_id])
   @@index([organization_id, policy_id])
-  @@index([organization_id, status])
-  @@index([organization_id, policy_number])
   @@map("commission_entry")
 }
 
@@ -1993,7 +1980,6 @@ model Document {
   classification_status     DocumentClassificationStatus  @default(ausstehend)
   classification_confidence Float?
   classification_reason     String?
-  extracted_data            Json?                          @map("extracted_data")
   linked_contract_id        String?
   linked_application_id     String?
   uploaded_by               String?
@@ -2017,9 +2003,6 @@ model Document {
 
   @@index([organization_id, customer_id])
   @@index([organization_id, category])
-  @@index([organization_id, name])
-  @@index([organization_id, uploaded_by])
-  @@index([organization_id, created_at])
   @@map("document")
 }
 
@@ -2072,7 +2055,7 @@ model Lead {
   phone                  String?
   birthdate              DateTime?
   company                String?
-  source                 LeadSource   @default(manual)
+  source                 LeadSource
   advisor_id             String?
   advisor_name           String?
   organization_id        String?
@@ -2203,7 +2186,7 @@ model SystemLog {
 // --------------------------------------------------------------------------
 model Notification {
   id                String           @id @default(uuid())
-  type              NotificationType @default(contract_expiry)
+  type              NotificationType
   recipient_email   String
   recipient_name    String?
   subject           String
@@ -2221,8 +2204,6 @@ model Notification {
   // Relations
   organization      Organization?    @relation(fields: [organization_id], references: [id])
 
-  @@index([organization_id, status])
-  @@index([organization_id, recipient_email])
   @@map("notification")
 }
 
@@ -2259,7 +2240,7 @@ model Message {
 // --------------------------------------------------------------------------
 model StatusDefinition {
   id              String              @id @default(uuid())
-  type            StatusDefinitionType @default(application)
+  type            StatusDefinitionType
   key             String
   label           String
   color           StatusColor         @default(gray)
@@ -2285,7 +2266,7 @@ model StatusDefinition {
 // --------------------------------------------------------------------------
 model StatusHistory {
   id                String                 @id @default(uuid())
-  entity_type       StatusHistoryEntityType @default(application)
+  entity_type       StatusHistoryEntityType
   entity_id         String
   customer_id       String?
   from_status       String?
@@ -2316,7 +2297,7 @@ model BAGPraemienDaten {
   krankenkasse      String
   kanton            String
   region            String?
-  modell            BAGModell  @default(standard)
+  modell            BAGModell
   modell_label      String
   franchise         Int
   unfall            Boolean      @default(false)
@@ -2449,7 +2430,7 @@ model VergleichsAnalyse {
 model AccountingEntry {
   id                String                 @id @default(uuid())
   entry_date        DateTime
-  entry_type        AccountingEntryType @default(commission)
+  entry_type        AccountingEntryType
   amount            Float
   advisor_id        String
   advisor_name      String?
@@ -2702,7 +2683,7 @@ model VersichererDB {
 model Partner {
   id                String          @id @default(uuid())
   name              String
-  category          PartnerCategory  @default(versicherung)
+  category          PartnerCategory
   contact_person    String?
   phone             String?
   email             String?
@@ -2734,7 +2715,7 @@ model PartnerActivity {
   id                String              @id @default(uuid())
   partner_id                     String
   partner_name      String?
-  activity_type     PartnerActivityType @default(partner_created)
+  activity_type     PartnerActivityType
   description       String
   document_id       String?
   document_name     String?
@@ -2763,7 +2744,7 @@ model PartnerDocument {
   partner_name      String?
   file_name         String
   file_url          String
-  category          PartnerDocumentCategory @default(sonstige)
+  category          PartnerDocumentCategory
   uploaded_by       String?
   uploaded_by_name  String?
   file_size         Float?
@@ -2974,7 +2955,7 @@ model AdvisoryDossier {
 model DossierSnapshot {
   id                String   @id @default(uuid())
   dossier_id                     String
-  version           Float  @default(1)
+  version           Float
   snapshot_data     String?
   pdf_url           String?
   created_by_name   String?
@@ -3004,7 +2985,7 @@ model MutationRequest {
   customer_id                    String
   policy_id         String
   policy_number     String?
-  request_type      MutationRequestType @default(other)
+  request_type      MutationRequestType
   description       String
   status            MutationRequestStatus @default(pending)
   reviewed_by       String?
@@ -3126,7 +3107,7 @@ model Interaction {
   id                  String                  @id @default(uuid())
   customer_id                    String
   customer_name       String?
-  type                InteractionType       @default(notiz)
+  type                InteractionType
   subject             String
   content             String?
   date                DateTime?
@@ -3154,7 +3135,7 @@ model InsuranceKnowledgePattern {
   id                  String   @id @default(uuid())
   insurer             String
   document_type       String?
-  pattern_type        PatternType     @default(field_signal)
+  pattern_type        PatternType
   signal              String
   maps_to             String
   maps_to_value       String?
@@ -3189,8 +3170,8 @@ model EnterpriseImprovement {
   id                      String                      @id @default(uuid())
   audit_id                String?
   title                   String
-  priority                EnterpriseImprovementPriority @default(medium)
-  area                    EnterpriseImprovementArea @default(performance)
+  priority                EnterpriseImprovementPriority
+  area                    EnterpriseImprovementArea
   current_state           String
   target_state            String
   ki_recommendation       String?
@@ -3231,7 +3212,7 @@ model EnterpriseIncident {
   id                      String                    @id @default(uuid())
   priority                EnterpriseIncidentPriority @default(medium)
   severity                EnterpriseIncidentSeverity @default(warning)
-  category                EnterpriseIncidentCategory  @default(other)
+  category                EnterpriseIncidentCategory
   module                  String?
   entity_type             String?
   entity_id               String?
@@ -3290,7 +3271,7 @@ model GovernanceRule {
   effective_to                DateTime?
   entity_type                 String
   event_types                 GovernanceEventType[]
-  layer                       GovernanceRuleLayer @default(VALIDATION)
+  layer                       GovernanceRuleLayer
   business_criticality        GovernanceBusinessCriticality @default(MEDIUM)
   enforcement_mode            GovernanceEnforcementMode @default(monitor)
   simulate_only               Boolean                   @default(true)
@@ -3359,7 +3340,7 @@ model GovernanceScoreSnapshot {
 // --------------------------------------------------------------------------
 model DuplicateAlert {
   id                  String                  @id @default(uuid())
-  entity_type         DuplicateAlertEntityType @default(customer)
+  entity_type         DuplicateAlertEntityType
   primary_entity_id   String
   duplicate_entity_id String
   match_criteria      DuplicateMatchCriteria[]
@@ -3388,7 +3369,7 @@ model DuplicateAlert {
 model BackupLog {
   id                String       @id @default(uuid())
   backup_id         String?
-  backup_type       BackupType  @default(full)
+  backup_type       BackupType
   status            BackupStatus @default(completed)
   timestamp         DateTime
   error_message     String?
@@ -3417,7 +3398,7 @@ model BackupLog {
 // --------------------------------------------------------------------------
 model ErrorLog {
   id                String        @id @default(uuid())
-  error_type        ErrorType @default(other)
+  error_type        ErrorType
   entity_type       String?
   entity_id         String?
   error_message     String
@@ -3514,7 +3495,7 @@ model PdfExportLog {
 // --------------------------------------------------------------------------
 model AutomationQueue {
   id                  String             @id @default(uuid())
-  job_type            AutomationJobType @default(other)
+  job_type            AutomationJobType
   status              AutomationJobStatus @default(pending)
   related_document_id String?
   related_entity_type String?
@@ -3545,7 +3526,7 @@ model AiFinding {
   id                    String           @id @default(uuid())
   review_id             String?
   organization_id       String
-  finding_type          AiFindingType  @default(other)
+  finding_type          AiFindingType
   severity              FindingSeverity  @default(warning)
   confidence_score      Float?
   evidence_strength     EvidenceStrength?
@@ -3582,15 +3563,15 @@ model AiFinding {
 // --------------------------------------------------------------------------
 model AiReview {
   id                  String         @id @default(uuid())
-  level               AiReviewLevel @default(quick)
+  level               AiReviewLevel
   status              AiReviewStatus @default(completed)
-  findings            Json?
+  findings            Json
   finding_count       Float?
   critical_count      Float?
   warning_count       Float?
   opportunity_count   Float?
-  reviewed_at         DateTime?
-  reviewed_by         String?
+  reviewed_at         DateTime
+  reviewed_by         String
   previous_review_id  String?
   notes               String?
   organization_id     String?

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -86,16 +86,16 @@ export default function SmartDocumentSuggestions({ document, insights, onSuccess
 
   // ── Mutations ──
   const createCustomerMut = useMutation({
-    mutationFn: async (data) => avaai.entities.Customer.create(data),
+    mutationFn: async (data) => base44.entities.Customer.create(data),
   })
   const createFamilyMut = useMutation({
-    mutationFn: async (data) => avaai.functions.invoke('createFamilyMember', data),
+    mutationFn: async (data) => base44.functions.invoke('createFamilyMember', data),
   })
   const createContractMut = useMutation({
-    mutationFn: async (data) => avaai.entities.Contract.create(data),
+    mutationFn: async (data) => base44.entities.Contract.create(data),
   })
   const updateDocMut = useMutation({
-    mutationFn: async ({ id, updates }) => avaai.entities.Document.update(id, updates),
+    mutationFn: async ({ id, updates }) => base44.entities.Document.update(id, updates),
   })
 
   const isLoading = createCustomerMut.isPending || createFamilyMut.isPending
@@ -140,7 +140,7 @@ export default function SmartDocumentSuggestions({ document, insights, onSuccess
     // Fallback: organization_id aus erster verfügbarer Org laden
     let resolvedOrgId = orgId
     if (!resolvedOrgId) {
-      const orgs = await avaai.entities.Organization.list('-created_date', 1)
+      const orgs = await base44.entities.Organization.list('-created_date', 1)
       resolvedOrgId = orgs?.[0]?.id || null
     }
     if (!resolvedOrgId) {
@@ -202,7 +202,7 @@ export default function SmartDocumentSuggestions({ document, insights, onSuccess
   // FLOW A: Neues Familienmitglied
   // ─────────────────────────────────────────────
   const handleSaveFamilyMember = async () => {
-    const user = await avaai.auth.me()
+    const user = await base44.auth.me()
     const primaryId = selectedPrimaryId
 
     // Finde Hauptkontakt-Daten für Org/Advisor – lade vollständige Daten aus DB
@@ -210,7 +210,7 @@ export default function SmartDocumentSuggestions({ document, insights, onSuccess
       ? insights.matchedPrimaryCustomer
       : null
     if (!primary?.organization_id) {
-      const results = await avaai.entities.Customer.filter({ id: primaryId })
+      const results = await base44.entities.Customer.filter({ id: primaryId })
       primary = results[0] || primary
     }
 
@@ -257,7 +257,7 @@ export default function SmartDocumentSuggestions({ document, insights, onSuccess
     // Organisations-ID: aus insights (vorhandener Kunde) oder erste verfügbare Org
     let orgId = insights.matchedPrimaryCustomer?.organization_id || null
     if (!orgId) {
-      const orgs = await avaai.entities.Organization.list('-created_date', 1)
+      const orgs = await base44.entities.Organization.list('-created_date', 1)
       orgId = orgs?.[0]?.id || null
     }
     if (!orgId) {
@@ -293,7 +293,7 @@ export default function SmartDocumentSuggestions({ document, insights, onSuccess
   // FLOW C: Bestehende Person (matchedPerson found)
   // ─────────────────────────────────────────────
   const handleFinalizeExisting = async () => {
-    const user = await avaai.auth.me()
+    const user = await base44.auth.me()
     const person = insights.matchedPerson || insights.matchedPrimaryCustomer
     await finalize(
       person.id,

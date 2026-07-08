@@ -7,12 +7,12 @@
  * - Stabile Versionsnummer via nextSnapshotVersion() statt snapshots.length + 1
  * - Ladezustände für Customer/Contracts bei Live-Preview klar kommuniziert
  * - Snapshot-Deserialization-Fehler werden dem User angezeigt (kein stiller null)
- * - created_date Fallback auf created_date (ISO-String von avaai)
+ * - created_date Fallback auf created_date (ISO-String von Base44)
  * - Kein Mailversand, keine Automationen, keine produktiven Exporte
  */
 import React, { useState, useMemo, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import {
   Printer, Eye, Save, Clock, FileText, ChevronDown, ChevronUp,
   Shield, AlertCircle, Loader2, RefreshCw, Download, CheckCircle2, Hash, ExternalLink,
@@ -192,14 +192,14 @@ export default function DossierExportTab({ dossier }) {
   // ── Data fetching (alle read-only) ──
   const { data: customer, isLoading: loadingCustomer } = useQuery({
     queryKey: ['dossier_customer_ro', customerId],
-    queryFn:  () => avaai.entities.Customer.filter({ id: customerId }).then(r => r?.[0] ?? null),
+    queryFn:  () => base44.entities.Customer.filter({ id: customerId }).then(r => r?.[0] ?? null),
     enabled:  !!customerId,
     staleTime: 60_000,
   });
 
   const { data: familyMembers = [] } = useQuery({
     queryKey: ['dossier_family_ro', customerId],
-    queryFn:  () => avaai.entities.Customer.filter({ primary_customer_id: customerId }),
+    queryFn:  () => base44.entities.Customer.filter({ primary_customer_id: customerId }),
     enabled:  !!customerId,
     staleTime: 60_000,
   });
@@ -214,7 +214,7 @@ export default function DossierExportTab({ dossier }) {
     queryFn:  async () => {
       if (allCustomerIds.length === 0) return [];
       const results = await Promise.all(
-        allCustomerIds.map(id => avaai.entities.Contract.filter({ customer_id: id }))
+        allCustomerIds.map(id => base44.entities.Contract.filter({ customer_id: id }))
       );
       return results.flat().filter(c => c.status !== 'archived');
     },
@@ -224,21 +224,21 @@ export default function DossierExportTab({ dossier }) {
 
   const { data: entries = [] } = useQuery({
     queryKey: ['dossier_comparison', dossierId],
-    queryFn:  () => avaai.entities.ComparisonEntry.filter({ dossier_id: dossierId }),
+    queryFn:  () => base44.entities.ComparisonEntry.filter({ dossier_id: dossierId }),
     enabled:  !!dossierId,
     staleTime: 30_000,
   });
 
   const { data: verkaufschance } = useQuery({
     queryKey: ['dossier_vs_ro', dossier?.linked_verkaufschance_id],
-    queryFn:  () => avaai.entities.Verkaufschance.filter({ id: dossier.linked_verkaufschance_id }).then(r => r?.[0] ?? null),
+    queryFn:  () => base44.entities.Verkaufschance.filter({ id: dossier.linked_verkaufschance_id }).then(r => r?.[0] ?? null),
     enabled:  !!dossier?.linked_verkaufschance_id,
     staleTime: 60_000,
   });
 
   const { data: snapshots = [], isLoading: snapsLoading } = useQuery({
     queryKey: ['dossier_snapshots', dossierId],
-    queryFn:  () => avaai.entities.DossierSnapshot.filter({ dossier_id: dossierId }, '-created_date', 50),
+    queryFn:  () => base44.entities.DossierSnapshot.filter({ dossier_id: dossierId }, '-created_date', 50),
     enabled:  !!dossierId,
   });
 
@@ -250,7 +250,7 @@ export default function DossierExportTab({ dossier }) {
       });
       const version  = nextSnapshotVersion(snapshots);
       const jsonBlob = serializeSnapshot(snap);
-      const created = await avaai.entities.DossierSnapshot.create({
+      const created = await base44.entities.DossierSnapshot.create({
         dossier_id:    dossierId,
         version,
         snapshot_data: jsonBlob,
@@ -258,7 +258,7 @@ export default function DossierExportTab({ dossier }) {
       });
       // Freigabe-Snapshot koppeln: wenn Dossier freigegeben, diesen Snapshot als approved_snapshot_id speichern
       if (dossier?.advisor_approved && created?.id && !dossier?.approved_snapshot_id) {
-        await avaai.entities.AdvisoryDossier.update(dossierId, {
+        await base44.entities.AdvisoryDossier.update(dossierId, {
           approved_snapshot_id: created.id,
         });
         qc.invalidateQueries({ queryKey: ['advisory_dossier'] });
@@ -289,7 +289,7 @@ export default function DossierExportTab({ dossier }) {
   // ── Sprint C: Server-PDF generieren (Hooks vor early return!) ──
   const [serverPdfResult, setServerPdfResult] = useState(null);
   const serverPdfMutation = useMutation({
-    mutationFn: () => avaai.functions.invoke('generateDossierPdf', { dossierId }),
+    mutationFn: () => base44.functions.invoke('generateDossierPdf', { dossierId }),
     onSuccess: (res) => {
       setServerPdfResult(res.data);
       qc.invalidateQueries({ queryKey: ['advisory_dossier', dossierId] });
@@ -301,7 +301,7 @@ export default function DossierExportTab({ dossier }) {
   const [signedUrlLoading, setSignedUrlLoading] = useState(false);
   const openPrivatePdf = async (fileUri) => {
     setSignedUrlLoading(true);
-    const res = await avaai.integrations.Core.CreateFileSignedUrl({ file_uri: fileUri, expires_in: 300 });
+    const res = await base44.integrations.Core.CreateFileSignedUrl({ file_uri: fileUri, expires_in: 300 });
     setSignedUrlLoading(false);
     if (res?.signed_url) window.open(res.signed_url, '_blank');
   };
@@ -309,7 +309,7 @@ export default function DossierExportTab({ dossier }) {
   // Export-Log laden
   const { data: exportLogs = [] } = useQuery({
     queryKey: ['pdf_export_logs', dossierId],
-    queryFn: () => avaai.entities.PdfExportLog.filter({ dossier_id: dossierId }, '-exported_at', 20),
+    queryFn: () => base44.entities.PdfExportLog.filter({ dossier_id: dossierId }, '-exported_at', 20),
     enabled: !!dossierId,
     staleTime: 30_000,
   });

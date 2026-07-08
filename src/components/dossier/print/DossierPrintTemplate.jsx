@@ -10,7 +10,7 @@
  */
 import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { fmtCHF, fmtDate, calcDossierSummary } from '@/lib/dossierCalc';
 import DossierLegende from '@/components/dossier/print/DossierLegende';
 import DossierDocumentHeader from '@/components/dossier/print/DossierDocumentHeader';
@@ -748,13 +748,13 @@ export default function DossierPrintTemplate({ snapshot }) {
   // Organization & Advisor Daten laden (Hooks immer aufrufen - Rules of Hooks)
   const { data: organization } = useQuery({
     queryKey: ['dossier_org_ro', dossier?.organization_id],
-    queryFn: () => avaai.entities.Organization.filter({ id: dossier.organization_id }).then(r => r[0]),
+    queryFn: () => base44.entities.Organization.filter({ id: dossier.organization_id }).then(r => r[0]),
     enabled: !!dossier?.organization_id,
   });
 
   const { data: advisor } = useQuery({
     queryKey: ['dossier_advisor_ro', dossier?.advisor_id],
-    queryFn: () => avaai.entities.Advisor.filter({ id: dossier.advisor_id }).then(r => r[0]),
+    queryFn: () => base44.entities.Advisor.filter({ id: dossier.advisor_id }).then(r => r[0]),
     enabled: !!dossier?.advisor_id,
   });
 

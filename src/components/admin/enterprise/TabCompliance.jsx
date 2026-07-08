@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { AlertTriangle, CheckCircle2, TrendingDown } from 'lucide-react';
 
 const RISK_CFG = {
@@ -26,7 +26,7 @@ function ConfBar({ value }) {
 export default function TabCompliance() {
   const { data: dossiers = [], isLoading } = useQuery({
     queryKey: ['enterprise_compliance_dossiers'],
-    queryFn: () => avaai.entities.AdvisoryDossier.filter({ archived: false }, '-updated_date', 100),
+    queryFn: () => base44.entities.AdvisoryDossier.filter({ archived: false }, '-updated_date', 100),
     staleTime: 30_000,
   });
 

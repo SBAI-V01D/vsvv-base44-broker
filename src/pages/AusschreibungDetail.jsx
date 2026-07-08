@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { avaai } from '@/api/avaaiClient';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,7 +43,7 @@ function RisikoTab({ id, ausschreibung, setAusschreibung }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await avaai.entities.Ausschreibung.update(id, { risiko_daten: risikoRef.current });
+    await base44.entities.Ausschreibung.update(id, { risiko_daten: risikoRef.current });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -78,14 +78,14 @@ export default function AusschreibungDetail() {
 
   const load = async () => {
     const [list, o] = await Promise.all([
-      avaai.entities.Ausschreibung.filter({ id }),
-      avaai.entities.Offerte.filter({ ausschreibung_id: id }),
+      base44.entities.Ausschreibung.filter({ id }),
+      base44.entities.Offerte.filter({ ausschreibung_id: id }),
     ]);
     const a = list[0] || null;
     setAusschreibung(a);
     setOfferten(o);
     if (a?.customer_id) {
-      avaai.entities.Customer.filter({ id: a.customer_id }).then(res => setCustomer(res[0] || null));
+      base44.entities.Customer.filter({ id: a.customer_id }).then(res => setCustomer(res[0] || null));
     }
     setLoading(false);
   };
@@ -107,18 +107,18 @@ export default function AusschreibungDetail() {
     }
 
     if (newStatus && newStatus !== currentStatus) {
-      await avaai.entities.Ausschreibung.update(currentAusschreibung.id, { status: newStatus });
+      await base44.entities.Ausschreibung.update(currentAusschreibung.id, { status: newStatus });
     }
   };
 
   const saveOfferte = async (data) => {
-    if (editingOfferte?.id) await avaai.entities.Offerte.update(editingOfferte.id, data);
-    else await avaai.entities.Offerte.create(data);
+    if (editingOfferte?.id) await base44.entities.Offerte.update(editingOfferte.id, data);
+    else await base44.entities.Offerte.create(data);
     setShowOfferteDialog(false);
     setEditingOfferte(null);
     // Reload and then auto-update status
     const [updatedOfferten] = await Promise.all([
-      avaai.entities.Offerte.filter({ ausschreibung_id: id }),
+      base44.entities.Offerte.filter({ ausschreibung_id: id }),
     ]);
     setOfferten(updatedOfferten);
     await autoUpdateStatus(ausschreibung, updatedOfferten);
@@ -135,7 +135,7 @@ export default function AusschreibungDetail() {
     if (['entwurf', 'vorbereitung'].includes(updatedData.status) && (data.ausgewaehlte_versicherer || []).length > 0 && offerten.length === 0) {
       updatedData.status = 'offerten_ausstehend';
     }
-    await avaai.entities.Ausschreibung.update(id, updatedData);
+    await base44.entities.Ausschreibung.update(id, updatedData);
     setShowEditDialog(false);
     load();
   };
@@ -245,7 +245,7 @@ export default function AusschreibungDetail() {
         <TabsContent value="analyse" className="mt-4">
           <div className="surface p-6">
             <KIEmpfehlung ausschreibung={ausschreibung} offerten={offerten} onUpdate={async (res) => {
-              await avaai.entities.Ausschreibung.update(id, {
+              await base44.entities.Ausschreibung.update(id, {
                 ki_analyse: res, ki_empfehlung_text: res.broker_fazit,
                 ki_empfohlener_versicherer: res.empfohlener_versicherer, status: 'in_analyse',
               });

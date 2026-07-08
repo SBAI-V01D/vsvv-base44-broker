@@ -1,7 +1,6 @@
 #env
 .env
 .env.*
-!.env.example
 
 # Logs
 /logs
@@ -20,17 +19,6 @@ backend/dist
 
 # Temporary files
 .tmp
-TEMP/
-
-# Test artifacts
-login-test.*
-schema-prisma-chunk-*
-/.playwright-mcp
-
-# Editor backup files
-*.bak
-*.new
-*.full
 
 # Base44 SDK (externally provided)
 base44

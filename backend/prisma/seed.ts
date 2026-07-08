@@ -1,5 +1,5 @@
 // ============================================================================
-// avaai Premium Broker — Database Seed
+// VSVV Premium Broker — Database Seed
 // Idempotent seed script: safe to run multiple times (uses upsert everywhere)
 // Run with: npx tsx prisma/seed.ts
 // ============================================================================
@@ -10,7 +10,7 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main(): Promise<void> {
-  console.log('🌱 avaai Database Seed — Starting...')
+  console.log('🌱 VSVV Database Seed — Starting...')
   console.log('')
 
   // --------------------------------------------------------------------------
@@ -18,11 +18,11 @@ async function main(): Promise<void> {
   // --------------------------------------------------------------------------
   console.log('📦 Organization')
   const org = await prisma.organization.upsert({
-    where: { id: 'org-avaai-main' },
+    where: { id: 'org-vsvv-main' },
     update: {},
     create: {
-      id: 'org-avaai-main',
-      name: 'avaai Premium Broker AG',
+      id: 'org-vsvv-main',
+      name: 'VSVV Premium Broker AG',
       type: 'broker',
       status: 'active',
       finma_number: 'FINMA-12345',
@@ -30,8 +30,8 @@ async function main(): Promise<void> {
       zip_code: '8001',
       city: 'Zürich',
       phone: '+41 44 555 00 00',
-      email: 'info@avaai.ch',
-      website: 'https://avaai.ch',
+      email: 'info@vsvv.ch',
+      website: 'https://vsvv.ch',
     },
   })
   console.log(`   ✓ ${org.name} (${org.id})`)
@@ -52,14 +52,14 @@ async function main(): Promise<void> {
   }
 
   const usersData: UserSeed[] = [
-    { id: 'user-admin',        email: 'admin@avaai.ch',        name: 'Admin User',        role: 'admin' },
-    { id: 'user-management',   email: 'management@avaai.ch',   name: 'Management User',   role: 'management' },
-    { id: 'user-broker-1',     email: 'broker1@avaai.ch',      name: 'Hans Muster',       role: 'broker' },
-    { id: 'user-broker-2',     email: 'broker2@avaai.ch',      name: 'Lisa Beispiel',     role: 'broker' },
-    { id: 'user-backoffice',   email: 'backoffice@avaai.ch',   name: 'Backoffice User',   role: 'backoffice' },
-    { id: 'user-finance',      email: 'finance@avaai.ch',      name: 'Finance User',      role: 'finance' },
-    { id: 'user-support',      email: 'support@avaai.ch',      name: 'Support User',      role: 'support' },
-    { id: 'user-compliance',   email: 'compliance@avaai.ch',   name: 'Compliance User',   role: 'compliance' },
+    { id: 'user-admin',        email: 'admin@vsvv.ch',        name: 'Admin User',        role: 'admin' },
+    { id: 'user-management',   email: 'management@vsvv.ch',   name: 'Management User',   role: 'management' },
+    { id: 'user-broker-1',     email: 'broker1@vsvv.ch',      name: 'Hans Muster',       role: 'broker' },
+    { id: 'user-broker-2',     email: 'broker2@vsvv.ch',      name: 'Lisa Beispiel',     role: 'broker' },
+    { id: 'user-backoffice',   email: 'backoffice@vsvv.ch',   name: 'Backoffice User',   role: 'backoffice' },
+    { id: 'user-finance',      email: 'finance@vsvv.ch',      name: 'Finance User',      role: 'finance' },
+    { id: 'user-support',      email: 'support@vsvv.ch',      name: 'Support User',      role: 'support' },
+    { id: 'user-compliance',   email: 'compliance@vsvv.ch',   name: 'Compliance User',   role: 'compliance' },
   ]
 
   for (const user of usersData) {
@@ -92,7 +92,7 @@ async function main(): Promise<void> {
       id: 'advisor-1',
       firstname: 'Hans',
       lastname: 'Muster',
-      email: 'hans.muster@avaai.ch',
+      email: 'hans.muster@vsvv.ch',
       phone: '+41 44 555 01 01',
       organization_id: org.id,
       role: 'advisor',
@@ -108,7 +108,7 @@ async function main(): Promise<void> {
       id: 'advisor-2',
       firstname: 'Lisa',
       lastname: 'Beispiel',
-      email: 'lisa.beispiel@avaai.ch',
+      email: 'lisa.beispiel@vsvv.ch',
       phone: '+41 44 555 01 02',
       organization_id: org.id,
       role: 'team_lead',

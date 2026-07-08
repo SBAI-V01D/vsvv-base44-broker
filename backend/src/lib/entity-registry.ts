@@ -1,5 +1,5 @@
 // ============================================================================
-// avaai Backend — Entity Route Registry
+// VSVV Backend — Entity Route Registry
 //
 // Central configuration for all 58 Prisma models. Each entry defines how
 // the generic CRUD factory creates list/get/create/update/delete routes.
@@ -9,7 +9,6 @@
 // ============================================================================
 
 import type { CrudConfig } from './crud-factory.js';
-import { OrganizationSchema, UserSchema, AdvisorSchema, ContractSchema } from './validation.js';
 
 export const ENTITY_REGISTRY: CrudConfig[] = [
   // ==========================================================================
@@ -21,9 +20,6 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     prefix: 'organizations',
     searchFields: ['name', 'email', 'type'],
     sortableFields: ['created_at', 'updated_at', 'name'],
-    skipTenantFilter: true,
-    validateCreate: async (body) => { try { OrganizationSchema.create.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
-    validateUpdate: async (body) => { try { OrganizationSchema.update.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
   },
   {
     model: 'user',
@@ -31,16 +27,12 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     searchFields: ['email', 'name'],
     sortableFields: ['created_at', 'updated_at', 'email', 'name'],
     permissions: { list: ['admin', 'management'], create: ['admin'], update: ['admin', 'management'], delete: ['admin'] },
-    validateCreate: async (body) => { try { UserSchema.create.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
-    validateUpdate: async (body) => { try { UserSchema.update.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
   },
   {
     model: 'advisor',
     prefix: 'advisors',
     searchFields: ['email'],
     sortableFields: ['created_at', 'updated_at', 'email'],
-    validateCreate: async (body) => { try { AdvisorSchema.create.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
-    validateUpdate: async (body) => { try { AdvisorSchema.update.parse(body) } catch (e: any) { return { error: e.errors?.map((x: any) => x.message).join(', '), status: 400 } } },
   },
   {
     model: 'broker',
@@ -60,6 +52,12 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     sortableFields: ['created_at', 'updated_at', 'first_name', 'last_name', 'email'],
   },
   {
+    model: 'contract',
+    prefix: 'contracts',
+    searchFields: ['status'],
+    sortableFields: ['created_at', 'updated_at', 'status'],
+  },
+  {
     model: 'contractAdvisor',
     prefix: 'contract-advisors',
     sortableFields: ['created_at'],
@@ -70,6 +68,30 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     sortableFields: ['created_at'],
   },
 
+  // ==========================================================================
+  // Applications & Commissions
+  // ==========================================================================
+
+  {
+    model: 'application',
+    prefix: 'applications',
+    searchFields: ['status'],
+    sortableFields: ['created_at', 'updated_at', 'status'],
+  },
+  {
+    model: 'commission',
+    prefix: 'commissions',
+    searchFields: ['type', 'status'],
+    sortableFields: ['created_at', 'updated_at', 'type', 'status'],
+    permissions: { list: ['admin', 'management', 'finance', 'broker', 'backoffice'], get: ['admin', 'management', 'finance', 'broker'], create: ['admin', 'management'], update: ['admin', 'management', 'finance'], delete: ['admin'] },
+  },
+  {
+    model: 'commissionEntry',
+    prefix: 'commission-entries',
+    searchFields: ['status'],
+    sortableFields: ['created_at', 'updated_at', 'status'],
+    permissions: { list: ['admin', 'management', 'finance', 'broker'], get: ['admin', 'management', 'finance'], create: ['admin', 'management', 'finance'], update: ['admin', 'management', 'finance'], delete: ['admin'] },
+  },
   {
     model: 'commissionRate',
     prefix: 'commission-rates',
@@ -105,6 +127,24 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     prefix: 'extraction-correction-logs',
     sortableFields: ['created_at'],
     permissions: { list: ['admin', 'management'], get: ['admin'], create: ['admin', 'management'], update: ['admin'], delete: ['admin'] },
+  },
+
+  // ==========================================================================
+  // Tasks & Leads
+  // ==========================================================================
+
+  {
+    model: 'task',
+    prefix: 'tasks',
+    searchFields: ['title', 'description', 'status'],
+    sortableFields: ['created_at', 'updated_at', 'status'],
+  },
+  {
+    model: 'lead',
+    prefix: 'leads',
+    searchFields: ['first_name', 'last_name', 'email', 'status'],
+    sortableFields: ['created_at', 'updated_at', 'status'],
+    permissions: { list: ['admin', 'management', 'broker', 'backoffice', 'support'], get: ['admin', 'management', 'broker', 'backoffice'], create: ['admin', 'management', 'broker', 'backoffice'], update: ['admin', 'management', 'broker', 'backoffice'], delete: ['admin'] },
   },
 
   // ==========================================================================
@@ -193,10 +233,16 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     permissions: { list: ['admin', 'management', 'backoffice', 'broker'], get: ['admin', 'management', 'backoffice', 'broker'], create: ['admin', 'management', 'backoffice'], update: ['admin', 'management', 'backoffice'], delete: ['admin'] },
   },
   {
+    model: 'krankenkassenVergleich',
+    prefix: 'krankenkassen-vergleiche',
+    searchFields: ['status'],
+    sortableFields: ['created_at', 'updated_at', 'status'],
+    permissions: { list: ['admin', 'management', 'broker', 'backoffice'], get: ['admin', 'management', 'broker', 'backoffice'], create: ['admin', 'management', 'broker', 'backoffice'], update: ['admin', 'management', 'broker', 'backoffice'], delete: ['admin'] },
+  },
+  {
     model: 'comparisonEntry',
     prefix: 'comparison-entries',
     sortableFields: ['created_at', 'praemie_monatlich'],
-    skipTenantFilter: true,  // model has no organization_id field
     permissions: { list: ['admin', 'management', 'broker', 'backoffice'], get: ['admin', 'management', 'broker', 'backoffice'], create: ['admin', 'management', 'broker', 'backoffice'], update: ['admin', 'management', 'broker', 'backoffice'], delete: ['admin'] },
   },
   {
@@ -343,6 +389,12 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     sortableFields: ['created_at', 'updated_at', 'status', 'priority'],
   },
   {
+    model: 'enterpriseIncident',
+    prefix: 'enterprise-incidents',
+    searchFields: ['title', 'description', 'status'],
+    sortableFields: ['created_at', 'updated_at', 'status', 'severity'],
+  },
+  {
     model: 'governanceRule',
     prefix: 'governance-rules',
     searchFields: ['name', 'description'],
@@ -367,6 +419,12 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
   // ==========================================================================
 
   {
+    model: 'auditLog',
+    prefix: 'audit-logs',
+    sortableFields: ['created_at', 'entity_type', 'action'],
+    permissions: { list: ['admin', 'management', 'compliance'], get: ['admin', 'management', 'compliance'], create: ['admin', 'management', 'backoffice'], update: ['admin'], delete: ['admin'] },
+  },
+  {
     model: 'systemLog',
     prefix: 'system-logs',
     searchFields: ['message', 'source', 'level'],
@@ -380,6 +438,14 @@ export const ENTITY_REGISTRY: CrudConfig[] = [
     sortableFields: ['created_at'],
     permissions: { list: ['admin'], get: ['admin'], create: ['admin', 'management', 'backoffice'], update: ['admin'], delete: ['admin'] },
   },
+  {
+    model: 'backupLog',
+    prefix: 'backup-logs',
+    searchFields: ['status'],
+    sortableFields: ['created_at'],
+    permissions: { list: ['admin'], get: ['admin'], create: ['admin'], update: ['admin'], delete: ['admin'] },
+  },
+
   // ==========================================================================
   // Status & Automation
   // ==========================================================================

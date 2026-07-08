@@ -1,4 +1,4 @@
-# 📦 **ARILLA → avaai IMPORT CHECKLISTE**
+# 📦 **ARILLA → Base44 IMPORT CHECKLISTE**
 
 ---
 
@@ -52,7 +52,7 @@ VERTRÄGE:
 ## 🚀 Schritt 1: Kunden importieren
 ```
 1. Kunden-CSV bereit
-2. avaai → Kunden → Import
+2. Base44 → Kunden → Import
 3. Mapping prüfen
 4. Import starten
 ```
@@ -61,7 +61,7 @@ VERTRÄGE:
 ```
 1. Verträge-CSV bereit
 2. customer_id korrekt verknüpft? ✓
-3. avaai → Verträge → Import
+3. Base44 → Verträge → Import
 4. Stichprobe: 10–20 Datensätze prüfen
 ```
 

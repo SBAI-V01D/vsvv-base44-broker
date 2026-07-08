@@ -27,14 +27,6 @@ import CommissionsAndCourtage from './pages/CommissionsAndCourtage.jsx'
 import BeratungOrganisation from './pages/BeratungOrganisation'
 import SystemLogs from './pages/SystemLogs'
 import FinanceDashboard from './pages/FinanceDashboard'
-import AccountingEntries from './pages/AccountingEntries'
-import Payouts from './pages/Payouts'
-import Advisors from './pages/Advisors'
-import FinancePeriods from './pages/FinancePeriods'
-import Offers from './pages/Offers'
-import MutationRequests from './pages/MutationRequests'
-import DuplicateAlerts from './pages/DuplicateAlerts'
-import GovernanceRules from './pages/GovernanceRules'
 import CEODashboard from './components/ceo/CEODashboard'
 import CEOCockpit from './pages/CEOCockpit'
 import AdvancedDashboard from './pages/AdvancedDashboard'
@@ -54,6 +46,7 @@ import BrokerReporting from './pages/BrokerReporting'
 import EnterpriseAudit from './pages/EnterpriseAudit'
 import EnterpriseSystemCheck from './pages/EnterpriseSystemCheck'
 import InsuranceLearningCenter from './pages/InsuranceLearningCenter'
+import DocumentExtractor from './pages/DocumentExtractor'
 import Ausschreibungen from './pages/Ausschreibungen'
 import AusschreibungDetail from './pages/AusschreibungDetail'
 import VersichererDBPage from './pages/VersichererDBPage'
@@ -67,19 +60,6 @@ import AdminHub from './pages/AdminHub'
 import AdminSecurity from './pages/AdminSecurity'
 import AdminBackup from './pages/AdminBackup'
 import EnterpriseImprovements from './pages/EnterpriseImprovements'
-import Login from './pages/Login'
-
-// ── Module Pages (Modular Backend) ──
-import ModuleDashboard from './modules/dashboard/pages/Dashboard.jsx'
-import ModuleCustomers from './modules/customers/pages/Customers.jsx'
-import ModuleContracts from './modules/contracts/pages/Contracts.jsx'
-import ModuleApplications from './modules/applications/pages/Applications.jsx'
-import ModuleTasks from './modules/tasks/pages/Tasks.jsx'
-import ModuleDocuments from './modules/documents/pages/Documents.jsx'
-import ModuleCommissions from './modules/commissions/pages/Commissions.jsx'
-import ModuleLeads from './modules/leads/pages/Leads.jsx'
-import ModuleMigration from './modules/migration/pages/Migration.jsx'
-import ModuleReports from './modules/reports/pages/Reports.jsx'
 
 // Portal
 import PortalRoot from './pages/portal/PortalRoot'
@@ -91,20 +71,18 @@ import PortalProfile from './pages/portal/PortalProfile.jsx'
 import PortalSetup from './pages/portal/PortalSetup'
 import PortalResetPassword from './pages/portal/PortalResetPassword'
 
-const PUBLIC_ROUTES = ['/login', '/portal']
-
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated } = useAuth()
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth()
   const location = useLocation()
-  const isPublicRoute = PUBLIC_ROUTES.some(p => location.pathname.startsWith(p))
 
-  // Portal routes are public — skip auth entirely
-  if (location.pathname.startsWith('/portal')) {
+  // Portal routes are public — skip Base44 auth entirely
+  const isPortalRoute = location.pathname.startsWith('/portal')
+  if (isPortalRoute) {
     return (
       <Routes>
-        <Route path="setup" element={<PortalSetup />} />
-        <Route path="reset-password" element={<PortalResetPassword />} />
-        <Route element={<PortalRoot />}>
+        <Route path="/portal/setup" element={<PortalSetup />} />
+        <Route path="/portal/reset-password" element={<PortalResetPassword />} />
+        <Route path="/portal" element={<PortalRoot />}>
           <Route index element={<PortalDashboard />} />
           <Route path="vertraege" element={<PortalContracts />} />
           <Route path="antraege" element={<PortalApplications />} />
@@ -127,38 +105,32 @@ const AuthenticatedApp = () => {
     )
   }
 
-  // Auth guard — unauthenticated users see login page
-  if (!isAuthenticated && !isPublicRoute) {
-    return <Navigate to="/login" replace />
-  }
-
-  // Auth errors → redirect to login
   if (authError) {
-    if (authError.type === 'auth_required') {
-      return <Navigate to="/login" replace />
-    }
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />
+    } else if (authError.type === 'auth_required') {
+      navigateToLogin()
+      return null
     }
     return <UserNotRegisteredError />
   }
 
   return (
-    <AppLayout>
-      <Routes>
-        <Route path="/" element={<ModuleDashboard />} />
-        <Route path="/kunden" element={<ModuleCustomers />} />
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/kunden" element={<CustomerIntelligenceWorkspace />} />
         <Route path="/neukunden" element={<NewCustomers />} />
+        <Route path="/kunden/:customerId/360" element={<Customer360 />} />
         <Route path="/kunden/:customerId/detail" element={<CustomerDetail />} />
-
-        <Route path="/vertraege" element={<ModuleContracts />} />
-        <Route path="/antraege" element={<ModuleApplications />} />
-        <Route path="/aufgaben" element={<ModuleTasks />} />
-        <Route path="/dokumente" element={<ModuleDocuments />} />
+        <Route path="/vertraege" element={<Contracts />} />
+        <Route path="/antraege" element={<Applications />} />
+        <Route path="/aufgaben" element={<Tasks />} />
+        <Route path="/dokumente" element={<Documents />} />
         <Route path="/email-templates" element={<EmailTemplates />} />
         <Route path="/email-kampagnen" element={<EmailCampaigns />} />
         <Route path="/status-verwaltung" element={<StatusVerwaltung />} />
-        <Route path="/provisionen-courtagen" element={<ModuleCommissions />} />
+        <Route path="/provisionen-courtagen" element={<CommissionsAndCourtage />} />
         <Route path="/berater-organisation" element={<BeratungOrganisation />} />
         <Route path="/finanz-dashboard" element={<FinanceDashboard />} />
         <Route path="/ceo-dashboard" element={<CEODashboard />} />
@@ -166,11 +138,9 @@ const AuthenticatedApp = () => {
         <Route path="/advanced-dashboard" element={<AdvancedDashboard />} />
         <Route path="/execution-mode" element={<ExecutionMode />} />
         <Route path="/sales-autopilot" element={<SalesAutopilot />} />
-        <Route path="/leads" element={<ModuleLeads />} />
+        <Route path="/leads" element={<Leads />} />
         <Route path="/coverage-intelligence" element={<CoverageIntelligence />} />
         <Route path="/system-logs" element={<SystemLogs />} />
-        <Route path="/migration" element={<ModuleMigration />} />
-        <Route path="/reports" element={<ModuleReports />} />
         <Route path="/partner" element={<Partners />} />
         <Route path="/partner/:id" element={<PartnerDetail />} />
         <Route path="/verkaufschancen" element={<Verkaufschancen />} />
@@ -178,6 +148,7 @@ const AuthenticatedApp = () => {
         {/* AdvisoryDossierEngine — Phase 1 — Admin-Only */}
         <Route path="/beratungsdossier" element={<AdvisoryDossier />} />
         <Route path="/reporting" element={<BrokerReporting />} />
+        <Route path="/dokument-extraktor" element={<DocumentExtractor />} />
         <Route path="/ausschreibungen" element={<Ausschreibungen />} />
         <Route path="/ausschreibungen/:id" element={<AusschreibungDetail />} />
         <Route path="/ausschreibungen/versicherer" element={<VersichererDBPage />} />
@@ -185,14 +156,6 @@ const AuthenticatedApp = () => {
         <Route path="/vergleichs-analysen" element={<VergleichsAnalysenListe />} />
         <Route path="/test/kkv" element={<TestKrankenkassenVergleich />} />
         <Route path="/compliance-schreiben" element={<ComplianceSchreiben />} />
-        <Route path="/buchhaltung" element={<AccountingEntries />} />
-        <Route path="/auszahlungen" element={<Payouts />} />
-        <Route path="/berater" element={<Advisors />} />
-        <Route path="/finanz-perioden" element={<FinancePeriods />} />
-        <Route path="/angebote" element={<Offers />} />
-        <Route path="/aenderungen" element={<MutationRequests />} />
-        <Route path="/dubletten" element={<DuplicateAlerts />} />
-        <Route path="/admin/governance-rules" element={<ProtectedRoute allowedRoles={['admin']}><GovernanceRules /></ProtectedRoute>} />
         <Route path="/chat-export" element={<ChatExport />} />
         <Route path="/archive-download" element={<ArchiveDownload />} />
 
@@ -208,21 +171,32 @@ const AuthenticatedApp = () => {
         <Route path="/admin/security" element={<ProtectedRoute allowedRoles={['admin']}><AdminSecurity /></ProtectedRoute>} />
         <Route path="/admin/backup" element={<ProtectedRoute allowedRoles={['admin']}><AdminBackup /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminHub /></ProtectedRoute>} />
+      </Route>
 
-        {/* ── LEGACY ROUTE REDIRECTS ───────────────────────────── */}
-        <Route path="/admin/team-zugriffsrechte" element={<Navigate to="/admin/team" replace />} />
-        <Route path="/admin/enterprise-control-center" element={<Navigate to="/admin/control-center" replace />} />
-        <Route path="/admin/enterprise-audit" element={<Navigate to="/admin/audit" replace />} />
-        <Route path="/admin-logs" element={<Navigate to="/admin/audit-logs" replace />} />
-        <Route path="/system-logs" element={<Navigate to="/admin/logs" replace />} />
+      {/* ── LEGACY ROUTE REDIRECTS ───────────────────────────── */}
+      <Route path="/admin/team-zugriffsrechte" element={<Navigate to="/admin/team" replace />} />
+      <Route path="/admin/enterprise-control-center" element={<Navigate to="/admin/control-center" replace />} />
+      <Route path="/admin/enterprise-audit" element={<Navigate to="/admin/audit" replace />} />
+      <Route path="/admin-logs" element={<Navigate to="/admin/audit-logs" replace />} />
+      <Route path="/system-logs" element={<Navigate to="/admin/logs" replace />} />
 
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </AppLayout>
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
   )
 }
 
 function App() {
+  React.useEffect(() => {
+    // Clear localStorage recovery flags only
+    localStorage.removeItem('recovery_mode_enabled')
+    localStorage.removeItem('bypass_visibility')
+    
+    // Force reload Krankenkassenvergleich page cache
+    if (window.location.pathname === '/krankenkassen-vergleich') {
+      sessionStorage.setItem('kkv_cache_buster', Date.now().toString())
+    }
+  }, [])
+
   return (
     <ErrorBoundary>
       <AuthProvider>
@@ -230,11 +204,8 @@ function App() {
           <Router>
             <ScrollToTop />
             <Routes>
-<Routes>
-  <Route path="/login" element={<Login />} />
-  <Route path="/portal/*" element={<AuthenticatedApp />} />
-  <Route path="/*" element={<AuthenticatedApp />} />
-</Routes>
+              <Route path="*" element={<AuthenticatedApp />} />
+            </Routes>
           </Router>
           <Toaster />
         </QueryClientProvider>

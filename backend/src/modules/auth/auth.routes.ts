@@ -1,5 +1,5 @@
 // ============================================================================
-// avaai Backend — Authentication Routes
+// VSVV Backend — Authentication Routes
 // Complete auth system: register, login, refresh, logout, me, forgot/reset password.
 // JWT access tokens (15min) + refresh tokens (7d) with rotation.
 // ============================================================================
@@ -416,12 +416,10 @@ const authRoutes: FastifyPluginAsync = async (app) => {
       },
     });
 
-    // NOTE: We log ONLY the user ID, NEVER the token itself.
-    // Logging reset tokens is a security risk — logs may be ingested by
-    // third-party services (e.g., Datadog, Splunk), exposing account access.
+    // In development, log the reset URL for convenience
     if (env.NODE_ENV === 'development') {
       app.log.info(
-        `[DEV] Password reset token generated for user: ${user.id}`,
+        `[DEV] Password reset link: http://localhost:${env.PORT}/reset-password?token=${resetToken}`,
       );
     }
 

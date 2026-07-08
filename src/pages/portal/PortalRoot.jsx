@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { useNavigate, Outlet } from 'react-router-dom'
 import PortalLayout from '@/components/portal/PortalLayout'
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { usePortalData } from '@/hooks/usePortalData'
-import { avaai } from '@/api/avaaiClient'
+import { base44 } from '@/api/base44Client'
 import { User, Mail, Phone, MapPin, Calendar, Briefcase, Globe, Shield, LogOut, Edit2, Check, X, AlertCircle } from 'lucide-react'
 
 const NAVY = '#0B1C2C'
@@ -67,7 +67,7 @@ export default function PortalProfile() {
     setSaving(true)
     setSaveError('')
     try {
-      await avaai.functions.invoke('getPortalData', {
+      await base44.functions.invoke('getPortalData', {
         customer_id: customerId,
         action: 'update_customer',
         update_data: form,
