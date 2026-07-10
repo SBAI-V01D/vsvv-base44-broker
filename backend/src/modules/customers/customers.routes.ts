@@ -88,20 +88,8 @@ const customersRoutes: FastifyPluginAsync = async (app) => {
       },
 
       validateUpdate: async (body, _id, _request) => {
-        // Clean up empty strings that would pass Zod but fail Prisma
-        // (Prisma enums / DateTime don't accept '')
-        if (body.birthdate === '') body.birthdate = undefined;
-        if (body.canton === '') body.canton = undefined;
-        if (body.advisor_id === '') body.advisor_id = undefined;
-        if (body.primary_customer_id === '') body.primary_customer_id = undefined;
         try {
-          // Parse AND use the result to strip unknown fields
-          // (frontend sends extra fields like contracts, id, created_at etc.
-          //  that would cause Prisma to throw)
-          const parsed = updateCustomerSchema.parse(body);
-          Object.keys(body).forEach(key => {
-            if (!(key in parsed)) delete (body as Record<string, unknown>)[key];
-          });
+          updateCustomerSchema.parse(body);
         } catch (err: unknown) {
           const zodErr = err as {
             errors?: Array<{ message: string }>;

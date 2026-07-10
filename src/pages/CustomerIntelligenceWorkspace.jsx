@@ -5,9 +5,8 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useToast } from '@/components/ui/use-toast'
 import {
   Plus, User, Building2, Upload, Download, Users, Search, X,
   AlertTriangle, TrendingUp, Target, Calendar, ChevronRight
@@ -195,7 +194,6 @@ export default function CustomerIntelligenceWorkspace() {
 
   const DISPLAY_LIMIT = 3;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -272,50 +270,28 @@ export default function CustomerIntelligenceWorkspace() {
     retry: false,
   });
 
-  const [saving, setSaving] = useState(false);
-
-  const handleCreate = async (cData) => {
-    setSaving(true);
-    try {
-      await base44.entities.Customer.create(cData);
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+  const createMutation = useMutation({
+    mutationFn: (data) => base44.entities.Customer.create(data),
+    onSuccess: (newCustomer) => {
+      queryClient.setQueryData(['customers'], (old = []) => [newCustomer, ...old]);
       setShowForm(false); setEditing(null);
-      toast({ title: 'Kunde erstellt' });
-    } catch (err) {
-      toast({ title: 'Fehler beim Erstellen', description: err.message, variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleUpdate = async (id, safeData) => {
-    console.log('[DEBUG] handleUpdate start', { id, safeData });
-    setSaving(true);
-    try {
-      console.log('[DEBUG] calling Customer.update...');
-      const result = await base44.entities.Customer.update(id, safeData);
-      console.log('[DEBUG] Customer.update result:', result);
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+    },
+  });
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Customer.update(id, data),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['customers'], (old = []) =>
+        old.map(c => c.id === updated.id ? updated : c)
+      );
       setShowForm(false); setEditing(null);
-      toast({ title: 'Gespeichert' });
-    } catch (err) {
-      console.error('[DEBUG] handleUpdate error:', err);
-      toast({ title: 'Fehler beim Speichern', description: err.message, variant: 'destructive' });
-    } finally {
-      console.log('[DEBUG] handleUpdate finally');
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await base44.entities.Customer.delete(id);
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast({ title: 'Kunde gelöscht', variant: 'destructive' });
-    } catch (err) {
-      toast({ title: 'Fehler beim Löschen', description: err.message, variant: 'destructive' });
-    }
-  };
+    },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Customer.delete(id),
+    onSuccess: (_, id) => {
+      queryClient.setQueryData(['customers'], (old = []) => old.filter(c => c.id !== id));
+    },
+  });
 
   const segments = useMemo(() => buildSegments(customers, tasks, contracts, documents), [customers, tasks, contracts, documents]);
   const primaryCustomers = useMemo(() => customers.filter(c => !c.is_family_member), [customers]);
@@ -409,20 +385,17 @@ export default function CustomerIntelligenceWorkspace() {
   const totalPages = Math.ceil(displayed.length / PAGE_SIZE);
   const pagedDisplayed = displayed.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const READ_ONLY_FIELDS = new Set([
-    'id', 'created_date', 'updated_date', 'customer_number',
-    'total_premium', 'archived', 'primary_customer', 'assigned_advisors',
-    'assigned_assistants', 'primary_advisor_id', 'access_level',
-  ])
-
   const handleSave = async (data) => {
-    console.log('[DEBUG] handleSave called', { editing: !!editing, data });
-    await new Promise(r => setTimeout(r, 500));
     if (editing) {
-      const safeData = Object.fromEntries(
-        Object.entries(data).filter(([k]) => !READ_ONLY_FIELDS.has(k))
-      )
-      await handleUpdate(editing.id, safeData); return;
+      const safeData = {
+        ...data,
+        organization_id: data.organization_id || editing.organization_id,
+        assigned_advisors: editing.assigned_advisors,
+        assigned_assistants: editing.assigned_assistants,
+        primary_advisor_id: editing.primary_advisor_id,
+        access_level: editing.access_level,
+      }
+      updateMutation.mutate({ id: editing.id, data: safeData }); return;
     }
     const orgId = data.organization_id || organizations[0]?.id || '';
     let cData = { ...data, organization_id: orgId };
@@ -432,7 +405,7 @@ export default function CustomerIntelligenceWorkspace() {
         if (r?.data?.customer_number) cData.customer_number = r.data.customer_number;
       } catch {}
     }
-    handleCreate(cData);
+    createMutation.mutate(cData);
   };
 
   const handleExport = () => {
@@ -723,7 +696,7 @@ export default function CustomerIntelligenceWorkspace() {
                     segments={segments}
                     matchedFamilyIds={matchedFamilyIds}
                     onEdit={(c) => { setEditing(c); setShowForm(true); }}
-                    onDelete={(id) => { if (confirm('Kunde löschen?')) handleDelete(id); }}
+                    onDelete={(id) => { if (confirm('Kunde löschen?')) deleteMutation.mutate(id); }}
                     allContracts={contracts}
                     allTasks={tasks}
                     allDocuments={documents}
@@ -770,9 +743,9 @@ export default function CustomerIntelligenceWorkspace() {
             </DialogTitle>
           </DialogHeader>
           {(editing?.customer_type === 'business' || (!editing && newCustomerType === 'business')) ? (
-            <CompanyForm customer={editing} onSave={handleSave} onCancel={() => { setShowForm(false); setEditing(null); }} saving={saving} />
+            <CompanyForm customer={editing} onSave={handleSave} onCancel={() => { setShowForm(false); setEditing(null); }} saving={createMutation.isPending || updateMutation.isPending} />
           ) : (
-            <CustomerForm customer={editing || { customer_type: 'private' }} primaryCustomers={primaryCustomers} onSave={handleSave} onCancel={() => { setShowForm(false); setEditing(null); }} saving={saving} />
+            <CustomerForm customer={editing || { customer_type: 'private' }} primaryCustomers={primaryCustomers} onSave={handleSave} onCancel={() => { setShowForm(false); setEditing(null); }} saving={createMutation.isPending || updateMutation.isPending} />
           )}
         </DialogContent>
       </Dialog>
