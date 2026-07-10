@@ -62,9 +62,9 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('*'),
 
   // ----- AI / OpenAI-compatible API -----
-  AI_BASE_URL: z.string().default('https://api.openai.com/v1'),
-  AI_API_KEY: z.string().default(''),
-  AI_MODEL: z.string().default('gpt-4o'),
+  AI_BASE_URL: z.string().default('https://aipi.coredy.ai/ollama/v1'),
+  AI_API_KEY: z.string().default('sk-sbai-aipi-v1-7f9e2b4a8c1d0e3f5b6a9d8c7f2e1a0b'),
+  AI_MODEL: z.string().default('ava-nucl3us'),
 });
 
 /** Type definition inferred from the Zod schema */
