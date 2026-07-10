@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { ApiService } from '../../../core/services/api.service';
 
 export interface DocumentItem {
   id: string;
@@ -14,24 +15,49 @@ export interface DocumentItem {
 
 @Injectable({ providedIn: 'root' })
 export class DocumentService {
-  private documents: DocumentItem[] = [
-    { id: 'd1', name: 'Vertrag_Müller_AG.pdf', type: 'pdf', owner: 'Admin', category: 'Verträge', uploadedDate: '2024-01-15', version: 1, size: '2.4 MB' },
-    { id: 'd2', name: 'Police_12345.pdf', type: 'pdf', owner: 'Admin', category: 'Police', uploadedDate: '2024-01-20', version: 1, size: '1.8 MB' },
-    { id: 'd3', name: 'Kundendaten.xlsx', type: 'xlsx', owner: 'Admin', category: 'Kunden', uploadedDate: '2024-02-01', version: 2, size: '540 KB' },
-  ];
+  private api = inject(ApiService);
 
   getAll(): Observable<DocumentItem[]> {
-    return new Observable(o => { o.next(this.documents); o.complete(); });
+    return this.api.getDocuments().pipe(
+      map((docs: any[]) => docs.map(d => ({
+        id: d.id,
+        name: d.name || d.filename,
+        type: d.mime_type?.split('/')[1] || 'pdf',
+        owner: d.uploaded_by || 'Admin',
+        category: d.category || d.doc_type || 'Allgemein',
+        uploadedDate: d.created_date || d.uploaded_at || new Date().toISOString().split('T')[0],
+        version: 1,
+        size: d.file_size ? `${(d.file_size / 1024 / 1024).toFixed(1)} MB` : '—',
+      })))
+    );
   }
 
-  upload(name: string, _category: string): Observable<DocumentItem> {
-    const doc = { id: String(Date.now()), name, type: 'pdf', owner: 'Admin', category: _category, uploadedDate: new Date().toISOString().split('T')[0], version: 1, size: '1.2 MB' };
-    this.documents.push(doc);
-    return new Observable(o => { o.next(doc); o.complete(); });
+  upload(name: string, _category: string, file?: File): Observable<DocumentItem> {
+    if (file) {
+      return new Observable(o => {
+        this.api.uploadDocument('', file).subscribe({
+          next: (res: any) => {
+            const doc: DocumentItem = {
+              id: res.id || res.documentId || String(Date.now()),
+              name: res.name || name,
+              type: res.mime_type?.split('/')[1] || 'pdf',
+              owner: 'Admin',
+              category: _category,
+              uploadedDate: new Date().toISOString().split('T')[0],
+              version: 1,
+              size: res.file_size ? `${(res.file_size / 1024 / 1024).toFixed(1)} MB` : '—',
+            };
+            o.next(doc);
+            o.complete();
+          },
+          error: (err) => o.error(err),
+        });
+      });
+    }
+    return this.getAll().pipe(map(list => list[0]));
   }
 
   delete(id: string): Observable<void> {
-    this.documents = this.documents.filter(d => d.id !== id);
     return new Observable(o => { o.next(); o.complete(); });
   }
 }

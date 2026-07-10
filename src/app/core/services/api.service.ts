@@ -40,6 +40,16 @@ export class ApiService {
     return this.request<T>('PATCH', path, { body });
   }
 
+  private upload<T>(path: string, formData: FormData): Observable<T> {
+    let url = this.resolvePath(path);
+    const token = this.auth.getAccessToken();
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.post<T>(url, formData, { headers }).pipe(
+      catchError(e => this.handleErr(e))
+    );
+  }
+
   // ------ Customer ------
   getCustomers(params?: HttpParams): Observable<Customer[]> {
     return this.get<Customer[]>(`${this.API_BASE}/customers`, params);
@@ -97,10 +107,12 @@ export class ApiService {
   uploadDocument(customerId: string, file: File): Observable<Document> {
     const fd = new FormData();
     fd.append('file', file);
-    return this.post<Document>(
-      `${this.API_BASE}/documents?entity_type=Customer&entity_id=${customerId}`,
-      fd
-    );
+    return this.upload<Document>(`${this.API_BASE}/upload/file`, fd);
+  }
+  uploadDocuments(files: File[]): Observable<{ files: Document[] }> {
+    const fd = new FormData();
+    files.forEach((f, i) => fd.append(`file_${i}`, f));
+    return this.upload<{ files: Document[] }>(`${this.API_BASE}/upload/files`, fd);
   }
 
   // Leads
