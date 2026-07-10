@@ -476,7 +476,11 @@ const integrations = {
       return request('POST', '/api/upload/file', {
         body: formData,
         isFormData: true,
-      }).then(res => ({ file_url: res.url || res.data?.url }))
+      }).then(res => {
+        const fileUrl = res.data?.url || res.url
+        if (!fileUrl) throw new Error('upload_failed: No file URL in response')
+        return { file_url: fileUrl }
+      })
     },
 
     UploadFiles: async ({ files, ...metadata }) => {

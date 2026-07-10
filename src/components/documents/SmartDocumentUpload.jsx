@@ -94,6 +94,26 @@ export default function SmartDocumentUpload({ open, onOpenChange, onSuccess }) {
     },
   })
 
+  const userFacingError = (err) => {
+    const msg = err?.response?.data?.error || err?.message || ''
+    if (msg.includes('pdftoppm') || msg.includes('poppler')) {
+      return 'Das PDF konnte nicht gelesen werden. Bitte stellen Sie sicher, dass es kein leeres oder defektes Dokument ist, und versuchen Sie es als Bild (JPG/PNG).'
+    }
+    if (msg.includes('fetch') || msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+      return 'Netzwerkfehler beim Hochladen. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.'
+    }
+    if (msg.includes('Unsupported file type')) {
+      return 'Dieser Dateityp wird nicht unterstützt. Bitte laden Sie ein PDF, JPG oder PNG hoch.'
+    }
+    if (msg.includes('file_url is required')) {
+      return 'Interner Fehler: Keine Datei-URL. Bitte laden Sie die Datei erneut hoch.'
+    }
+    if (msg.includes('timeout') || msg.includes('TIMEOUT')) {
+      return 'Die KI-Analyse hat zu lange gedauert. Bitte versuchen Sie es mit einem kleineren Dokument oder Bild.'
+    }
+    return msg || 'Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.'
+  }
+
   const handleFileSelect = (e) => {
     const f = e.target.files?.[0]
     if (f) {
@@ -128,7 +148,7 @@ export default function SmartDocumentUpload({ open, onOpenChange, onSuccess }) {
       onSuccess?.()
       handleClose()
     } catch (err) {
-      setErrorMsg(err?.message || 'Upload fehlgeschlagen')
+      setErrorMsg(userFacingError(err))
     } finally {
       setAnlageUploading(false)
     }
@@ -179,14 +199,15 @@ export default function SmartDocumentUpload({ open, onOpenChange, onSuccess }) {
       }
 
       if (!result?.success) {
-        throw new Error(result?.error || 'KI-Analyse fehlgeschlagen. Bitte prüfen Sie das Dokument.')
+        const aiErr = result?.error || 'KI-Analyse fehlgeschlagen. Bitte prüfen Sie das Dokument.'
+        throw new Error(aiErr)
       }
 
       setAnalysisResult(result)
       setStep('review')
     } catch (err) {
       console.error('Upload/Analyse Fehler:', err)
-      setErrorMsg(err?.response?.data?.error || err?.message || 'Fehler beim Upload')
+      setErrorMsg(userFacingError(err))
       setStep('upload')
     }
   }
