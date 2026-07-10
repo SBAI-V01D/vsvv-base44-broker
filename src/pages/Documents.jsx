@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   Search, Plus, MoreHorizontal, FileText, ExternalLink,
-  Zap, Paperclip, Tag, Trash2, Eye, RefreshCw, Clock, Download, AlertCircle, CheckCircle2, Sparkles, Loader2
+  Zap, Paperclip, Tag, Trash2, Eye, RefreshCw, Clock, Download, CheckCircle2, Sparkles, Loader2
 } from 'lucide-react'
 import DocumentTypeBadge from '@/components/documents/DocumentTypeBadge'
 import DocumentTagBadge from '@/components/documents/DocumentTagBadge'
