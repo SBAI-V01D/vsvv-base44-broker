@@ -1,0 +1,345 @@
+- generic:
+  - generic:
+    - generic:
+      - generic:
+        - complementary:
+          - generic:
+            - generic:
+              - paragraph: test@test.ch
+              - paragraph: Administrator
+          - navigation:
+            - generic:
+              - paragraph: Cockpit
+              - generic:
+                - link:
+                  - /url: /
+                  - generic: Dashboard
+                - link:
+                  - /url: /vertragsablaeufe
+                  - generic: Vertragsabläufe
+                - link:
+                  - /url: /aufgaben
+                  - generic: Aufgaben
+                  - generic: "7"
+            - generic:
+              - paragraph: Kunden
+              - generic:
+                - link:
+                  - /url: /kunden
+                  - generic: Kundenübersicht
+                - link:
+                  - /url: /verkaufschancen
+                  - generic: Verkaufschancen
+                  - generic: "5"
+                - link:
+                  - /url: /leads
+                  - generic: Leads
+                  - generic: "7"
+                - link:
+                  - /url: /krankenkassen-vergleich
+                  - generic: Krankenkassenvergleich
+                - link:
+                  - /url: /beratungsdossier
+                  - generic: Beratungsdossiers
+                - link:
+                  - /url: /portal
+                  - generic: Kundenportal
+            - generic:
+              - paragraph: Ausschreibungen
+              - generic:
+                - link:
+                  - /url: /ausschreibungen
+                  - generic: Ausschreibungen
+                - link:
+                  - /url: /ausschreibungen/versicherer
+                  - generic: Versicherer DB
+            - generic:
+              - paragraph: Verwaltung
+              - generic:
+                - link:
+                  - /url: /vertraege
+                  - generic: Verträge
+                - link:
+                  - /url: /antraege
+                  - generic: Anträge
+                - link:
+                  - /url: /dokumente
+                  - generic: Dokumente
+                  - generic: "6"
+                - link:
+                  - /url: /dokument-extraktor
+                  - generic: Dok.-Extraktor
+            - generic:
+              - paragraph: Finanzen & Team
+              - generic:
+                - link:
+                  - /url: /reporting
+                  - generic: Reporting
+                - link:
+                  - /url: /provisionen-courtagen
+                  - generic: Provisionen
+                - link:
+                  - /url: /finanz-dashboard
+                  - generic: Finanzdashboard
+            - generic:
+              - paragraph: Enterprise
+              - generic:
+                - link:
+                  - /url: /berater-organisation
+                  - generic: Berater & Partner
+            - generic:
+              - paragraph: Administration
+              - generic:
+                - link:
+                  - /url: /admin
+                  - generic: Admin Hub
+                - link:
+                  - /url: /admin/control-center
+                  - generic: System-Health
+                - link:
+                  - /url: /admin/team
+                  - generic: Team & Zugriffe
+                - link:
+                  - /url: /admin/audit
+                  - generic: Audit
+                - link:
+                  - /url: /admin/audit-logs
+                  - generic: Audit Logs
+                - link:
+                  - /url: /admin/system-check
+                  - generic: System Check
+                - link:
+                  - /url: /admin/logs
+                  - generic: System Logs
+                - link:
+                  - /url: /admin/improvements
+                  - generic: KI-Verbesserungen
+                - link:
+                  - /url: /admin/security
+                  - generic: Sicherheit
+                - link:
+                  - /url: /admin/backup
+                  - generic: Backup
+                - link:
+                  - /url: /admin/insurance-learning
+                  - generic: Lernzentrum
+          - generic:
+            - button:
+              - generic: Abmelden
+            - button
+      - generic:
+        - generic:
+          - button
+          - generic: Swiss Premium Broker
+        - main:
+          - navigation:
+            - link:
+              - /url: /
+              - generic: Dashboard
+            - generic: Dokumente
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading [level=1]: Dokumente (11)
+                      - paragraph: Intelligente Klassifizierung & automatische Antragserfassung
+                  - generic:
+                    - button: 3 löschen
+                    - button: 3 Status korrigieren
+                    - button: Dokument hochladen
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: "11"
+                      - paragraph: Total
+                  - generic:
+                    - generic:
+                      - paragraph: "0"
+                      - paragraph: Anträge
+                  - generic:
+                    - generic:
+                      - paragraph: "0"
+                      - paragraph: Anlagen
+                  - generic:
+                    - generic:
+                      - paragraph: "3"
+                      - paragraph: Prüfung erforderlich
+                - generic:
+                  - generic:
+                    - button:
+                      - text: Alle
+                      - generic: "11"
+                    - button:
+                      - text: Anträge
+                      - generic: "0"
+                    - button:
+                      - text: Anlagen
+                      - generic: "0"
+                    - button:
+                      - text: Prüfung nötig
+                      - generic: "3"
+                  - generic:
+                    - textbox:
+                      - /placeholder: Suche nach Name, Kunde...
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: Dokument
+                      - generic: Kunde
+                      - generic: Typ
+                      - generic: Kategorie
+                      - generic: Hochgeladen
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: König Lau_Police 2026 Helsana.pdf
+                      - generic: –
+                      - generic: Unbekannt
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: König Lau_Police 2026 Helsana.pdf
+                      - generic: –
+                      - generic: Prüfung erforderlich
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: König Lau_Police 2026 Helsana.pdf
+                      - generic: –
+                      - generic: Prüfung erforderlich
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: König Lau_Police 2026 Helsana.pdf
+                      - generic: Laurent Fabrice Koenig
+                      - generic: Unbekannt
+                      - generic: Vertrag
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: König Lau_Police 2026 Helsana.pdf
+                      - generic: –
+                      - generic: Prüfung erforderlich
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: König Lau_Police 2026 Helsana.pdf
+                      - generic: –
+                      - generic: Klassifizierung...
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: D3
+                      - generic: –
+                      - generic: Klassifizierung...
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: D2
+                      - generic: –
+                      - generic: Klassifizierung...
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: D1
+                      - generic: –
+                      - generic: Klassifizierung...
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: D1
+                      - generic: –
+                      - generic: Klassifizierung...
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: D1
+                      - generic: –
+                      - generic: Klassifizierung...
+                      - generic: –
+                      - generic:
+                        - button
+                        - button
+                        - button
+                        - button
+  - dialog [active] [ref=f3e556]:
+    - heading "Intelligenter Dokumenten-Upload – Neuantrag" [level=2] [ref=f3e557]:
+      - text: Intelligenter Dokumenten-Upload
+      - generic [ref=f3e558]: – Neuantrag
+    - generic [ref=f3e559]:
+      - generic [ref=f3e560]:
+        - generic [ref=f3e564]: Neuantrag
+        - button "Ändern" [ref=f3e565] [cursor=pointer]
+      - generic [ref=f3e566]:
+        - button "Neue Datei hochladen" [ref=f3e567] [cursor=pointer]
+        - button "Bestehendes Dokument" [ref=f3e571] [cursor=pointer]
+      - generic [ref=f3e574] [cursor=pointer]:
+        - paragraph [ref=f3e578]: PDF oder Bild hochladen
+        - paragraph [ref=f3e579]: Antragsdokument (PDF, JPG, PNG)
+      - generic [ref=f3e580]:
+        - button "Zurück" [ref=f3e581] [cursor=pointer]
+        - button "KI-Analyse starten" [disabled]
+    - button "Close" [ref=f3e551] [cursor=pointer]

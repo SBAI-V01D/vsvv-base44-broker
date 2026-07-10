@@ -1,0 +1,139 @@
+- generic [ref=f3e3]:
+  - complementary [ref=f3e5]:
+    - generic [ref=f3e11]:
+      - paragraph [ref=f3e12]: test@test.ch
+      - paragraph [ref=f3e13]: Administrator
+    - navigation [ref=f3e14]:
+      - generic [ref=f3e15]:
+        - paragraph [ref=f3e16]: Cockpit
+        - generic [ref=f3e17]:
+          - link "Dashboard" [ref=f3e18] [cursor=pointer]:
+            - /url: /
+          - link "Vertragsabläufe" [ref=f3e25] [cursor=pointer]:
+            - /url: /vertragsablaeufe
+          - link "Aufgaben" [ref=f3e32] [cursor=pointer]:
+            - /url: /aufgaben
+      - generic [ref=f3e37]:
+        - paragraph [ref=f3e38]: Kunden
+        - generic [ref=f3e39]:
+          - link "Kundenübersicht" [ref=f3e40] [cursor=pointer]:
+            - /url: /kunden
+          - link "Verkaufschancen" [ref=f3e47] [cursor=pointer]:
+            - /url: /verkaufschancen
+          - link "Leads" [ref=f3e52] [cursor=pointer]:
+            - /url: /leads
+          - link "Krankenkassenvergleich" [ref=f3e57] [cursor=pointer]:
+            - /url: /krankenkassen-vergleich
+          - link "Beratungsdossiers" [ref=f3e61] [cursor=pointer]:
+            - /url: /beratungsdossier
+          - link "Kundenportal" [ref=f3e65] [cursor=pointer]:
+            - /url: /portal
+      - generic [ref=f3e71]:
+        - paragraph [ref=f3e72]: Ausschreibungen
+        - generic [ref=f3e73]:
+          - link "Ausschreibungen" [ref=f3e74] [cursor=pointer]:
+            - /url: /ausschreibungen
+          - link "Versicherer DB" [ref=f3e77] [cursor=pointer]:
+            - /url: /ausschreibungen/versicherer
+      - generic [ref=f3e83]:
+        - paragraph [ref=f3e84]: Verwaltung
+        - generic [ref=f3e85]:
+          - link "Verträge" [ref=f3e86] [cursor=pointer]:
+            - /url: /vertraege
+          - link "Anträge" [ref=f3e91] [cursor=pointer]:
+            - /url: /antraege
+          - link "Dokumente" [ref=f3e96] [cursor=pointer]:
+            - /url: /dokumente
+          - link "Dok.-Extraktor" [ref=f3e101] [cursor=pointer]:
+            - /url: /dokument-extraktor
+      - generic [ref=f3e113]:
+        - paragraph [ref=f3e114]: Finanzen & Team
+        - generic [ref=f3e115]:
+          - link "Reporting" [ref=f3e116] [cursor=pointer]:
+            - /url: /reporting
+          - link "Provisionen" [ref=f3e119] [cursor=pointer]:
+            - /url: /provisionen-courtagen
+          - link "Finanzdashboard" [ref=f3e124] [cursor=pointer]:
+            - /url: /finanz-dashboard
+      - generic [ref=f3e127]:
+        - paragraph [ref=f3e128]: Enterprise
+        - link "Berater & Partner" [ref=f3e130] [cursor=pointer]:
+          - /url: /berater-organisation
+      - generic [ref=f3e135]:
+        - paragraph [ref=f3e136]: Administration
+        - generic [ref=f3e137]:
+          - link "Admin Hub" [ref=f3e138] [cursor=pointer]:
+            - /url: /admin
+          - link "System-Health" [ref=f3e142] [cursor=pointer]:
+            - /url: /admin/control-center
+          - link "Team & Zugriffe" [ref=f3e146] [cursor=pointer]:
+            - /url: /admin/team
+          - link "Audit" [ref=f3e151] [cursor=pointer]:
+            - /url: /admin/audit
+          - link "Audit Logs" [ref=f3e154] [cursor=pointer]:
+            - /url: /admin/audit-logs
+          - link "System Check" [ref=f3e161] [cursor=pointer]:
+            - /url: /admin/system-check
+          - link "System Logs" [ref=f3e166] [cursor=pointer]:
+            - /url: /admin/logs
+          - link "KI-Verbesserungen" [ref=f3e171] [cursor=pointer]:
+            - /url: /admin/improvements
+          - link "Sicherheit" [ref=f3e183] [cursor=pointer]:
+            - /url: /admin/security
+          - link "Backup" [ref=f3e187] [cursor=pointer]:
+            - /url: /admin/backup
+          - link "Lernzentrum" [ref=f3e191] [cursor=pointer]:
+            - /url: /admin/insurance-learning
+    - generic [ref=f3e195]:
+      - button "Abmelden" [ref=f3e196] [cursor=pointer]
+      - button "Einklappen" [ref=f3e201] [cursor=pointer]
+  - generic [ref=f3e204]:
+    - generic [ref=f3e205]:
+      - button [ref=f3e206] [cursor=pointer]
+      - generic [ref=f3e208]: Swiss Premium Broker
+    - main [ref=f3e209]:
+      - navigation "Breadcrumb" [ref=f3e210]:
+        - link "Dashboard" [ref=f3e211] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f3e218]: Dokumente
+      - generic [ref=f3e220]:
+        - generic [ref=f3e222]:
+          - generic [ref=f3e228]:
+            - heading "Dokumente (0)" [level=1] [ref=f3e229]
+            - paragraph [ref=f3e230]: Intelligente Klassifizierung & automatische Antragserfassung
+          - button "Dokument hochladen" [ref=f3e232] [cursor=pointer]
+        - generic [ref=f3e233]:
+          - generic [ref=f3e234]:
+            - generic [ref=f3e240]:
+              - paragraph [ref=f3e241]: "0"
+              - paragraph [ref=f3e242]: Total
+            - generic [ref=f3e247]:
+              - paragraph [ref=f3e248]: "0"
+              - paragraph [ref=f3e249]: Anträge
+            - generic [ref=f3e255]:
+              - paragraph [ref=f3e256]: "0"
+              - paragraph [ref=f3e257]: Anlagen
+            - generic [ref=f3e263]:
+              - paragraph [ref=f3e264]: "0"
+              - paragraph [ref=f3e265]: Prüfung erforderlich
+          - generic [ref=f3e266]:
+            - generic [ref=f3e267]:
+              - button "Alle 0" [ref=f3e268] [cursor=pointer]:
+                - text: Alle
+                - generic [ref=f3e269]: "0"
+              - button "Anträge 0" [ref=f3e270] [cursor=pointer]:
+                - text: Anträge
+                - generic [ref=f3e271]: "0"
+              - button "Anlagen 0" [ref=f3e272] [cursor=pointer]:
+                - text: Anlagen
+                - generic [ref=f3e273]: "0"
+              - button "Prüfung nötig 0" [ref=f3e274] [cursor=pointer]:
+                - text: Prüfung nötig
+                - generic [ref=f3e275]: "0"
+            - textbox "Suche nach Name, Kunde..." [ref=f3e280]
+          - generic [ref=f3e283]:
+            - generic [ref=f3e284]: Dokument
+            - generic [ref=f3e285]: Kunde
+            - generic [ref=f3e286]: Typ
+            - generic [ref=f3e287]: Kategorie
+            - generic [ref=f3e288]: Hochgeladen
