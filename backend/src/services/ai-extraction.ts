@@ -227,8 +227,9 @@ export async function extractFromDocument(
       throw new Error('Empty response from AI model');
     }
 
-    // 5. Parse JSON response
-    const parsed = JSON.parse(rawText) as {
+    // 5. Strip markdown fences (Ollama doesn't support response_format) and parse
+    const jsonText = stripMarkdownFence(rawText);
+    const parsed = JSON.parse(jsonText) as {
       policies?: ExtractedPolicy[];
       confidence?: number;
     };
@@ -316,7 +317,8 @@ export async function extractFromBuffer(
     const rawText = completion.choices?.[0]?.message?.content;
     if (!rawText) throw new Error('Empty response from AI model');
 
-    const parsed = JSON.parse(rawText) as {
+    const jsonText = stripMarkdownFence(rawText);
+    const parsed = JSON.parse(jsonText) as {
       policies?: ExtractedPolicy[];
       confidence?: number;
     };
@@ -334,6 +336,14 @@ export async function extractFromBuffer(
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Strip markdown code fences (```json ... ```) that some AI models wrap
+ * around JSON responses, especially when response_format is not supported.
+ */
+function stripMarkdownFence(text: string): string {
+  return text.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+}
 
 function getMimeFromExtension(fileName: string): string {
   const ext = fileName.split('.').pop()?.toLowerCase();
