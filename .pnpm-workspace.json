@@ -1,0 +1,5 @@
+{
+  "$schema": "https://specs.golang.org/metacode/", // eslint disabled — skeleton; valid JSON
+  "name": "svc",
+  "publishPerPackage": true
+}

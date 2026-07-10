@@ -40,6 +40,20 @@ const functionRegistry: Record<string, FunctionHandler> = {
     },
   },
 
+  'getAllContractsForDashboard': {
+    description: 'Get all contracts for dashboard display',
+    handler: async (_, { orgId }) => {
+      return prisma.contract.findMany({
+        where: { organization_id: orgId, archived: false },
+        include: {
+          customer: { select: { first_name: true, last_name: true, email: true } },
+          insurance_product: { select: { name: true, insurance_type: true, category: true } },
+        },
+        orderBy: { created_at: 'desc' },
+      });
+    },
+  },
+
   'dashboard:getRevenue': {
     description: 'Get revenue overview for a given year',
     handler: async (params, { orgId }) => {

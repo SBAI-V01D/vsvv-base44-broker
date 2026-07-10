@@ -244,8 +244,8 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
         file_url: document.file_url,
         file_name: document.name,
       })
-      if (!res.data?.success || !res.data?.structured) {
-        setStep('extract', 'error', 'Extraktion fehlgeschlagen')
+      if (!res || res.error) {
+        setStep('extract', 'error', res?.error || 'Extraktion fehlgeschlagen')
         setPipelineError('Datenextraktion fehlgeschlagen. Bitte erneut versuchen.')
         setProcessing(false)
         return
@@ -257,23 +257,64 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
       return
     }
 
-    const data = res.data
-    // PIPELINE TRACE: Log each transformation stage
-    const normalizedStage2 = data.normalized || {}
-    // applyLearned BYPASSED in pure mode (or when pure_mode flag is set)
-    const normalized = data.pure_mode ? normalizedStage2 : applyLearned(normalizedStage2)
-    console.log('[PIPELINE STAGE 1] RAW LLM:', JSON.stringify(data.structured?.versicherung?.produkte))
-    console.log('[PIPELINE STAGE 2] normalized.produkte:', JSON.stringify(normalizedStage2.produkte))
-    console.log('[PIPELINE STAGE 3] after applyLearned produkte:', JSON.stringify(normalized.produkte))
-    console.log('[PIPELINE pure_mode]:', data.pure_mode, '| status:', data.status)
-    setRawOcrText(data.raw_ocr_text || null)
-    setNormalizedRaw(normalizedStage2)
+    // Normalize engine result to legacy format
+    const engineResult = res.engineResult
+    const enginePersons = engineResult?.persons || res.persons || []
+    const engineProducts = engineResult?.products || res.products || []
+    const qualityScore = res.qualityScore || engineResult?.quality_score
+    const firstPerson = enginePersons[0] || {}
+    const firstProduct = engineProducts[0] || {}
+
+    const normalized = {
+      first_name:                firstPerson.person_name?.split(' ').slice(0, -1).join(' ') || '',
+      last_name:                 firstPerson.person_name?.split(' ').slice(-1).join(' ') || '',
+      birthdate:                 firstPerson.birthdate || '',
+      phone:                     firstPerson.phone || '',
+      email:                     firstPerson.email || '',
+      street:                    firstPerson.street || '',
+      zip_code:                  firstPerson.zip_code || '',
+      city:                      firstPerson.city || '',
+      insurer:                   engineResult?.insurer || res.insurer || '',
+      contract_start_date:       firstProduct?.start_date || '',
+      contract_end_date:         firstProduct?.end_date || '',
+      premium_monthly:           firstProduct?.premium_frequency === 'monatlich' ? firstProduct?.premium_amount : null,
+      premium_yearly:            firstProduct?.premium_frequency === 'jaehrlich' ? firstProduct?.premium_amount : null,
+      franchise:                 String(firstProduct?.deductible ?? (engineProducts.length > 0 ? engineProducts[0]?.deductible : '') ?? ''),
+      kassenmodell:              firstProduct?.model || '',
+      zusatz_type:               firstProduct?.coverage_type || '',
+      product_label:             firstProduct?.product_name || '',
+      sparte:                    firstProduct?.insurance_type || '',
+      produkte:                  engineProducts.map(p => ({
+        name: p.product_name,
+        sparte: p.insurance_type,
+        praemie: p.premium_amount,
+        intervall: p.premium_frequency,
+        franchise: p.deductible,
+        modell: p.model,
+        zusatz_typ: p.coverage_type,
+      })),
+      company_name:              '',
+      sparte_detection_method:   'engine',
+    }
+
+    console.log('[PIPELINE] Engine result → normalized:', JSON.stringify(normalized))
+    setRawOcrText(null)
+    setNormalizedRaw(normalized)
     setNormalizedAfterLearned(normalized)
-    setExtraction({ ...data, normalized })
+    setExtraction({
+      success: true,
+      normalized,
+      structured: { versicherung: { produkte: normalized.produkte } },
+      confidence: qualityScore ? qualityScore.quality_score : Math.round(res.confidence * 100),
+      status: qualityScore?.status || 'unknown',
+      missing_fields: qualityScore?.warnings || [],
+      pure_mode: true,
+      raw_ocr_text: null,
+    })
 
     if (normalized.sparte) {
       setSparteLocked(true)
-      setSparteDetectionMethod(normalized.sparte_detection_method || 'extraction')
+      setSparteDetectionMethod('engine')
     }
 
     const flat = {
@@ -299,9 +340,8 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
     setForm(flat)
     originalRef.current = { ...flat }
     const finalProdukte = normalized.produkte || []
-    console.log('[PIPELINE STAGE 4] UI produkte state:', JSON.stringify(finalProdukte))
     setProdukte(finalProdukte)
-    setStep('extract', 'ok', `Konfidenz: ${data.confidence}% · ${data.status}`)
+    setStep('extract', 'ok', `Konfidenz: ${qualityScore ? qualityScore.quality_score : Math.round(res.confidence * 100)}% · ${qualityScore?.status || 'unknown'}`)
 
     // STEP 2: Match
     setStep('match', 'running')
@@ -342,18 +382,18 @@ export default function DocumentReviewPanel({ document, onClose, onSaved }) {
       }
     }
 
-    // ── AUTO MODE: Konfidenz >= 90 → direkt speichern, kein Review ────────────
-    if (data.confidence >= 90) {
-      setStep('review', 'ok', `Auto-Mode: Konfidenz ${data.confidence}% ≥ 90% → direkt verarbeiten`)
+    // ── AUTO MODE: Qualität >= 90 → direkt speichern, kein Review ────────────
+    const threshold = qualityScore?.quality_score || data.confidence
+    if (threshold >= 90) {
+      setStep('review', 'ok', `Auto-Mode: Qualität ${threshold}% ≥ 90% → direkt verarbeiten`)
       setPhase('auto_processing')
       setProcessing(false)
-      // Speichern mit den soeben gesetzten lokalen Werten (kein State-Read)
-      await doSaveAutoMode(data.normalized || {}, flat, normalized.produkte || [], candidates, topScore)
+      await doSaveAutoMode(normalized, flat, normalized.produkte || [], candidates, topScore)
       return
     }
 
-    // ── REVIEW MODE: Konfidenz < 90 → User muss prüfen ────────────────────────
-    setStep('review', 'waiting', `Konfidenz ${data.confidence}% < 90% → Bitte Daten prüfen`)
+    // ── REVIEW MODE: Qualität < 90 → User muss prüfen ────────────────────────
+    setStep('review', 'waiting', `Qualität ${threshold}% < 90% → Bitte Daten prüfen`)
     setPhase('review')
     setProcessing(false)
   }

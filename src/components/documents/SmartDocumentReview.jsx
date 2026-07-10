@@ -199,6 +199,9 @@ export default function SmartDocumentReview({ document, documentType, analysisRe
   }
 
   // ── KI-Zusammenfassung (Inline-Banner) ────────────────────────────────────
+  const engineResult = extracted?.engineResult || analysisResult?.engineResult
+  const qualityScore = extracted?.qualityScore || analysisResult?.qualityScore
+
   const AiBanner = () => {
     const name = extracted?.insured_is_different
       ? `${extracted.insured_first_name || ''} ${extracted.insured_last_name || ''}`.trim()
@@ -207,7 +210,7 @@ export default function SmartDocumentReview({ document, documentType, analysisRe
     return (
       <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-start gap-2">
         <Sparkles className="w-3.5 h-3.5 mt-0.5 text-primary flex-shrink-0" />
-        <div className="space-y-0.5">
+        <div className="space-y-0.5 flex-1">
           {name && <span className="font-medium text-slate-800">{name}</span>}
           {firstPol && (
             <span className="ml-2 text-slate-500">
@@ -217,6 +220,16 @@ export default function SmartDocumentReview({ document, documentType, analysisRe
           )}
           {extracted?.summary && <p className="text-slate-500 mt-0.5 line-clamp-1">{extracted.summary}</p>}
         </div>
+        {qualityScore && (
+          <span className={cn(
+            'text-[10px] px-1.5 py-0.5 rounded-full font-medium border flex-shrink-0 self-start',
+            qualityScore.status === 'high_quality' ? 'bg-green-50 text-green-700 border-green-200' :
+            qualityScore.status === 'review_recommended' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+            'bg-red-50 text-red-700 border-red-200'
+          )}>
+            {qualityScore.quality_score}% {qualityScore.status === 'high_quality' ? '✅' : qualityScore.status === 'review_recommended' ? '⚠️' : '🔴'}
+          </span>
+        )}
       </div>
     )
   }
@@ -648,7 +661,53 @@ export default function SmartDocumentReview({ document, documentType, analysisRe
           )}
         </div>
 
-        {/* Phase 1+2: Validierungsprotokoll */}
+        {/* Engine quality score */}
+        {qualityScore && qualityScore.warnings?.length > 0 && (
+          <div className="p-2.5 rounded-lg text-xs space-y-1 bg-amber-50 border border-amber-200">
+            <p className="font-semibold text-amber-800 uppercase tracking-wide text-[10px]">{qualityScore.quality_score}/100 — Qualitätswarnungen</p>
+            {qualityScore.warnings.map((w, i) => (
+              <p key={i} className="text-amber-700 flex items-start gap-1">
+                <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                {w}
+              </p>
+            ))}
+          </div>
+        )}
+
+        {/* Engine persons */}
+        {engineResult?.persons?.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Personen erkannt ({engineResult.persons.length})
+            </p>
+            {engineResult.persons.map((person, i) => (
+              <div key={i} className="p-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+                <p className="font-semibold">{person.person_name}{person.roles?.length > 0 ? ` — ${person.roles.join(', ')}` : ''}</p>
+                {person.birthdate && <p className="text-blue-700 mt-0.5">Geb. {person.birthdate}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Engine products */}
+        {engineResult?.products?.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Produkte erkannt ({engineResult.products.length})
+            </p>
+            {engineResult.products.map((prod, i) => (
+              <div key={i} className="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800">
+                <p className="font-semibold">{prod.product_name || prod.insurance_type || 'Produkt'}</p>
+                <p className="text-emerald-700 mt-0.5">
+                  {prod.insurance_type && `Typ: ${prod.insurance_type.toUpperCase()}`}
+                  {prod.premium_amount ? ` · CHF ${prod.premium_amount}/${prod.premium_frequency === 'jaehrlich' ? 'J' : 'M'}` : ''}
+                  {prod.deductible ? ` · Franchise: CHF ${prod.deductible}` : ''}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
         <ExtractionValidationPanel extracted={extracted} policies={activePolicies} />
 
         <div className="space-y-2">

@@ -1,23 +1,35 @@
 // ============================================================================
 // avaai Backend — AI Document Extraction Service
 //
-// Uses OpenAI SDK against aipi.coredy.ai (Ollama-compatible, model ava-nucl3us)
-// to extract structured insurance data from uploaded documents (PDF, PNG, JPG).
+// DEPRECATED — wraps InsuranceExtractionEngine for backward compatibility.
+// New code should import from insurance-extraction-engine.ts directly.
 //
-// Flow:
-//   1. Download file from S3 via presigned URL
-//   2. Convert PDF first page to PNG (if PDF)
-//   3. Send image as base64 to Vision API
-//   4. Parse structured JSON response
-//   5. Return typed ExtractionResult with confidence scores
+// This module converts the engine's InsuranceExtractionResult back into the
+// legacy ExtractionResult / ExtractedPolicy format so existing call sites
+// (document.worker.ts, functions.routes.ts, document.routes.ts) continue to
+// work without modification during the migration window.
 // ============================================================================
 
-import OpenAI from 'openai';
-import { env } from '../config/env.js';
-import { getFileUrl } from '../services/file-storage.js';
+export type {
+  InsuranceExtractionResult,
+  ExtractionEvidence,
+  ExtractedPerson,
+  ExtractedProduct,
+  DocumentClassification,
+  DocumentType,
+  PersonRole,
+  ExtractionQualityScore,
+  ExtractionVersion,
+  CustomerMatchResult,
+} from './insurance-extraction-engine.js';
+
+import {
+  analyzeDocument as engineAnalyzeDocument,
+  analyzeBuffer as engineAnalyzeBuffer,
+} from './insurance-extraction-engine.js';
 
 // ---------------------------------------------------------------------------
-// Types
+// Legacy Types (preserved for backward compatibility)
 // ---------------------------------------------------------------------------
 
 export interface ExtractedPolicy {
@@ -38,312 +50,141 @@ export interface ExtractedPolicy {
 export interface ExtractionResult {
   success: boolean;
   policies: ExtractedPolicy[];
-  confidence: number;           // overall confidence 0-1
+  confidence: number;
   error?: string;
-  rawResponse?: string;         // original AI response for debugging
+  rawResponse?: string;
+  // Engine metadata (optional — only present when engine produced the result)
+  engineResult?: import('./insurance-extraction-engine.js').InsuranceExtractionResult;
+  qualityScore?: import('./insurance-extraction-engine.js').ExtractionQualityScore;
+  version?: import('./insurance-extraction-engine.js').ExtractionVersion;
+  persons?: import('./insurance-extraction-engine.js').ExtractedPerson[];
+  products?: import('./insurance-extraction-engine.js').ExtractedProduct[];
 }
 
 // ---------------------------------------------------------------------------
-// OpenAI Client
+// Legacy Document Type Mapping
 // ---------------------------------------------------------------------------
 
-let _client: OpenAI | null = null;
-
-function getClient(): OpenAI {
-  if (!_client) {
-    _client = new OpenAI({
-      baseURL: env.AI_BASE_URL,
-      apiKey: env.AI_API_KEY,
-      timeout: 300_000, // 5min timeout for vision requests
-      maxRetries: 3,
-    });
-  }
-  return _client;
-}
-
-// ---------------------------------------------------------------------------
-// System Prompt — Swiss Insurance Expert
-// ---------------------------------------------------------------------------
-
-const SYSTEM_PROMPT = `Du bist ein Schweizer Versicherungsexperte. Analysiere das gezeigte Versicherungsdokument und extrahiere alle relevanten Daten im JSON-Format.
-
-Das Dokument ist ein PDF (erste Seite) oder Bild einer Versicherungspolice, eines Antrags oder einer Abrechnung aus der Schweiz.
-
-Extrahiere folgende Felder als JSON-Array "policies" (auch wenn nur eine Police vorhanden ist):
-
-- insurer: Versicherer-Name (z.B. "AXA", "SwissLife", "Mobiliar", "CSS", "Helsana", "Generali", "Allianz", "Zürich")
-- policyNumber: Police-/Vertragsnummer
-- policyHolder: Name der versicherten Hauptperson
-- insuredPersons: Array aller versicherten Personen (auch Familienmitglieder)
-- premium: Prämienbetrag in CHF (als Zahl, ohne Währungssymbol)
-- premiumInterval: "monatlich" oder "jaehrlich"
-- coverage: Array der versicherten Leistungen/Deckungen (z.B. ["Krankheitskosten", "Spital", "Zahn"])
-- deductible: Franchise in CHF (als Zahl)
-- model: Versicherungsmodell (z.B. "HMO", "Standard", "Hausarzt", "Telmed")
-- startDate: Versicherungsbeginn als ISO-Datum (YYYY-MM-DD)
-- endDate: Versicherungsende als ISO-Datum (YYYY-MM-DD, falls vorhanden)
-- documentType: Typ des Dokuments ("antrag", "police", "abrechnung", "unbekannt")
-
-Gib NUR das JSON-Objekt zurück, ohne zusätzlichen Text. Das Format:
-{
-  "policies": [...],
-  "confidence": 0.95
-}
-
-confidence ist deine Einschätzung (0-1) wie zuverlässig die Extraktion ist.
-Wenn du dir bei einem Feld unsicher bist, setze den Wert auf null.`;
+const DOC_TYPE_LEGACY_MAP: Record<string, 'antrag' | 'police' | 'abrechnung' | 'unbekannt'> = {
+  police: 'police',
+  offerte: 'antrag',
+  antrag: 'antrag',
+  neuantrag: 'antrag',
+  aenderungsantrag: 'antrag',
+  erneuerungsantrag: 'antrag',
+  praemienrechnung: 'abrechnung',
+  leistungsabrechnung: 'abrechnung',
+  korrespondenz: 'unbekannt',
+  kuendigung: 'unbekannt',
+  vertragsaenderung: 'unbekannt',
+  versicherungsnachweis: 'police',
+  unbekannt: 'unbekannt',
+};
 
 // ---------------------------------------------------------------------------
-// PDF → PNG Conversion (first page only)
+// Public API — Engine Delegates
 // ---------------------------------------------------------------------------
 
 /**
- * Try to convert first page of a PDF to a PNG buffer using pdftoppm.
- * Attempts multiple parameter sets for better compatibility.
- */
-async function pdfToPngBuffer(pdfBuffer: Buffer): Promise<Buffer> {
-  async function tryConvert(args: string[]): Promise<Buffer> {
-    const { spawn } = await import('node:child_process');
-    const { Readable } = await import('node:stream');
-
-    return new Promise((resolve, reject) => {
-      const proc = spawn('pdftoppm', args);
-      const chunks: Buffer[] = [];
-      let stderr = '';
-
-      proc.stdout.on('data', (chunk: Buffer) => chunks.push(chunk));
-      proc.stderr.on('data', (data: Buffer) => { stderr += data.toString(); });
-      proc.on('close', (code) => {
-        if (code !== 0) {
-          reject(new Error(`pdftoppm exit code ${code}: ${stderr}`));
-          return;
-        }
-        resolve(Buffer.concat(chunks));
-      });
-      proc.on('error', (err) => {
-        reject(new Error(`pdftoppm not available: ${err.message}. Install poppler-utils.`));
-      });
-
-      const stdin = new Readable();
-      stdin.push(pdfBuffer);
-      stdin.push(null);
-      stdin.pipe(proc.stdin);
-    });
-  }
-
-  // Primary attempt — high quality
-  try {
-    return await tryConvert([
-      '-png', '-r', '200', '-f', '1', '-l', '1',
-      '-singlefile', '-scale-to', '1024', '-auto-rotate',
-    ]);
-  } catch {
-    // Fallback — lower DPI, no auto-rotate
-    return tryConvert([
-      '-png', '-r', '150', '-f', '1', '-l', '1',
-      '-singlefile', '-scale-to', '1024',
-    ]);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Image to Base64 Data URL
-// ---------------------------------------------------------------------------
-
-function bufferToDataUrl(buffer: Buffer, mimeType: string): string {
-  const base64 = buffer.toString('base64');
-  return `data:${mimeType};base64,${base64}`;
-}
-
-// ---------------------------------------------------------------------------
-// Main Extraction Function
-// ---------------------------------------------------------------------------
-
-/**
- * Extract insurance document data from a file URL.
- *
- * @param fileKey  - S3 file key (orgId/uuid.ext)
- * @param mimeType - MIME type of the file (application/pdf, image/png, etc.)
- * @returns ExtractionResult with structured data
+ * Extract insurance document data from a file key (S3).
+ * Delegates to InsuranceExtractionEngine, then converts result to legacy format.
  */
 export async function extractFromDocument(
   fileKey: string,
   mimeType: string,
 ): Promise<ExtractionResult> {
-  const client = getClient();
-
   try {
-    // 1. Get presigned download URL
-    const fileUrl = await getFileUrl(fileKey, 300); // 5min expiry
-    const response = await fetch(fileUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to download file: ${response.statusText}`);
-    }
-    const fileBuffer = Buffer.from(await response.arrayBuffer());
-
-    // 2. Convert to image if PDF
-    let imageBuffer: Buffer;
-    let imageMimeType: string;
-
-    if (mimeType === 'application/pdf') {
-      imageBuffer = await pdfToPngBuffer(fileBuffer);
-      imageMimeType = 'image/png';
-    } else if (mimeType.startsWith('image/')) {
-      imageBuffer = fileBuffer;
-      imageMimeType = mimeType;
-    } else {
-      throw new Error(`Unsupported file type: ${mimeType}`);
-    }
-
-    // 3. Prepare image as data URL
-    const imageDataUrl = bufferToDataUrl(imageBuffer, imageMimeType);
-
-    // 4. Call AI Vision API
-    const completion = await client.chat.completions.create({
-      model: env.AI_MODEL,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: { url: imageDataUrl, detail: 'high' },
-            },
-            {
-              type: 'text',
-              text: 'Extrahiere die Versicherungsdaten aus diesem Dokument im JSON-Format.',
-            },
-          ],
-        },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.1, // low temperature for consistent extraction
-      max_tokens: 4096,
-    });
-
-    const rawText = completion.choices?.[0]?.message?.content;
-    if (!rawText) {
-      throw new Error('Empty response from AI model');
-    }
-
-    // 5. Strip markdown fences (Ollama doesn't support response_format) and parse
-    const jsonText = stripMarkdownFence(rawText);
-    const parsed = JSON.parse(jsonText) as {
-      policies?: ExtractedPolicy[];
-      confidence?: number;
-    };
-
-    if (!parsed.policies || parsed.policies.length === 0) {
-      return {
-        success: false,
-        policies: [],
-        confidence: 0,
-        error: 'Keine Versicherungsdaten im Dokument gefunden',
-        rawResponse: rawText,
-      };
-    }
-
-    return {
-      success: true,
-      policies: parsed.policies,
-      confidence: parsed.confidence ?? 0.7,
-      rawResponse: rawText,
-    };
+    const engineResult = await engineAnalyzeDocument(fileKey, mimeType);
+    return toLegacyResult(engineResult);
   } catch (error: any) {
-    const errorMessage = error.response?.data?.message || error.message || 'Unknown AI Extraction Error';
     return {
       success: false,
       policies: [],
       confidence: 0,
-      error: errorMessage,
+      error: error.message || 'Unknown AI Extraction Error',
     };
   }
 }
 
 /**
- * Extract from a file that's already in memory (for direct API calls).
+ * Extract from a file buffer (for direct API calls).
+ * Delegates to InsuranceExtractionEngine, then converts result to legacy format.
  */
 export async function extractFromBuffer(
   fileBuffer: Buffer,
   fileName: string,
   mimeType: string,
 ): Promise<ExtractionResult> {
-  // Determine MIME type from extension if not provided
   const resolvedMime = mimeType || getMimeFromExtension(fileName);
 
-  // Use the same logic but bypass S3 download
-  const client = getClient();
-
   try {
-    let imageBuffer: Buffer;
-    let imageMimeType: string;
-
-    if (resolvedMime === 'application/pdf') {
-      imageBuffer = await pdfToPngBuffer(fileBuffer);
-      imageMimeType = 'image/png';
-    } else if (resolvedMime.startsWith('image/')) {
-      imageBuffer = fileBuffer;
-      imageMimeType = resolvedMime;
-    } else {
-      throw new Error(`Unsupported file type: ${resolvedMime}`);
-    }
-
-    const imageDataUrl = bufferToDataUrl(imageBuffer, imageMimeType);
-
-    const completion = await client.chat.completions.create({
-      model: env.AI_MODEL,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: { url: imageDataUrl, detail: 'high' },
-            },
-            {
-              type: 'text',
-              text: 'Extrahiere die Versicherungsdaten aus diesem Dokument im JSON-Format.',
-            },
-          ],
-        },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.1,
-      max_tokens: 4096,
-    });
-
-    const rawText = completion.choices?.[0]?.message?.content;
-    if (!rawText) throw new Error('Empty response from AI model');
-
-    const jsonText = stripMarkdownFence(rawText);
-    const parsed = JSON.parse(jsonText) as {
-      policies?: ExtractedPolicy[];
-      confidence?: number;
-    };
-
-    if (!parsed.policies || parsed.policies.length === 0) {
-      return { success: false, policies: [], confidence: 0, error: 'Keine Daten gefunden', rawResponse: rawText };
-    }
-
-    return { success: true, policies: parsed.policies, confidence: parsed.confidence ?? 0.7, rawResponse: rawText };
+    const engineResult = await engineAnalyzeBuffer(fileBuffer, resolvedMime);
+    return toLegacyResult(engineResult);
   } catch (error: any) {
-    return { success: false, policies: [], confidence: 0, error: error.message };
+    return {
+      success: false,
+      policies: [],
+      confidence: 0,
+      error: error.message || 'Unknown AI Extraction Error',
+    };
   }
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Legacy Converter
 // ---------------------------------------------------------------------------
 
-/**
- * Strip markdown code fences (```json ... ```) that some AI models wrap
- * around JSON responses, especially when response_format is not supported.
- */
-function stripMarkdownFence(text: string): string {
-  return text.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+function toLegacyResult(engineResult: import('./insurance-extraction-engine.js').InsuranceExtractionResult): ExtractionResult {
+  if (!engineResult.success) {
+    return {
+      success: false,
+      policies: [],
+      confidence: 0,
+      error: engineResult.error || 'Extraction failed',
+      engineResult,
+      qualityScore: engineResult.quality_score,
+      version: engineResult.version,
+    };
+  }
+
+  // Convert the engine's legacy_policies field (already mapped in the engine)
+  const policies: ExtractedPolicy[] = engineResult.legacy_policies.length > 0
+    ? engineResult.legacy_policies.map((p: any) => ({
+        insurer: p.insurer || engineResult.insurer,
+        policyNumber: p.policyNumber || engineResult.policy_number,
+        policyHolder: p.policyHolder || null,
+        insuredPersons: p.insuredPersons || [],
+        premium: p.premium,
+        premiumInterval: p.premiumInterval as 'monatlich' | 'jaehrlich' | null,
+        coverage: p.coverage || [],
+        deductible: p.deductible,
+        model: p.model,
+        startDate: p.startDate,
+        endDate: p.endDate,
+        documentType: mapLegacyDocType(engineResult.classification.document_type),
+      }))
+    : [];
+
+  return {
+    success: true,
+    policies,
+    confidence: engineResult.legacy_confidence,
+    rawResponse: engineResult.raw_response,
+    engineResult,
+    qualityScore: engineResult.quality_score,
+    version: engineResult.version,
+    persons: engineResult.persons,
+    products: engineResult.products,
+  };
 }
+
+function mapLegacyDocType(docType: string): 'antrag' | 'police' | 'abrechnung' | 'unbekannt' {
+  return DOC_TYPE_LEGACY_MAP[docType] || 'unbekannt';
+}
+
+// ---------------------------------------------------------------------------
+// MIME Helper
+// ---------------------------------------------------------------------------
 
 function getMimeFromExtension(fileName: string): string {
   const ext = fileName.split('.').pop()?.toLowerCase();
@@ -358,3 +199,8 @@ function getMimeFromExtension(fileName: string): string {
     default: return 'application/octet-stream';
   }
 }
+
+export {
+  engineAnalyzeDocument as analyzeDocumentEngine,
+  engineAnalyzeBuffer as analyzeBufferEngine,
+};

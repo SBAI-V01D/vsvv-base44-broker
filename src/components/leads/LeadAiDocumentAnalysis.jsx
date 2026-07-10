@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 /**
  * KI-Dokumentenanalyse für Leads (Phase 1)
  * Analysiert hochgeladene Policen und füllt Lead-Felder automatisch vor.
+ * Nutzt InsuranceExtractionEngine über /api/functions/extractApplicationData.
  * KEINE Änderungen an Lifecycle, Guards oder Automationen.
  */
 export default function LeadAiDocumentAnalysis({ onDataExtracted, className }) {
@@ -46,66 +47,44 @@ export default function LeadAiDocumentAnalysis({ onDataExtracted, className }) {
     setError(null)
 
     try {
-      const extracted = await base44.integrations.Core.InvokeLLM({
-        prompt: `Du bist ein Schweizer Versicherungsexperte. Analysiere dieses Versicherungsdokument (Police oder Kundeninformation) und extrahiere alle relevanten Daten.
-
-Gib die Daten als JSON zurück. Wenn ein Feld nicht im Dokument vorhanden ist, lasse es leer (null).
-
-Analysiere besonders:
-- Persönliche Daten des Versicherungsnehmers
-- Versicherungsgesellschaft(en)
-- Policennummer(n)
-- Versicherungsarten/Sparten
-- Prämienhöhe (monatlich/jährlich)
-- Vertragslaufzeit (Beginn, Ende)
-- Kündigungsfristen
-- Deckungsumfang
-- Produkte/Tarife
-
-Dokument: ${name}`,
-        file_urls: [url],
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            person: {
-              type: 'object',
-              properties: {
-                first_name: { type: 'string' },
-                last_name: { type: 'string' },
-                birthdate: { type: 'string', description: 'Format YYYY-MM-DD' },
-                address: { type: 'string' },
-                phone: { type: 'string' },
-                email: { type: 'string' },
-              }
-            },
-            policies: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  insurer: { type: 'string' },
-                  policy_number: { type: 'string' },
-                  sparte: { type: 'string' },
-                  product: { type: 'string' },
-                  premium_monthly: { type: 'number' },
-                  premium_yearly: { type: 'number' },
-                  start_date: { type: 'string' },
-                  end_date: { type: 'string' },
-                  cancellation_deadline_months: { type: 'number' },
-                  coverage_summary: { type: 'string' },
-                }
-              }
-            },
-            summary: { type: 'string', description: 'Kurze Zusammenfassung des Dokuments auf Deutsch' },
-            confidence: { type: 'string', enum: ['high', 'medium', 'low'], description: 'Wie sicher ist die Erkennung?' },
-            missing_sparten: {
-              type: 'array',
-              items: { type: 'string' },
-              description: 'Potentiell fehlende Versicherungsarten basierend auf Profil'
-            }
-          }
-        }
+      const engineResult = await base44.functions.invoke('extractApplicationData', {
+        file_url: url,
+        file_name: name,
+        mime_type: name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
       })
+
+      if (!engineResult) throw new Error('Empty response from extraction engine')
+
+      // Convert engine result to UI format
+      const p = engineResult.persons?.[0] || {}
+      const policies = engineResult.products?.map((prod) => ({
+        insurer: engineResult.insurer,
+        policy_number: engineResult.policy_number,
+        sparte: prod.insurance_type,
+        product: prod.product_name,
+        premium_monthly: prod.premium_frequency === 'monatlich' ? prod.premium_amount : null,
+        premium_yearly: prod.premium_frequency === 'jaehrlich' ? prod.premium_amount : null,
+        start_date: prod.start_date,
+        end_date: prod.end_date,
+        cancellation_deadline_months: null,
+        coverage_summary: prod.coverage_type,
+      })) || []
+
+      const extracted = {
+        person: {
+          first_name: p.person_name?.split(' ').slice(0, -1).join(' ') || '',
+          last_name: p.person_name?.split(' ').slice(-1).join(' ') || '',
+          birthdate: p.birthdate || '',
+          address: [p.street, p.zip_code, p.city].filter(Boolean).join(', '),
+          phone: p.phone || '',
+          email: p.email || '',
+        },
+        policies,
+        summary: `${engineResult.classification.document_type} — ${policies.length} Produkt(e) erkannt`,
+        confidence: engineResult.quality_score.status === 'high_quality' ? 'high'
+          : engineResult.quality_score.status === 'review_recommended' ? 'medium' : 'low',
+        missing_sparten: [],
+      }
 
       setResult(extracted)
       setExpanded(true)
