@@ -10,6 +10,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { requireTenant } from '../../middleware/tenant.js';
 import { prisma } from '../../lib/prisma.js';
+import { extractFromBuffer } from '../../services/ai-extraction.js';
 
 // ---------------------------------------------------------------------------
 // Function Registry — maps function names to handler implementations
@@ -159,6 +160,34 @@ const functionRegistry: Record<string, FunctionHandler> = {
         take: limit,
         orderBy: { created_at: 'desc' },
       });
+    },
+  },
+
+  // ==========================================================================
+  // AI Document Analysis
+  // ==========================================================================
+
+  'smartDocumentAnalysis': {
+    description: 'Analyse a document with AI (general purpose)',
+    handler: async (params) => {
+      const { file_url, file_name, mime_type } = params as { file_url?: string; file_name?: string; mime_type?: string };
+      if (!file_url) throw new Error('file_url is required');
+      const response = await fetch(file_url);
+      if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      return extractFromBuffer(buffer, file_name || 'document', mime_type || 'application/pdf');
+    },
+  },
+
+  'extractApplicationData': {
+    description: 'Extract application form data from a document',
+    handler: async (params) => {
+      const { file_url, file_name, mime_type } = params as { file_url?: string; file_name?: string; mime_type?: string };
+      if (!file_url) throw new Error('file_url is required');
+      const response = await fetch(file_url);
+      if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      return extractFromBuffer(buffer, file_name || 'document', mime_type || 'application/pdf');
     },
   },
 
