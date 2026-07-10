@@ -98,50 +98,52 @@ Wenn du dir bei einem Feld unsicher bist, setze den Wert auf null.`;
 // ---------------------------------------------------------------------------
 
 /**
- * Convert first page of a PDF to PNG buffer.
- * Requires `pdftoppm` (poppler-utils) to be installed in the container.
- * Falls back to returning the raw buffer for non-PDF files.
+ * Try to convert first page of a PDF to a PNG buffer using pdftoppm.
+ * Attempts multiple parameter sets for better compatibility.
  */
 async function pdfToPngBuffer(pdfBuffer: Buffer): Promise<Buffer> {
-  const { spawn } = await import('node:child_process');
-  const { Readable } = await import('node:stream');
+  async function tryConvert(args: string[]): Promise<Buffer> {
+    const { spawn } = await import('node:child_process');
+    const { Readable } = await import('node:stream');
 
-  return new Promise((resolve, reject) => {
-    const proc = spawn('pdftoppm', [
-      '-png',         // output as PNG
-      '-r', '200',    // 200 DPI (good balance quality/size)
-      '-f', '1',      // first page
-      '-l', '1',      // last page (only first)
-      '-singlefile',  // single file output
-      '-scale-to', '1024', // max width
-      '-auto-rotate', // ensure document is oriented correctly
+    return new Promise((resolve, reject) => {
+      const proc = spawn('pdftoppm', args);
+      const chunks: Buffer[] = [];
+      let stderr = '';
+
+      proc.stdout.on('data', (chunk: Buffer) => chunks.push(chunk));
+      proc.stderr.on('data', (data: Buffer) => { stderr += data.toString(); });
+      proc.on('close', (code) => {
+        if (code !== 0) {
+          reject(new Error(`pdftoppm exit code ${code}: ${stderr}`));
+          return;
+        }
+        resolve(Buffer.concat(chunks));
+      });
+      proc.on('error', (err) => {
+        reject(new Error(`pdftoppm not available: ${err.message}. Install poppler-utils.`));
+      });
+
+      const stdin = new Readable();
+      stdin.push(pdfBuffer);
+      stdin.push(null);
+      stdin.pipe(proc.stdin);
+    });
+  }
+
+  // Primary attempt — high quality
+  try {
+    return await tryConvert([
+      '-png', '-r', '200', '-f', '1', '-l', '1',
+      '-singlefile', '-scale-to', '1024', '-auto-rotate',
     ]);
-
-    const chunks: Buffer[] = [];
-    proc.stdout.on('data', (chunk: Buffer) => chunks.push(chunk));
-    proc.stderr.on('data', (data: Buffer) => {
-      // pdftoppm sometimes writes to stderr even on success
-      // We only reject when the process exits with non-zero
-    });
-
-    proc.on('close', (code) => {
-      if (code !== 0) {
-        reject(new Error(`pdftoppm exit code ${code}`));
-        return;
-      }
-      resolve(Buffer.concat(chunks));
-    });
-
-    proc.on('error', (err) => {
-      reject(new Error(`pdftoppm not available: ${err.message}. Install poppler-utils.`));
-    });
-
-    // Pipe PDF buffer to stdin
-    const stdin = new Readable();
-    stdin.push(pdfBuffer);
-    stdin.push(null);
-    stdin.pipe(proc.stdin);
-  });
+  } catch {
+    // Fallback — lower DPI, no auto-rotate
+    return tryConvert([
+      '-png', '-r', '150', '-f', '1', '-l', '1',
+      '-singlefile', '-scale-to', '1024',
+    ]);
+  }
 }
 
 // ---------------------------------------------------------------------------
