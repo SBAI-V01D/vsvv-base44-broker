@@ -543,6 +543,7 @@ async function importContracts() {
         cancellation_deadline: parseDate(r[cancelDeadlineIdx]),
         renewal_status: renewalStatus ?? 'none',
         assigned_broker: cleanStr(r[brokerIdx]),
+        insurance_type: 'other',
       },
     })
     imported++
@@ -661,6 +662,7 @@ async function importExcel() {
             premium_monthly: premiumVal,
             status: 'active',
             organization_id: ORG_ID,
+            insurance_type: 'other',
           },
         })
       }
@@ -716,7 +718,7 @@ async function importDocuments() {
         file_size: fileStats?.size ?? 0,
         mime_type: 'application/pdf',
         category: 'contract',
-        doc_type: 'police',
+        doc_type: 'unbekannt',
         classification_status: 'ausstehend',
         customer_id: customerId || undefined,
         organization_id: ORG_ID,

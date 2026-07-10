@@ -285,6 +285,7 @@ async function importContracts() {
         cancellation_deadline: parseDate(row[cancelDeadlineIdx]),
         renewal_status: renewalStatus ?? 'none',
         assigned_broker: cleanStr(row[brokerIdx]),
+        insurance_type: 'other',
       },
     })
     imported++
@@ -561,6 +562,7 @@ async function importExcel() {
             premium_monthly: premiumIdx >= 0 ? parseFloat(String(row[premiumIdx]).replace(/[^0-9.,]/g, '').replace(',', '.')) || 0 : 0,
             status: 'active',
             organization_id: ORG_ID,
+            insurance_type: 'other',
           },
         })
       }

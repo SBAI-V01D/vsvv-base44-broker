@@ -182,6 +182,22 @@ export function emitEntityEvent(
 }
 
 /**
+ * Emit an event to all members of an organization.
+ *
+ * @param event          - The event name (e.g. "extraction:complete")
+ * @param data           - The payload to send
+ * @param organizationId - Organization ID for tenant-scoped broadcast
+ */
+export function emitToOrganization(
+  event: string,
+  data: Record<string, unknown>,
+  organizationId: string,
+): void {
+  if (!io) return;
+  io.to(`org:${organizationId}`).emit(event, data);
+}
+
+/**
  * Gracefully shut down the Socket.io server.
  */
 export async function closeSocketServer(): Promise<void> {

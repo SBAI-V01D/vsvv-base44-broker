@@ -97,6 +97,7 @@ const applicationsRoutes: FastifyPluginAsync = async (app) => {
           end_date: appRecord.contract_end_date,
           source_application_id: appRecord.id,
           assigned_broker: appRecord.assigned_broker,
+          insurance_type: 'other',
         },
       })
       await prisma.application.update({

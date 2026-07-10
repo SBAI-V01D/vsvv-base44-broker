@@ -60,6 +60,11 @@ const envSchema = z.object({
 
   // ----- CORS -----
   CORS_ORIGIN: z.string().default('*'),
+
+  // ----- AI / OpenAI-compatible API -----
+  AI_BASE_URL: z.string().default('https://api.openai.com/v1'),
+  AI_API_KEY: z.string().default(''),
+  AI_MODEL: z.string().default('gpt-4o'),
 });
 
 /** Type definition inferred from the Zod schema */
