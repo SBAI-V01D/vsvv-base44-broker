@@ -204,6 +204,8 @@ enum DocumentProcessingStage {
 enum DocumentDocType {
   antrag
   anlage
+  police
+  abrechnung
   unbekannt
 
   @@map("document_doc_type")

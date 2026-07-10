@@ -62,14 +62,14 @@ export interface ExtractionResult {
 const DOC_TYPE_MAP: Record<string, string> = {
   antrag: 'antrag',
   anlage: 'anlage',
-  police: 'unbekannt',
-  abrechnung: 'unbekannt',
+  police: 'police',
+  abrechnung: 'abrechnung',
 }
 
-function mapDocType(aiType: string | undefined | null): 'antrag' | 'anlage' | 'unbekannt' {
+function mapDocType(aiType: string | undefined | null): 'antrag' | 'anlage' | 'police' | 'abrechnung' | 'unbekannt' {
   if (!aiType) return 'unbekannt'
   const lower = aiType.toLowerCase().trim()
-  return (DOC_TYPE_MAP[lower] as 'antrag' | 'anlage' | 'unbekannt') || 'unbekannt'
+  return (DOC_TYPE_MAP[lower] as 'antrag' | 'anlage' | 'police' | 'abrechnung' | 'unbekannt') || 'unbekannt'
 }
 
 // ---------------------------------------------------------------------------
