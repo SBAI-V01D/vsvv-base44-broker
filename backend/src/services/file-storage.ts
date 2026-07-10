@@ -90,8 +90,7 @@ export async function uploadFile(
     'X-Amz-Meta-Original-Name': encodeURIComponent(originalName),
   });
 
-  // Generate a presigned URL valid for 1 hour
-  const url = await client.presignedGetObject(BUCKET_NAME, key, 60 * 60);
+  const url = `/api/uploads/${encodeURIComponent(key)}`;
 
   return {
     key,
@@ -124,11 +123,44 @@ export async function deleteFile(key: string): Promise<void> {
 }
 
 /**
- * Get a presigned URL for downloading a file.
+ * Get a presigned URL for downloading a file (for server-to-server use).
  */
 export async function getFileUrl(key: string, expirySeconds = 3600): Promise<string> {
   const client = getClient();
   return client.presignedGetObject(BUCKET_NAME, key, expirySeconds);
+}
+
+/**
+ * Get a file's content as a Buffer (for server-side processing).
+ */
+export async function getFileBuffer(key: string): Promise<{ buffer: Buffer; mimeType: string }> {
+  const client = getClient();
+  const stream = await client.getObject(BUCKET_NAME, key);
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  const stat = await client.statObject(BUCKET_NAME, key);
+  return {
+    buffer: Buffer.concat(chunks),
+    mimeType: stat.metaData?.['content-type'] || 'application/octet-stream',
+  };
+}
+
+/**
+ * Resolve a file buffer from either a relative API path or a presigned URL.
+ * Handles both old (presigned) and new (same-origin) file_url formats.
+ */
+export async function resolveFileBuffer(fileUrl: string): Promise<Buffer> {
+  const match = fileUrl.match(/^\/api\/uploads\/(.+)/);
+  if (match) {
+    const key = decodeURIComponent(match[1]);
+    const { buffer } = await getFileBuffer(key);
+    return buffer;
+  }
+  const response = await fetch(fileUrl);
+  if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+  return Buffer.from(await response.arrayBuffer());
 }
 
 export default {
@@ -136,4 +168,6 @@ export default {
   uploadFiles,
   deleteFile,
   getFileUrl,
+  getFileBuffer,
+  resolveFileBuffer,
 };

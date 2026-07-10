@@ -8,7 +8,7 @@
 
 import type { FastifyPluginAsync } from 'fastify';
 import multipart from '@fastify/multipart';
-import { uploadFile, uploadFiles, deleteFile } from '../../services/file-storage.js';
+import { uploadFile, uploadFiles, deleteFile, getFileBuffer } from '../../services/file-storage.js';
 import { requireTenant } from '../../middleware/tenant.js';
 import { prisma } from '../../lib/prisma.js';
 import { emitEntityEvent } from '../../lib/socket.js';
@@ -23,6 +23,35 @@ const uploadRoutes: FastifyPluginAsync = async (app) => {
       files: 10,
     },
   });
+
+  // ---------------------------------------------------------------------------
+  // GET /api/uploads/* — Serve a file through the API (same-origin proxy)
+  // This avoids CSP issues and Docker-internal hostnames from presigned URLs.
+  // The wildcard captures the full key (org-id/uuid.ext) even with slashes.
+  // ---------------------------------------------------------------------------
+  app.get(
+    '/api/uploads/*',
+    {
+      preHandler: [app.requireAuth, requireTenant],
+    },
+    async (request, reply) => {
+      const raw = (request.params as Record<string, string>)['*'];
+      if (!raw) return reply.code(400).send({ error: 'bad_request', message: 'Missing file key' });
+      const key = decodeURIComponent(raw);
+      const doc = await prisma.document.findFirst({
+        where: { file_key: key, organization_id: request.orgId! },
+      });
+      if (!doc) {
+        return reply.code(404).send({ error: 'not_found', message: 'File not found' });
+      }
+      const { buffer, mimeType } = await getFileBuffer(key);
+      return reply
+        .header('Content-Type', mimeType)
+        .header('Content-Disposition', `inline; filename="${doc.name}"`)
+        .header('Cache-Control', 'private, max-age=3600')
+        .send(buffer);
+    },
+  );
 
   // ---------------------------------------------------------------------------
   // POST /api/upload/file — Single file upload
