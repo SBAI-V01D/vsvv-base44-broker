@@ -36,3 +36,5 @@ base44
 
 .env
 .vite
+.playwright-mcp/
+login-page.txt

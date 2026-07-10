@@ -1,4 +1,0 @@
-- generic [active] [ref=f38e1]:
-  - heading "500 Internal Server Error" [level=1] [ref=f38e3]
-  - separator [ref=f38e4]
-  - generic [ref=f38e5]: nginx/1.18.0 (Ubuntu)
