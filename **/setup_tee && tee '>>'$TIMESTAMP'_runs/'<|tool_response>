@@ -1,0 +1,1 @@
+export SCRIPT=build && cd ~/.npm/_global/cli-tools/.cache/${NPM}</* /node --exec tsconfig.json validate all src --noEmit || echo (400) 5>/dev/null; sleep .1;; cat /tmp/397b$^h*$typecheck.tsr6 *>&2 | grep -n error

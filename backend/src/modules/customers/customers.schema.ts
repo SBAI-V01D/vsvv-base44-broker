@@ -84,10 +84,10 @@ export const createCustomerSchema = z.object({
   street: z.string().optional().or(z.literal('')),
   zip_code: z.string().optional().or(z.literal('')),
   city: z.string().optional().or(z.literal('')),
-  canton: SwissCantonEnum.optional(),
+  canton: SwissCantonEnum.optional().or(z.literal('')),
 
   // --- Personal Details ---
-  birthdate: z.string().optional(), // ISO date string
+  birthdate: z.string().optional().or(z.literal('')), // ISO date string
   ahv_number: z
     .string()
     .regex(AHV_REGEX, 'Invalid AHV format — expected ###.##.###.###')
@@ -119,7 +119,7 @@ export const createCustomerSchema = z.object({
   notes: z.string().optional().or(z.literal('')),
 
   // --- Advisors ---
-  advisor_id: z.string().uuid('Invalid advisor ID').optional().nullable(),
+  advisor_id: z.string().uuid('Invalid advisor ID').optional().nullable().or(z.literal('')),
 
   // --- Family Relations ---
   is_family_member: z.boolean().default(false),
@@ -127,7 +127,8 @@ export const createCustomerSchema = z.object({
     .string()
     .uuid('Invalid primary customer ID')
     .optional()
-    .nullable(),
+    .nullable()
+    .or(z.literal('')),
   family_role: z
     .enum(['primary', 'spouse', 'child', 'parent', 'other'])
     .default('primary'),

@@ -228,6 +228,14 @@ export default function CustomerForm({ customer, primaryCustomers = [], onSave, 
    // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [customer?.id])
 
+   // Auto-lookup when zip_code changes (e.g. new customer typing PLZ)
+   useEffect(() => {
+     if (form.zip_code && form.zip_code.length === 4 && (!form.city || !form.canton)) {
+       doPlzLookup(form.zip_code, true)
+     }
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [form.zip_code])
+
    // Auto-sync from primary customer for family members
    const [syncedFromPrimary, setSyncedFromPrimary] = useState([])
 
@@ -348,6 +356,7 @@ export default function CustomerForm({ customer, primaryCustomers = [], onSave, 
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    console.log('[DEBUG] CustomerForm handleSubmit', { isNewCustomer: !!customer?.id, onSave: typeof onSave, saving });
     if (isNewCustomer && !form.advisor_id) {
       setAdvisorError('Pflichtfeld: Kunden muss ein Berater zugewiesen werden.')
       return

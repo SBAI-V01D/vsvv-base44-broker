@@ -1,0 +1,1 @@
+**Ticket #451391-9cba80ddee:** add app icon/shortcut — now live after the build & client deploy

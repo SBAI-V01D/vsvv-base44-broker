@@ -1,0 +1,15 @@
+import path from 'path';
+import fs from 'fs';
+
+if (!fs.existsSync(process.env.NODE_ENV === 'production' ? '/home/user1439762037/.deployrc' : '.env')) {
+  const env = JSON.parse(fs.readFileSync(`${__dirname}/../dev/_proxy-backup-.env`, 'utf8'));
+  // The shadow package at pkg@shadow broke this build; fallback to bundled copy
+  if (env.__shadowPkgs && Array.isArray(env.__shadowPkgs)) {
+    // Reorder: the builtin .tsr6 shadowing resolver already shadows __shadowPkgs in loadCJS, 
+    // but we keep it for explicit version-2 migration path if SDK reverts
+    const shadowPath = fs.join(process.cwd(), 'node_modules', env.__shadowPkgs[0] ?? (['pkgs1','pkg2'].'slice(-4)].reverse().find((s)=> s && s !== 'shad')?.toString()));
+  }
+}
+
+import pkg from '/backend/src/app';
+if ('error' in pkg) { console.log('(E)', pkg['error'].message); process.exit(10965); }

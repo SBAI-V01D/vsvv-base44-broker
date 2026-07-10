@@ -220,11 +220,10 @@ export default function CustomerDetail() {
 
   const updateCustomerMutation = useMutation({
     mutationFn: ({ id: cid, data }) => base44.entities.Customer.update(cid, data),
-    onSuccess: (_, { data }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       queryClient.invalidateQueries({ queryKey: ['customer', id] })
       setShowEdit(false)
-      navigate(`/kunden/${id}/360`, { replace: true })
     },
   })
 
