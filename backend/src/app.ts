@@ -10,6 +10,7 @@ import { prisma } from './lib/prisma.js';
 import { createCrudRoutes } from './lib/crud-factory.js';
 import { ENTITY_REGISTRY } from './lib/entity-registry.js';
 import { initSocketServer, closeSocketServer } from './lib/socket.js';
+import { startAuditWorker, stopAuditWorker } from './workers/audit.worker.js';
 
 // Middleware
 import { PUBLIC_ROUTES, requireAuth } from './middleware/auth.js';
@@ -31,6 +32,7 @@ import leadsRoutes from './modules/leads/leads.routes.js';
 import applicationsRoutes from './modules/applications/applications.routes.js';
 import commissionsRoutes from './modules/commissions/commissions.routes.js';
 import documentRoutes from './modules/document/document.routes.js';
+import documentsRoutes from './modules/documents/documents.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
 import auditRoutes from './modules/audit/audit.routes.js';
 import backupRoutes from './modules/backup/backup.routes.js';
@@ -168,6 +170,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(applicationsRoutes);
   await app.register(commissionsRoutes);
   await app.register(documentRoutes);
+  await app.register(documentsRoutes);
   await app.register(adminRoutes);
   await app.register(auditRoutes);
   await app.register(backupRoutes);
@@ -181,6 +184,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   const shutdown = async (signal: string) => {
     app.log.info(`Received ${signal} — shutting down gracefully`);
     await closeSocketServer();
+    await stopAuditWorker();
     await prisma.$disconnect();
     await app.close();
     process.exit(0);
@@ -206,6 +210,8 @@ async function start(): Promise<void> {
 
     // Initialize Socket.io on top of Fastify's HTTP server
     initSocketServer(app);
+    // Start background workers
+    startAuditWorker();
   } catch (err) {
     app.log.fatal(err);
     process.exit(1);
