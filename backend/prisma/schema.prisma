@@ -1543,6 +1543,8 @@ model Customer {
   portal_password_hash      String?
   portal_must_change_password Boolean       @default(true)
   portal_password_last_changed DateTime?
+  portal_token              String?
+  portal_token_expires_at   DateTime?
   portal_last_login         DateTime?
   company_name              String?
   legal_form                String?
@@ -1722,6 +1724,7 @@ model Contract {
   @@index([organization_id, customer_id])
   @@index([organization_id, advisor_id])
   @@index([organization_id, renewal_status])
+  @@index([primary_broker_id])
   @@map("contract")
 }
 
@@ -1952,6 +1955,7 @@ model CommissionSplit {
   organization           Organization? @relation(fields: [organization_id], references: [id])
   commission_entry       CommissionEntry @relation(fields: [commission_entry_id], references: [id])
 
+  @@index([commission_entry_id])
   @@map("commission_split")
 }
 
@@ -2005,6 +2009,8 @@ model Document {
 
   @@index([organization_id, customer_id])
   @@index([organization_id, category])
+  @@index([linked_contract_id])
+  @@index([linked_application_id])
   @@map("document")
 }
 
@@ -2063,6 +2069,7 @@ model Lead {
   organization_id        String?
   status                 LeadStatus          @default(new)
   customer_id            String?
+  converted_to_customer_id String?
   notes                  String?
   last_contact_date      DateTime?
   converted_at           DateTime?
@@ -2087,6 +2094,7 @@ model Lead {
 
   @@index([organization_id, status])
   @@index([organization_id, advisor_id])
+  @@index([converted_to_customer_id])
   @@map("lead")
 }
 
@@ -2180,6 +2188,7 @@ model SystemLog {
   // Relations
   organization        Organization?  @relation(fields: [organization_id], references: [id])
 
+  @@index([source])
   @@map("system_log")
 }
 
@@ -2206,6 +2215,7 @@ model Notification {
   // Relations
   organization      Organization?    @relation(fields: [organization_id], references: [id])
 
+  @@index([recipient_email])
   @@map("notification")
 }
 
@@ -3362,6 +3372,8 @@ model DuplicateAlert {
   // Relations
   organization        Organization?           @relation(fields: [organization_id], references: [id])
 
+  @@index([primary_entity_id])
+  @@index([duplicate_entity_id])
   @@map("duplicate_alert")
 }
 
