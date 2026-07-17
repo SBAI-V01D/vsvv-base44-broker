@@ -22,7 +22,7 @@ const integrationsRoutes: FastifyPluginAsync = async (app) => {
         });
       }
 
-      await addJob(QueueName.EMAIL, {
+      await addJob(QueueName.EMAIL, 'send-email', {
         to,
         subject,
         body: body || '',

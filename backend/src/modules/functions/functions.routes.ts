@@ -14,6 +14,7 @@ import { requireTenant } from '../../middleware/tenant.js';
 import { prisma } from '../../lib/prisma.js';
 import { extractFromBuffer } from '../../services/ai-extraction.js';
 import { resolveFileBuffer } from '../../services/file-storage.js';
+import type { AuditEntityType, AuditEventType, InsuranceType, BackupType, BackupStatus, ErrorType, ErrorLogStatus } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
 // Function Registry — maps function names to handler implementations
@@ -49,7 +50,6 @@ const functionRegistry: Record<string, FunctionHandler> = {
         where: { organization_id: orgId, archived: false },
         include: {
           customer: { select: { first_name: true, last_name: true, email: true } },
-          insurance_product: { select: { name: true, insurance_type: true, category: true } },
         },
         orderBy: { created_at: 'desc' },
       });
@@ -266,7 +266,7 @@ const functionRegistry: Record<string, FunctionHandler> = {
           policy_number: policy_number || `POL-${Date.now()}`,
           start_date: start_date ? new Date(start_date) : new Date(),
           status: 'active',
-          product: application.product || '',
+          insurance_type: (application.insurance_type as InsuranceType) || 'private_liability',
           insurer: application.insurer || '',
         },
       });
@@ -374,7 +374,7 @@ const functionRegistry: Record<string, FunctionHandler> = {
           last_name: lead.last_name || '',
           email: lead.email || '',
           phone: lead.phone || '',
-          source: 'lead_conversion',
+          notes: 'Converted from lead',
         },
       });
 
@@ -476,10 +476,10 @@ const functionRegistry: Record<string, FunctionHandler> = {
           trigger_type: 'manual',
           actor_type: 'user',
           actor_name: userId,
-          entity_type: entity_type || 'unknown',
+          entity_type: (entity_type || 'customer') as AuditEntityType,
           entity_id: entity_id || '',
-          action: action || 'unknown',
-          details: details || '',
+          action: (action || 'update') as AuditEventType,
+          error_message: details || '',
           organization_id: orgId,
         },
       });
@@ -500,10 +500,12 @@ const functionRegistry: Record<string, FunctionHandler> = {
 
       const errorLog = await prisma.errorLog.create({
         data: {
-          message: message || 'No message',
-          stack: stack || '',
-          source: source || 'frontend',
-          context: context || '',
+          error_type: 'application' as ErrorType,
+          error_message: message || 'No message',
+          stack_trace: stack || '',
+          occurred_at: new Date(),
+          function_name: source || 'frontend',
+          status: 'new' as ErrorLogStatus,
           organization_id: orgId,
         },
       });
@@ -519,9 +521,10 @@ const functionRegistry: Record<string, FunctionHandler> = {
 
       const backup = await prisma.backupLog.create({
         data: {
-          type: type || 'manual',
-          status: 'completed',
-          notes: notes || '',
+          backup_type: (type === 'full' ? 'full' : 'incremental') as BackupType,
+          status: 'completed' as BackupStatus,
+          timestamp: new Date(),
+          compliance_tags: notes || '',
           organization_id: orgId,
         },
       });
