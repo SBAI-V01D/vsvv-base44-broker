@@ -17,7 +17,7 @@ const enterpriseRoutes: FastifyPluginAsync = async (app) => {
         update: ['admin'],
         delete: ['admin'],
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // Incident bearbeiten

@@ -24,6 +24,20 @@ import healthRoutes from './modules/health/health.routes.js';
 import uploadRoutes from './modules/upload/upload.routes.js';
 // Functions routes
 import functionsRoutes from './modules/functions/functions.routes.js';
+// Custom business-logic route modules
+import contractsRoutes from './modules/contracts/contracts.routes.js';
+import tasksRoutes from './modules/tasks/tasks.routes.js';
+import leadsRoutes from './modules/leads/leads.routes.js';
+import applicationsRoutes from './modules/applications/applications.routes.js';
+import commissionsRoutes from './modules/commissions/commissions.routes.js';
+import documentRoutes from './modules/document/document.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
+import auditRoutes from './modules/audit/audit.routes.js';
+import backupRoutes from './modules/backup/backup.routes.js';
+import enterpriseRoutes from './modules/enterprise/enterprise.routes.js';
+import krankenkassenRoutes from './modules/krankenkassen/krankenkassen.routes.js';
+import portalRoutes from './modules/portal/portal.routes.js';
+import integrationsRoutes from './modules/integrations/integrations.routes.js';
 
 // ---------------------------------------------------------------------------
 // VSVV Backend — Fastify Application Bootstrap
@@ -148,6 +162,19 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '' });
   await app.register(uploadRoutes);
   await app.register(functionsRoutes);
+  await app.register(contractsRoutes);
+  await app.register(tasksRoutes);
+  await app.register(leadsRoutes);
+  await app.register(applicationsRoutes);
+  await app.register(commissionsRoutes);
+  await app.register(documentRoutes);
+  await app.register(adminRoutes);
+  await app.register(auditRoutes);
+  await app.register(backupRoutes);
+  await app.register(enterpriseRoutes);
+  await app.register(krankenkassenRoutes);
+  await app.register(portalRoutes);
+  await app.register(integrationsRoutes);
 
   // ----- Graceful Shutdown -------------------------------------------------
 

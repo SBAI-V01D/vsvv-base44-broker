@@ -21,7 +21,7 @@ const leadsRoutes: FastifyPluginAsync = async (app) => {
       include: {
         customer: { select: { id: true, first_name: true, last_name: true, email: true, phone: true } },
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // Lead qualifizieren (Status-Übergang)

@@ -373,6 +373,50 @@ const authRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // -------------------------------------------------------------------------
+  // PATCH /api/auth/me — Update current user profile
+  // -------------------------------------------------------------------------
+  app.patch(
+    '/api/auth/me',
+    { preHandler: [app.requireAuth] },
+    async (request, reply) => {
+      const body = (request.body ?? {}) as Record<string, unknown>;
+      const allowedFields: Record<string, unknown> = {};
+
+      if (typeof body.name === 'string') {
+        allowedFields.name = body.name;
+      }
+      if (typeof body.email === 'string') {
+        allowedFields.email = body.email;
+      }
+
+      if (Object.keys(allowedFields).length === 0) {
+        return reply.status(400).send({
+          statusCode: 400,
+          error: 'Bad Request',
+          message: 'No updatable fields provided',
+        });
+      }
+
+      const user = await prisma.user.update({
+        where: { id: request.user.id },
+        data: allowedFields,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          organization_id: true,
+          is_active: true,
+          created_at: true,
+          updated_at: true,
+        },
+      });
+
+      return { user: sanitizeUser(user) };
+    },
+  );
+
+  // -------------------------------------------------------------------------
   // POST /api/auth/forgot-password — Request a password reset
   // -------------------------------------------------------------------------
   app.post('/api/auth/forgot-password', async (request, reply) => {

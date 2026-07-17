@@ -21,7 +21,7 @@ const krankenkassenRoutes: FastifyPluginAsync = async (app) => {
         customer: { select: { id: true, first_name: true, last_name: true, birthdate: true, city: true } },
         vergleichs_analysen: { take: 5, orderBy: { created_at: 'desc' } },
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // BAG-Prämiendaten abrufen

@@ -25,7 +25,7 @@ const commissionsRoutes: FastifyPluginAsync = async (app) => {
         update: ['admin', 'finance'],
         delete: ['admin'],
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // Provision berechnen aus Vertrag

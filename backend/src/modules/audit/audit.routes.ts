@@ -17,7 +17,7 @@ const auditRoutes: FastifyPluginAsync = async (app) => {
         update: ['admin'],
         delete: ['admin'],
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // Gefilterte Audit-Logs

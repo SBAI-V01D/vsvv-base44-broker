@@ -22,7 +22,7 @@ const tasksRoutes: FastifyPluginAsync = async (app) => {
         customer: { select: { id: true, first_name: true, last_name: true } },
         assignee: { select: { id: true, email: true, name: true } },
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // Task zuweisen

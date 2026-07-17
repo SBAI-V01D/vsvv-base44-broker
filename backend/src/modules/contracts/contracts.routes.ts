@@ -27,7 +27,7 @@ const contractsRoutes: FastifyPluginAsync = async (app) => {
         customer: { select: { id: true, first_name: true, last_name: true, email: true } },
         commissions: { take: 3, orderBy: { created_at: 'desc' } },
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // Renewal Stage vorrücken

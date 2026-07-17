@@ -48,7 +48,7 @@ const applicationsRoutes: FastifyPluginAsync = async (app) => {
         try { updateApplicationSchema.parse(body) }
         catch (err: any) { return { error: err.errors?.map((e: any) => e.message).join(', ') || 'Validation failed', status: 400 } }
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // Custom: Status-Übergang mit Validierung

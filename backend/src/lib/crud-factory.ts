@@ -111,7 +111,7 @@ const DEFAULT_DELETE_ROLES: Role[] = ['admin'];
 // Factory
 // ---------------------------------------------------------------------------
 
-export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
+export function createCrudRoutes(config: CrudConfig, options?: { skipCrud?: boolean }): FastifyPluginAsync {
   const {
     model,
     prefix,
@@ -130,6 +130,10 @@ export function createCrudRoutes(config: CrudConfig): FastifyPluginAsync {
 
   return async (app) => {
     const basePath = `/api/${prefix}`;
+
+    if (options?.skipCrud) {
+      return;
+    }
 
     // -----------------------------------------------------------------------
     // GET /api/:prefix — List with pagination, search, sort, filter

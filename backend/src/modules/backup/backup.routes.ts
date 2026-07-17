@@ -17,7 +17,7 @@ const backupRoutes: FastifyPluginAsync = async (app) => {
         update: ['admin'],
         delete: ['admin'],
       },
-    }),
+    }, { skipCrud: true }),
   )
 
   // Backup auslösen (Log-Eintrag)

@@ -8,6 +8,8 @@
 // ============================================================================
 
 import type { FastifyPluginAsync } from 'fastify';
+import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import { requireTenant } from '../../middleware/tenant.js';
 import { prisma } from '../../lib/prisma.js';
 import { extractFromBuffer } from '../../services/ai-extraction.js';
@@ -229,6 +231,328 @@ const functionRegistry: Record<string, FunctionHandler> = {
         commissionRate,
         calculatedAmount,
         existingCommissions: contract.commissions,
+      };
+    },
+  },
+
+  // ==========================================================================
+  // Application & Contract Operations
+  // ==========================================================================
+
+  'acceptApplicationAndCreateContract': {
+    description: 'Accept an application and create a corresponding contract',
+    handler: async (params, { orgId }) => {
+      const { applicationId, policy_number, start_date } = params as {
+        applicationId?: string;
+        policy_number?: string;
+        start_date?: string;
+      };
+      if (!applicationId) throw new Error('applicationId is required');
+
+      const application = await prisma.application.findFirst({
+        where: { id: applicationId, organization_id: orgId },
+      });
+      if (!application) throw new Error('Application not found');
+
+      await prisma.application.update({
+        where: { id: applicationId },
+        data: { status: 'approved' },
+      });
+
+      const contract = await prisma.contract.create({
+        data: {
+          customer_id: application.customer_id,
+          organization_id: orgId,
+          policy_number: policy_number || `POL-${Date.now()}`,
+          start_date: start_date ? new Date(start_date) : new Date(),
+          status: 'active',
+          product: application.product || '',
+          insurer: application.insurer || '',
+        },
+      });
+
+      return { applicationId, contractId: contract.id, status: 'approved' };
+    },
+  },
+
+  // ==========================================================================
+  // Customer Operations
+  // ==========================================================================
+
+  'generateCustomerNumber': {
+    description: 'Generate a unique customer number',
+    handler: async (_, { orgId }) => {
+      const count = await prisma.customer.count({
+        where: { organization_id: orgId },
+      });
+      const prefix = 'K';
+      const number = String(count + 1).padStart(6, '0');
+      return { customerNumber: `${prefix}${number}` };
+    },
+  },
+
+  'detectDuplicates': {
+    description: 'Detect potential duplicate customer records',
+    handler: async (params, { orgId }) => {
+      const { email, firstName, lastName } = params as {
+        email?: string;
+        firstName?: string;
+        lastName?: string;
+      };
+      const where: Record<string, unknown> = {
+        organization_id: orgId,
+        archived: false,
+      };
+      if (email) {
+        where.email = email;
+      }
+      if (firstName || lastName) {
+        where.OR = [];
+        if (firstName) {
+          (where.OR as any[]).push({
+            first_name: { contains: firstName, mode: 'insensitive' },
+          });
+        }
+        if (lastName) {
+          (where.OR as any[]).push({
+            last_name: { contains: lastName, mode: 'insensitive' },
+          });
+        }
+      }
+      const duplicates = await prisma.customer.findMany({ where });
+      return { duplicates, count: duplicates.length };
+    },
+  },
+
+  'mergeCustomers': {
+    description: 'Merge two customer records',
+    handler: async (params, { orgId }) => {
+      const { primaryId, secondaryId } = params as {
+        primaryId?: string;
+        secondaryId?: string;
+      };
+      if (!primaryId || !secondaryId) throw new Error('primaryId and secondaryId are required');
+
+      const [primary, secondary] = await Promise.all([
+        prisma.customer.findFirst({ where: { id: primaryId, organization_id: orgId } }),
+        prisma.customer.findFirst({ where: { id: secondaryId, organization_id: orgId } }),
+      ]);
+      if (!primary || !secondary) throw new Error('One or both customers not found');
+
+      await Promise.all([
+        prisma.contract.updateMany({ where: { customer_id: secondaryId }, data: { customer_id: primaryId } }),
+        prisma.application.updateMany({ where: { customer_id: secondaryId }, data: { customer_id: primaryId } }),
+        prisma.document.updateMany({ where: { customer_id: secondaryId }, data: { customer_id: primaryId } }),
+        prisma.lead.updateMany({ where: { customer_id: secondaryId }, data: { customer_id: primaryId } }),
+        prisma.task.updateMany({ where: { customer_id: secondaryId }, data: { customer_id: primaryId } }),
+      ]);
+
+      await prisma.customer.update({
+        where: { id: secondaryId },
+        data: { archived: true, archived_at: new Date() },
+      });
+
+      return { merged: true, primaryId, archivedId: secondaryId };
+    },
+  },
+
+  'convertLeadToCustomer': {
+    description: 'Convert a lead into a customer record',
+    handler: async (params, { orgId, userId }) => {
+      const { leadId } = params as { leadId?: string };
+      if (!leadId) throw new Error('leadId is required');
+
+      const lead = await prisma.lead.findFirst({
+        where: { id: leadId, organization_id: orgId },
+      });
+      if (!lead) throw new Error('Lead not found');
+
+      const customer = await prisma.customer.create({
+        data: {
+          organization_id: orgId,
+          first_name: lead.first_name || '',
+          last_name: lead.last_name || '',
+          email: lead.email || '',
+          phone: lead.phone || '',
+          source: 'lead_conversion',
+        },
+      });
+
+      await prisma.lead.update({
+        where: { id: leadId },
+        data: { status: 'converted', converted_to_customer_id: customer.id },
+      });
+
+      return { customerId: customer.id, leadId };
+    },
+  },
+
+  // ==========================================================================
+  // Portal Operations
+  // ==========================================================================
+
+  'getPortalData': {
+    description: 'Get all customer portal data in one call',
+    handler: async (params, { orgId }) => {
+      const { customerId } = params as { customerId?: string };
+      if (!customerId) throw new Error('customerId is required');
+
+      const [customer, contracts, applications, documents] = await Promise.all([
+        prisma.customer.findFirst({ where: { id: customerId, organization_id: orgId } }),
+        prisma.contract.findMany({ where: { customer_id: customerId, organization_id: orgId, archived: false } }),
+        prisma.application.findMany({ where: { customer_id: customerId, organization_id: orgId, archived: false } }),
+        prisma.document.findMany({ where: { customer_id: customerId, organization_id: orgId, archived: false } }),
+      ]);
+
+      return { customer, contracts, applications, documents };
+    },
+  },
+
+  'inviteCustomerToPortal': {
+    description: 'Invite a customer to the portal and create access',
+    handler: async (params, { orgId }) => {
+      const { customerId, email } = params as { customerId?: string; email?: string };
+      if (!customerId) throw new Error('customerId is required');
+
+      const customer = await prisma.customer.findFirst({
+        where: { id: customerId, organization_id: orgId },
+      });
+      if (!customer) throw new Error('Customer not found');
+
+      const token = crypto.randomBytes(32).toString('hex');
+
+      await prisma.customer.update({
+        where: { id: customerId },
+        data: {
+          portal_token: token,
+          portal_token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      return { invited: true, customerId, email: email || customer.email, token };
+    },
+  },
+
+  'managePortalPassword': {
+    description: 'Set or reset a portal password for a customer',
+    handler: async (params, { orgId }) => {
+      const { customerId, password } = params as { customerId?: string; password?: string };
+      if (!customerId || !password) throw new Error('customerId and password are required');
+
+      const customer = await prisma.customer.findFirst({
+        where: { id: customerId, organization_id: orgId },
+      });
+      if (!customer) throw new Error('Customer not found');
+
+      const hashed = await bcrypt.hash(password, 12);
+
+      await prisma.customer.update({
+        where: { id: customerId },
+        data: { portal_password_hash: hashed },
+      });
+
+      return { success: true, customerId };
+    },
+  },
+
+  // ==========================================================================
+  // Audit & Logging
+  // ==========================================================================
+
+  'createAuditLog': {
+    description: 'Create an audit log entry',
+    handler: async (params, { orgId, userId }) => {
+      const { entity_type, entity_id, action, details } = params as {
+        entity_type?: string;
+        entity_id?: string;
+        action?: string;
+        details?: string;
+      };
+
+      const log = await prisma.auditLog.create({
+        data: {
+          audit_id: `audit-${entity_id || 'unknown'}-${Date.now()}`,
+          timestamp: new Date(),
+          trigger_type: 'manual',
+          actor_type: 'user',
+          actor_name: userId,
+          entity_type: entity_type || 'unknown',
+          entity_id: entity_id || '',
+          action: action || 'unknown',
+          details: details || '',
+          organization_id: orgId,
+        },
+      });
+
+      return { auditLogId: log.id };
+    },
+  },
+
+  'logError': {
+    description: 'Log an error to the error log',
+    handler: async (params, { orgId }) => {
+      const { message, stack, source, context } = params as {
+        message?: string;
+        stack?: string;
+        source?: string;
+        context?: string;
+      };
+
+      const errorLog = await prisma.errorLog.create({
+        data: {
+          message: message || 'No message',
+          stack: stack || '',
+          source: source || 'frontend',
+          context: context || '',
+          organization_id: orgId,
+        },
+      });
+
+      return { errorLogId: errorLog.id };
+    },
+  },
+
+  'createBackup': {
+    description: 'Create a backup log entry',
+    handler: async (params, { orgId }) => {
+      const { type, notes } = params as { type?: string; notes?: string };
+
+      const backup = await prisma.backupLog.create({
+        data: {
+          type: type || 'manual',
+          status: 'completed',
+          notes: notes || '',
+          organization_id: orgId,
+        },
+      });
+
+      return { backupId: backup.id, status: 'completed' };
+    },
+  },
+
+  // ==========================================================================
+  // AI & Insights
+  // ==========================================================================
+
+  'aiCustomerInsights': {
+    description: 'Generate AI insights for a customer',
+    handler: async (params, { orgId }) => {
+      const { customerId } = params as { customerId?: string };
+      if (!customerId) throw new Error('customerId is required');
+
+      const customer = await prisma.customer.findFirst({
+        where: { id: customerId, organization_id: orgId },
+        include: { contracts: true, documents: true },
+      });
+      if (!customer) throw new Error('Customer not found');
+
+      return {
+        customerId,
+        insights: {
+          totalContracts: customer.contracts?.length || 0,
+          totalDocuments: customer.documents?.length || 0,
+          name: `${customer.first_name} ${customer.last_name}`,
+        },
       };
     },
   },
