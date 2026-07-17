@@ -236,6 +236,7 @@ export default function ApplicationForm({ application, customers = [], brokers =
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!form.customer_id) return
     const sparteKey = form.sparte || ''
     // Derive organization_id and advisor_id from selected customer or existing form data
     const orgId = selectedCustomer?.organization_id || form.organization_id || ''
@@ -289,6 +290,7 @@ export default function ApplicationForm({ application, customers = [], brokers =
             onFocus={() => setShowDropdown(true)}
             placeholder="Name, Firma, E-Mail, PLZ suchen..."
             className="pl-9 pr-8"
+            required
           />
           {customerQuery && (
             <button

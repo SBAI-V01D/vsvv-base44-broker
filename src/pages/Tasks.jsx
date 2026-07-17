@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus, CheckCircle2, Circle, Clock, AlertCircle,
-  Calendar, User, Trash2, Pencil, ChevronRight, ClipboardCheck
+  Calendar, User, Trash2, Pencil, ChevronRight, ClipboardCheck, Search, X
 } from 'lucide-react';
 import { format, isToday, isPast, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -58,10 +58,30 @@ export default function Tasks() {
   const showFormRef = useRef(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [customerQuery, setCustomerQuery] = useState('');
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const customerDropdownRef = useRef(null);
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
     queryFn: () => base44.entities.Task.list('-created_date', 200),
+  });
+
+  const { data: customerResults = [] } = useQuery({
+    queryKey: ['task_customer_search', customerQuery],
+    queryFn: () => {
+      if (!customerQuery || customerQuery.length < 2) return [];
+      return base44.entities.Customer.filter({
+        archived: false,
+        OR: [
+          { first_name: { contains: customerQuery, mode: 'insensitive' } },
+          { last_name: { contains: customerQuery, mode: 'insensitive' } },
+          { email: { contains: customerQuery, mode: 'insensitive' } },
+        ],
+      }, '-created_date', 20);
+    },
+    enabled: customerQuery.length >= 2,
+    staleTime: 30000,
   });
 
   // Manuelle Datumsprüfung — Verträge mit Platzhalter-Datum
@@ -106,8 +126,19 @@ export default function Tasks() {
   const openEdit = (task) => { setEditing(task); setForm({ ...EMPTY_FORM, ...task }); showFormRef.current = true; setShowForm(true); };
   const closeForm = () => { showFormRef.current = false; setShowForm(false); setEditing(null); setForm(EMPTY_FORM); };
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (customerDropdownRef.current && !customerDropdownRef.current.contains(e.target)) {
+        setShowCustomerDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!form.customer_id) return;
     if (editing) updateMutation.mutate({ id: editing.id, data: form });
     else createMutation.mutate(form);
   };
@@ -376,6 +407,57 @@ export default function Tasks() {
             <DialogTitle>{editing ? 'Aufgabe bearbeiten' : 'Neue Aufgabe'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+            <div className="space-y-1.5" ref={customerDropdownRef}>
+              <Label>Kunde *</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={customerQuery}
+                  onChange={e => {
+                    setCustomerQuery(e.target.value);
+                    setShowCustomerDropdown(true);
+                    if (!e.target.value) setForm(f => ({ ...f, customer_id: '' }));
+                  }}
+                  onFocus={() => setShowCustomerDropdown(true)}
+                  placeholder="Kunde suchen..."
+                  className="pl-9 pr-8"
+                  required
+                />
+                {form.customer_id && customerQuery && (
+                  <button
+                    type="button"
+                    onClick={() => { setCustomerQuery(''); setForm(f => ({ ...f, customer_id: '' })); setShowCustomerDropdown(false) }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              {showCustomerDropdown && customerResults.length > 0 && (
+                <div className="absolute z-50 border rounded-lg bg-card shadow-lg overflow-hidden max-h-48 w-[calc(100%-2rem)]">
+                  {customerResults.map(c => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        setForm(f => ({ ...f, customer_id: c.id }));
+                        setCustomerQuery(`${c.first_name} ${c.last_name}`);
+                        setShowCustomerDropdown(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted/60 text-left text-sm border-b last:border-0"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0 text-xs">
+                        {c.first_name?.[0]}{c.last_name?.[0]}
+                      </div>
+                      <div>
+                        <p className="font-medium truncate">{c.first_name} {c.last_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{c.email}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="space-y-1.5">
               <Label>Titel *</Label>
               <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />

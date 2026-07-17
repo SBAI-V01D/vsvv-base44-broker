@@ -71,6 +71,7 @@ export default function ContractForm({ contract, customers = [], onSave, onCance
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!form.customer_id || !form.sparte) return
     const customer = customers.find(c => c.id === form.customer_id)
     const organization_id = customer?.organization_id || form.organization_id || ''
 
@@ -150,7 +151,7 @@ export default function ContractForm({ contract, customers = [], onSave, onCance
 
       <div>
         <Label>Versicherungssparte *</Label>
-        <Select value={form.sparte} onValueChange={setSparte}>
+        <Select value={form.sparte} onValueChange={setSparte} required>
           <SelectTrigger className="mt-1"><SelectValue placeholder="Sparte wählen" /></SelectTrigger>
           <SelectContent>
             {Object.entries(grouped).map(([group, items]) => (

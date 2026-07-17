@@ -84,6 +84,7 @@ export default function LeadForm({ open, onClose, onSubmit, lead, advisors = [],
     const errs = {}
     if (!form.first_name.trim()) errs.first_name = 'Vorname ist erforderlich'
     if (!form.last_name.trim()) errs.last_name = 'Nachname ist erforderlich'
+    if (!form.source) errs.source = 'Quelle ist erforderlich'
     if (!form.email.trim()) errs.email = 'E-Mail ist erforderlich'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Ungültige E-Mail-Adresse'
     return errs
@@ -273,16 +274,17 @@ export default function LeadForm({ open, onClose, onSubmit, lead, advisors = [],
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="flex items-center gap-1.5 mb-1">
-                  <Globe className="w-3.5 h-3.5" /> Quelle
+                  <Globe className="w-3.5 h-3.5" /> Quelle *
                 </Label>
                 <Select value={form.source} onValueChange={v => set('source', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className={errors.source ? 'border-red-400' : ''}><SelectValue placeholder="Quelle wählen" /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(SOURCE_LABELS).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.source && <p className="text-xs text-red-500 mt-1">{errors.source}</p>}
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 mb-1">
