@@ -40,4 +40,178 @@ import PartnerDetail from './pages/PartnerDetail'
 import Verkaufschancen from './pages/Verkaufschancen'
 import Vertragsablaeufe from './pages/Vertragsablaeufe'
 import AdminTeamAccess from './pages/AdminTeamAccess'
-import AdvisoryDossier from './packages/AdvisoryD
+import AdvisoryDossier from './pages/AdvisoryDossier'
+import AdminEnterpriseControlCenter from './pages/AdminEnterpriseControlCenter'
+import BrokerReporting from './pages/BrokerReporting'
+import EnterpriseAudit from './pages/EnterpriseAudit'
+import EnterpriseSystemCheck from './pages/EnterpriseSystemCheck'
+import InsuranceLearningCenter from './pages/InsuranceLearningCenter'
+import DocumentExtractor from './pages/DocumentExtractor'
+import Ausschreibungen from './pages/Ausschreibungen'
+import AusschreibungDetail from './pages/AusschreibungDetail'
+import VersichererDBPage from './pages/VersichererDBPage'
+import KrankenkassenVergleich from './pages/KrankenkassenVergleich'
+import VergleichsAnalysenListe from './pages/VergleichsAnalysenListe'
+import TestKrankenkassenVergleich from './pages/TestKrankenkassenVergleich'
+import ComplianceSchreiben from './pages/ComplianceSchreiben'
+import ChatExport from './pages/ChatExport'
+import ArchiveDownload from './pages/ArchiveDownload'
+import AdminHub from './pages/AdminHub'
+import AdminSecurity from './pages/AdminSecurity'
+import AdminBackup from './pages/AdminBackup'
+import EnterpriseImprovements from './pages/EnterpriseImprovements'
+
+// Portal
+import PortalRoot from './pages/portal/PortalRoot'
+import PortalDashboard from './pages/portal/PortalDashboard.jsx'
+import PortalContracts from './pages/portal/PortalContracts.jsx'
+import PortalApplications from './pages/portal/PortalApplications.jsx'
+import PortalDocuments from './pages/portal/PortalDocuments.jsx'
+import PortalProfile from './pages/portal/PortalProfile.jsx'
+import PortalSetup from './pages/portal/PortalSetup'
+import PortalResetPassword from './pages/portal/PortalResetPassword'
+
+const AuthenticatedApp = () => {
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth()
+  const location = useLocation()
+
+  // Portal routes are public — skip Base44 auth entirely
+  const isPortalRoute = location.pathname.startsWith('/portal')
+  if (isPortalRoute) {
+    return (
+      <Routes>
+        <Route path="/portal/setup" element={<PortalSetup />} />
+        <Route path="/portal/reset-password" element={<PortalResetPassword />} />
+        <Route path="/portal" element={<PortalRoot />}>
+          <Route index element={<PortalDashboard />} />
+          <Route path="vertraege" element={<PortalContracts />} />
+          <Route path="antraege" element={<PortalApplications />} />
+          <Route path="dokumente" element={<PortalDocuments />} />
+          <Route path="profil" element={<PortalProfile />} />
+          <Route path="dashboard" element={<PortalDashboard />} />
+        </Route>
+      </Routes>
+    )
+  }
+
+  if (isLoadingPublicSettings || isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-sm text-muted-foreground">Laden...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (authError) {
+    if (authError.type === 'user_not_registered') {
+      return <UserNotRegisteredError />
+    } else if (authError.type === 'auth_required') {
+      navigateToLogin()
+      return null
+    }
+    return <UserNotRegisteredError />
+  }
+
+  return (
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/kunden" element={<CustomerIntelligenceWorkspace />} />
+        <Route path="/neukunden" element={<NewCustomers />} />
+        <Route path="/kunden/:customerId/360" element={<Customer360 />} />
+        <Route path="/kunden/:customerId/detail" element={<CustomerDetail />} />
+        <Route path="/vertraege" element={<Contracts />} />
+        <Route path="/antraege" element={<Applications />} />
+        <Route path="/aufgaben" element={<Tasks />} />
+        <Route path="/dokumente" element={<Documents />} />
+        <Route path="/email-templates" element={<EmailTemplates />} />
+        <Route path="/email-kampagnen" element={<EmailCampaigns />} />
+        <Route path="/status-verwaltung" element={<StatusVerwaltung />} />
+        <Route path="/provisionen-courtagen" element={<CommissionsAndCourtage />} />
+        <Route path="/berater-organisation" element={<BeratungOrganisation />} />
+        <Route path="/finanz-dashboard" element={<FinanceDashboard />} />
+        <Route path="/ceo-dashboard" element={<CEODashboard />} />
+        <Route path="/ceo-cockpit" element={<CEOCockpit />} />
+        <Route path="/advanced-dashboard" element={<AdvancedDashboard />} />
+        <Route path="/execution-mode" element={<ExecutionMode />} />
+        <Route path="/sales-autopilot" element={<SalesAutopilot />} />
+        <Route path="/leads" element={<Leads />} />
+        <Route path="/coverage-intelligence" element={<CoverageIntelligence />} />
+        <Route path="/system-logs" element={<SystemLogs />} />
+        <Route path="/partner" element={<Partners />} />
+        <Route path="/partner/:id" element={<PartnerDetail />} />
+        <Route path="/verkaufschancen" element={<Verkaufschancen />} />
+        <Route path="/vertragsablaeufe" element={<Vertragsablaeufe />} />
+        {/* AdvisoryDossierEngine — Phase 1 — Admin-Only */}
+        <Route path="/beratungsdossier" element={<AdvisoryDossier />} />
+        <Route path="/reporting" element={<BrokerReporting />} />
+        <Route path="/dokument-extraktor" element={<DocumentExtractor />} />
+        <Route path="/ausschreibungen" element={<Ausschreibungen />} />
+        <Route path="/ausschreibungen/:id" element={<AusschreibungDetail />} />
+        <Route path="/ausschreibungen/versicherer" element={<VersichererDBPage />} />
+        <Route path="/krankenkassen-vergleich" element={<KrankenkassenVergleich />} />
+        <Route path="/vergleichs-analysen" element={<VergleichsAnalysenListe />} />
+        <Route path="/test/kkv" element={<TestKrankenkassenVergleich />} />
+        <Route path="/compliance-schreiben" element={<ComplianceSchreiben />} />
+        <Route path="/chat-export" element={<ChatExport />} />
+        <Route path="/archive-download" element={<ArchiveDownload />} />
+
+        {/* ── ADMIN ROUTES (admin-only) ───────────────────────────── */}
+        <Route path="/admin/team" element={<ProtectedRoute allowedRoles={['admin']}><AdminTeamAccess /></ProtectedRoute>} />
+        <Route path="/admin/control-center" element={<ProtectedRoute allowedRoles={['admin']}><AdminEnterpriseControlCenter /></ProtectedRoute>} />
+        <Route path="/admin/audit" element={<ProtectedRoute allowedRoles={['admin']}><EnterpriseAudit /></ProtectedRoute>} />
+        <Route path="/admin/audit-logs" element={<ProtectedRoute allowedRoles={['admin']}><AdminLogs /></ProtectedRoute>} />
+        <Route path="/admin/system-check" element={<ProtectedRoute allowedRoles={['admin']}><EnterpriseSystemCheck /></ProtectedRoute>} />
+        <Route path="/admin/improvements" element={<ProtectedRoute allowedRoles={['admin']}><EnterpriseImprovements /></ProtectedRoute>} />
+        <Route path="/admin/logs" element={<ProtectedRoute allowedRoles={['admin']}><SystemLogs /></ProtectedRoute>} />
+        <Route path="/admin/insurance-learning" element={<ProtectedRoute allowedRoles={['admin']}><InsuranceLearningCenter /></ProtectedRoute>} />
+        <Route path="/admin/security" element={<ProtectedRoute allowedRoles={['admin']}><AdminSecurity /></ProtectedRoute>} />
+        <Route path="/admin/backup" element={<ProtectedRoute allowedRoles={['admin']}><AdminBackup /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminHub /></ProtectedRoute>} />
+      </Route>
+
+      {/* ── LEGACY ROUTE REDIRECTS ───────────────────────────── */}
+      <Route path="/admin/team-zugriffsrechte" element={<Navigate to="/admin/team" replace />} />
+      <Route path="/admin/enterprise-control-center" element={<Navigate to="/admin/control-center" replace />} />
+      <Route path="/admin/enterprise-audit" element={<Navigate to="/admin/audit" replace />} />
+      <Route path="/admin-logs" element={<Navigate to="/admin/audit-logs" replace />} />
+      <Route path="/system-logs" element={<Navigate to="/admin/logs" replace />} />
+
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
+  )
+}
+
+function App() {
+  React.useEffect(() => {
+    // Clear localStorage recovery flags only
+    localStorage.removeItem('recovery_mode_enabled')
+    localStorage.removeItem('bypass_visibility')
+    
+    // Force reload Krankenkassenvergleich page cache
+    if (window.location.pathname === '/krankenkassen-vergleich') {
+      sessionStorage.setItem('kkv_cache_buster', Date.now().toString())
+    }
+  }, [])
+
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <ScrollToTop />
+            <Routes>
+              <Route path="*" element={<AuthenticatedApp />} />
+            </Routes>
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </AuthProvider>
+    </ErrorBoundary>
+  )
+}
+
+export default App
