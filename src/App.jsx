@@ -63,6 +63,7 @@ import EnterpriseImprovements from './pages/EnterpriseImprovements'
 
 // Portal
 import PortalRoot from './pages/portal/PortalRoot'
+import Login from './pages/Login';
 import PortalDashboard from './pages/portal/PortalDashboard.jsx'
 import PortalContracts from './pages/portal/PortalContracts.jsx'
 import PortalApplications from './pages/portal/PortalApplications.jsx'
@@ -117,6 +118,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      <Route path="/login" element={<Login />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/kunden" element={<CustomerIntelligenceWorkspace />} />
