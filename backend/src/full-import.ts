@@ -9,7 +9,7 @@ import { readFileSync, existsSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 
 const prisma = new PrismaClient()
-const DATA_DIR = '/workspaces/vsvv-premium-broker-main-v2/CUSTOMER_DOCS'
+const DATA_DIR = process.env.CUSTOMER_DOCS_DIR || resolve(__dirname, '../../CUSTOMER_DOCS')
 
 // ── Config ─────────────────────────────────────────────────────────────────
 
