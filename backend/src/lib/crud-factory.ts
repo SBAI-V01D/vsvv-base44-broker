@@ -94,9 +94,12 @@ const DEFAULT_GET_ROLES: Role[] = [
   'management',
   'broker',
   'backoffice',
+  'finance',
+  'support',
+  'compliance',
 ];
 
-const DEFAULT_CREATE_ROLES: Role[] = ['admin', 'management', 'backoffice'];
+const DEFAULT_CREATE_ROLES: Role[] = ['admin', 'management', 'broker', 'backoffice'];
 
 const DEFAULT_UPDATE_ROLES: Role[] = [
   'admin',
@@ -105,7 +108,7 @@ const DEFAULT_UPDATE_ROLES: Role[] = [
   'broker',
 ];
 
-const DEFAULT_DELETE_ROLES: Role[] = ['admin'];
+const DEFAULT_DELETE_ROLES: Role[] = ['admin', 'management', 'broker'];
 
 // ---------------------------------------------------------------------------
 // Factory
@@ -150,10 +153,7 @@ export function createCrudRoutes(config: CrudConfig, options?: { skipCrud?: bool
       async (request, reply) => {
         const query = request.query as Record<string, string>;
         const page = Math.max(1, parseInt(query.page ?? '1', 10) || 1);
-        const limit = Math.min(
-          100,
-          Math.max(1, parseInt(query.limit ?? '20', 10) || 20),
-        );
+        const limit = query.limit === 'all' || query.limit === '0' || !query.limit ? undefined : Math.max(1, parseInt(query.limit, 10) || 100000);
         const skip = (page - 1) * limit;
         const search = query.search ?? '';
         const sortBy = sortableFields.includes(query.sortBy ?? '')
@@ -185,7 +185,7 @@ export function createCrudRoutes(config: CrudConfig, options?: { skipCrud?: bool
             where,
             include,
             skip,
-            take: limit,
+            take: limit ? limit : undefined,
             orderBy: { [sortBy]: sortOrder },
           }),
           (prisma as any)[model].count({ where }),

@@ -1,0 +1,4 @@
+=====/plan/app_workflow.md====
+backend service at 4000 /auth/* paths -> httpOnly session cookie + Paseto token JWT jwt refreshing rotatable rotation strategy revook-all --sessionid id revoke revocation lists expired tokens refresh per user publish publish audit log for every create update and delete by organisation admin auth review only the organisations' team members — no cross-org access (users / users:{id}/members) -> public signup open session unauthenticated endpoint before jwt verify on login
+
+Frontend client at 3000 all requests routed through src/api/avaSysClient via axios with interceptors reauth.ts handles sess Exp and token renewal transparently user profile avatar banner background theme per org id (subdomain vsvv-base44.app for the demo) landing page signup checkout flows auth client middleware protecting protected routes

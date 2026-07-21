@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'url';
 /**
  * avaai Full Import — Organisation → Berater → Kunden → Verträge → Dokumente
  *
@@ -6,10 +7,11 @@
 
 import { PrismaClient } from '@prisma/client'
 import { readFileSync, existsSync, readdirSync } from 'fs'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
 
 const prisma = new PrismaClient()
-const DATA_DIR = process.env.CUSTOMER_DOCS_DIR || resolve(__dirname, '../../CUSTOMER_DOCS')
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DATA_DIR = process.env.CUSTOMER_DOCS_DIR || resolve(__dirname, '../../CUSTOMER_DOCS');
 
 // ── Config ─────────────────────────────────────────────────────────────────
 

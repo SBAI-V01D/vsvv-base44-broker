@@ -73,7 +73,7 @@ import PortalSetup from './pages/portal/PortalSetup'
 import PortalResetPassword from './pages/portal/PortalResetPassword'
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth()
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth()
   const location = useLocation()
 
   // Portal routes are public — skip Base44 auth entirely
@@ -106,12 +106,23 @@ const AuthenticatedApp = () => {
     )
   }
 
+  // Login route is always public — render it directly before any auth checks
+  // This prevents the infinite redirect loop: no token → authError → /login → no token → ...
+  const isLoginRoute = location.pathname === '/login'
+  if (isLoginRoute) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    )
+  }
+
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />
     } else if (authError.type === 'auth_required') {
-      navigateToLogin()
-      return null
+      // Use React Router Navigate — avoids full page reload that causes the loop
+      return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />
     }
     return <UserNotRegisteredError />
   }

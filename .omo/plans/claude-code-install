@@ -1,0 +1,11 @@
+== claude-code install ==
+
+INSTALL WASIROUT: ~/.local/bin (nvm npx wrapper); global symlinks at /usr/local/mcp/claudeCLIRUN --- a fresh install and build. The .pyc / venv leftover path from their prev config is already dead. So do not reuse it — clone clean or restore the real docs' ~/.config/claude-cli/:!npm_sh & npm run lint --prefix claude && npm publish; ls -F ~/AppData/Local/.claudevie [Windows] /app/.mcp (ClaudeDesktop) etc ·
+
+THE Plan:
+8. build install (35 min): npm rebuild deps -> verify version in sys-path with `which claude` & claude --version → 72 lines of dependency tree check and checksum compare docs before proceeding; report size delta per env <1KB overhead if the target node==20 already has it, else list missing dependencies
+9. deploy docs (.mcp/*): write `.claudevie.json`, `mcp:tools` for claude --the MCP spec routes skill -> file handlers with id & auth scope + task summaries in docs → no live server - render is purely semantic to inform the desktop client
+10 (approval needed) build check ✅→ a single npm run lint / verify across all lambdas, then ask: ok-to-deploy? .mcp/README.md 📖
+
+
+COMMIT 8426de30 (`Install install`): ./package.json && readme.md -> this is the commit I built on and plan from

@@ -21,9 +21,11 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       await checkUserAuth();
     } else {
+      // No token — user must log in
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
+      setAuthError({ type: 'auth_required', message: 'Authentication required' });
     }
   };
 
@@ -85,19 +87,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = (shouldRedirect = true) => {
+  const logout = () => {
+    clearTokens();
     setUser(null);
     setIsAuthenticated(false);
-
-    if (shouldRedirect) {
-      base44.auth.logout(window.location.href);
-    } else {
-      base44.auth.logout();
-    }
+    setAuthChecked(true);
+    setAuthError({ type: 'auth_required', message: 'Authentication required' });
+    window.location.href = '/login';
   };
 
-  const navigateToLogin = () => {
-    base44.auth.redirectToLogin(window.location.href);
+  const navigateToLogin = (returnUrl) => {
+    const target = returnUrl
+      ? `/login?redirect=${encodeURIComponent(returnUrl)}`
+      : '/login';
+    window.location.href = target;
   };
 
   return (

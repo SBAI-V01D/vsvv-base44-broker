@@ -17,7 +17,7 @@
  *   subscribe(callback)       → bridges to Socket.io for realtime
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 // ─── Token Management ───────────────────────────────────────────────────────
 
@@ -89,7 +89,7 @@ async function request(method, path, options = {}) {
     if (!refreshPromise) {
       refreshPromise = (async () => {
         try {
-          const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+          const res = await fetch(`${API_BASE}/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken }),
