@@ -347,7 +347,7 @@ export async function analyzeBuffer(
       throw new Error('Empty response from AI model');
     }
 
-    const jsonText = stripMarkdownFence(rawText);
+    const jsonText = extractJsonString(rawText);
     const parsed = JSON.parse(jsonText);
 
     return buildResult(parsed, rawText, startTime);
